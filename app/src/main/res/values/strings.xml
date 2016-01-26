@@ -1,3 +1,15 @@
 <resources>
     <string name="app_name">Primedice</string>
+    <string name="menu_picture">menu_picture</string>
+    <string name="drawer_open">Open Navigation Drawer</string>
+    <string name="drawer_close">Close Navigation Drawer</string>
+    <string name="bet_activity_txt">Make this layout</string>
+    <string name="faucet">Faucet</string>
+    <string name="zero_btc">0.00000000</string>
+    <string name="withdraw">Withdraw</string>
+    <string name="deposit">Deposit</string>
+    <string name="roll_dice">ROLL DICE</string>
+    <string name="max_bet">MAX</string>
+    <string name="double_bet">2X</string>
+    <string name="half_bet">1/2</string>
 </resources>
