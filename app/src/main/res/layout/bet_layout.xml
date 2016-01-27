@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:gravity="center"
+    android:layout_height="30dp"
+    android:layout_margin="10dp"
+    android:weightSum="1">
+
+    <TextView
+        android:id="@+id/txtBetID"
+        android:layout_width="0dip"
+        android:layout_weight="0.3"
+        android:text="9.999.999.999"
+        android:gravity="center"
+        android:textColor="@color/black"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:textAppearanceSmall"/>
+
+    <TextView
+        android:id="@+id/txtPlayer"
+        android:layout_width="0dip"
+        android:text="GeertBerkers"
+        android:layout_weight="0.3"
+        android:gravity="center"
+        android:textColor="@color/black"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:textAppearanceSmall"/>
+
+    <TextView
+        android:text="0.00000200"
+        android:id="@+id/txtProfit"
+        android:layout_width="0dip"
+        android:layout_weight="0.3"
+        android:gravity="center"
+        android:textColor="@color/black"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:textAppearanceSmall"/>
+
+</LinearLayout>

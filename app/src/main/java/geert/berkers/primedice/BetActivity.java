@@ -8,14 +8,23 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.lang.reflect.Array;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Created by Geert on 23-1-2016.
@@ -24,8 +33,12 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
 
     private User user;
     private boolean betHigh;
-    private double betAmount, betMultiplier, betPercentage;
     private DecimalFormat format;
+    private ArrayList<Bet> recentBets, myBets;
+    private String betURL, access_token;
+
+    private int betAmount;
+    private double betMultiplier, betPercentage;
 
     private ListView listView;
     private MenuAdapter menuAdapter;
@@ -55,6 +68,7 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
         edBetAmount = (EditText) findViewById(R.id.edBetAmount);
         edProfitonWin = (EditText) findViewById(R.id.edProfitonWin);
 
+        
         btnHalf = (Button) findViewById(R.id.btnHalfBet);
         btnDouble = (Button) findViewById(R.id.btnDoubleBet);
         btnMax = (Button) findViewById(R.id.btnMaxBet);
@@ -80,14 +94,20 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
         getSupportActionBar().setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.primedicecolor)));
 
         betHigh = false;
-        betAmount = 0.0;
+        betAmount = 0;
         betMultiplier = 2.0;
         betPercentage = 49.50;
-        format = new DecimalFormat("#.########");
+        format = new DecimalFormat("0.00000000");
+
+        myBets = new ArrayList<>();
+        recentBets = new ArrayList<>();
+        betURL = "https://api.primedice.com/api/bet?access_token=";
 
         Bundle b = getIntent().getExtras();
         try {
             user = b.getParcelable("userParcelable");
+            access_token = b.getString("access_token");
+
             if (user != null) {
                 txtBalance.setText(format.format(((user.balance / 100000000))));
             } else throw new Exception("User is null");
@@ -115,59 +135,133 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
         //TODO: Implement withdraw
     }
 
+    // Set the textboxes with bet/win amounts
+    public void updateBetAmountWinOnProfit() {
+        String betAmountString = format.format((double) betAmount / 100000000);
+        betAmountString = betAmountString.replace(",", ".");
+        edBetAmount.setText(betAmountString);
+
+        String winOnProfit = format.format(((betAmount * betMultiplier) - betAmount) / 100000000);
+        winOnProfit = winOnProfit.replace(",", ".");
+        edProfitonWin.setText(winOnProfit);
+    }
+
     // Halve the betAmount
     public void halfBet(View v) {
         betAmount = betAmount / 2;
-        edBetAmount.setText(format.format(betAmount));
-        edProfitonWin.setText(format.format(betAmount * betMultiplier));
+        updateBetAmountWinOnProfit();
     }
 
     // Double the betAmount
     public void doubleBet(View v) {
         betAmount = betAmount * 2;
-        edBetAmount.setText(format.format(betAmount));
-        edProfitonWin.setText(format.format(betAmount * betMultiplier));
+        updateBetAmountWinOnProfit();
     }
 
     // Set betAmount to balance of user
     public void maxBet(View v) {
-        betAmount = user.balance / 100000000;
-        edBetAmount.setText(format.format(betAmount));
-        edProfitonWin.setText(format.format(betAmount * betMultiplier));
+        betAmount = (int) user.balance;
+        updateBetAmountWinOnProfit();
     }
 
+    // Switch High/Low bet
     public void changeHighLow(View v) {
+        DecimalFormat overUnderFormat = new DecimalFormat("0.00");
+
         if (betHigh) {
             betHigh = false;
-            btnHighLow.setText("Under\n" + betPercentage);
+            btnHighLow.setText("Under\n" + overUnderFormat.format(betPercentage));
         } else {
             betHigh = true;
-            btnHighLow.setText("Over\n" + betPercentage);
+            btnHighLow.setText("Over\n" + overUnderFormat.format(99.99 - betPercentage));
         }
     }
 
     public void changeMultiplier(View v) {
-        //TODO: Set bet info
+        //TODO: Set multiplier
+        //betPercentage = 99 / betMultiplier
+
+        changeHighLow(v);
     }
 
     public void changePercentage(View v) {
-        //TODO: Set bet info
+        //TODO: Set percentage
+        //betMultiplier == 99 / betPercentage;
+
+        changeHighLow(v);
     }
 
     public void rollDice(View v) {
-        //TODO: Place bet!
+        BetTask betTask = new BetTask();
+
+        String condition;
+        String amount = String.valueOf(betAmount);
+        String target = String.valueOf(betPercentage);
+
+        if (betHigh) {
+            condition = ">";
+        } else {
+            condition = "<";
+        }
+
+        String betResult;
+        try {
+            betResult = betTask.execute((betURL + access_token), amount, target, condition).get();
+
+            //TODO: Fix fast betting problem. It crashes becayse betresult isnt loaded yet.
+            JSONObject jsonObject = new JSONObject(betResult);
+            JSONObject jsonBet = jsonObject.getJSONObject("bet");
+            JSONObject jsonUser = jsonObject.getJSONObject("user");
+
+            user.updateUser(jsonUser);
+            myBets.add(0, new Bet(jsonBet));
+
+            if (myBets.size() == 31) {
+                myBets.remove(30);
+            }
+
+        } catch (InterruptedException | ExecutionException | JSONException e) {
+            e.printStackTrace();
+        }
+
+        txtBalance.setText(format.format(((user.balance / 100000000))));
+        showMyBets(v);
     }
 
     public void showMyBets(View v) {
-        //TODO: Get and show my bets
+        //TODO: Save bets
+        showBets(myBets);
     }
 
     public void showAllBets(View v) {
-        //TODO: Get and show all bets
+        GetBetsTask getBetsTask = new GetBetsTask();
+
+        String URL = "https://api.primedice.com/api/bets";
+        try {
+            recentBets = getBetsTask.execute(URL).get();
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
+
+        showBets(recentBets);
     }
 
     public void showHighRollers(View v) {
-        //TODO: Get and show HR
+        GetBetsTask getBetsTask = new GetBetsTask();
+
+        String URL = "https://api.primedice.com/api/highrollers";
+        try {
+            recentBets = getBetsTask.execute(URL).get();
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
+
+        showBets(recentBets);
+    }
+
+    public void showBets(ArrayList<Bet> bets) {
+        BetAdapter betAdapter = new BetAdapter(this.getApplicationContext(), bets);
+        betListView.setAdapter(betAdapter);
     }
 
     @Override

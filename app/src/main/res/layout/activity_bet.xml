@@ -9,15 +9,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <android.support.v4.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
-            android:id="@+id/swipeRefreshLayout"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -28,8 +19,9 @@
                         android:layout_height="wrap_content"
                         android:background="@color/primedicecolor"
                         android:orientation="vertical"
-                        android:paddingBottom="20dp">
+                        android:paddingBottom="5dp">
 
+                        <!-- BTC balance info -->
                         <RelativeLayout
                             android:id="@+id/balanceLayout"
                             android:layout_width="match_parent"
@@ -48,7 +40,7 @@
                                 android:clickable="true"
                                 android:contentDescription="@string/faucet"
                                 android:onClick="claimFaucet"
-                                android:src="@drawable/btcfaucet" />
+                                android:src="@drawable/btnfaucet" />
 
                             <View
                                 android:id="@+id/action_divider"
@@ -68,14 +60,17 @@
                                 android:layout_alignTop="@+id/btnFaucet"
                                 android:layout_toEndOf="@+id/btnFaucet"
                                 android:layout_toRightOf="@+id/btnFaucet"
+                                android:layout_marginEnd="30dp"
+                                android:layout_marginRight="30dp"
                                 android:gravity="center"
                                 android:text="@string/zero_btc"
                                 android:textAppearance="?android:textAppearanceLarge"
                                 android:textColor="@color/white"
-                                android:textSize="36sp"
+                                android:textSize="24sp"
                                 android:textStyle="bold" />
                         </RelativeLayout>
 
+                        <!-- Deposit Withdraw button -->
                         <LinearLayout
                             android:id="@+id/depositwithdrawLayout"
                             android:layout_width="match_parent"
@@ -84,7 +79,7 @@
                             android:layout_marginLeft="20dp"
                             android:layout_marginRight="20dp"
                             android:layout_marginStart="20dp"
-                            android:layout_marginTop="10dp"
+                            android:layout_marginTop="5dp"
                             android:weightSum="1">
 
                             <Button
@@ -95,8 +90,8 @@
                                 android:layout_marginRight="5dp"
                                 android:layout_weight="0.5"
                                 android:background="@drawable/bet_background_deposit"
-                                android:drawableLeft="@drawable/deposit"
-                                android:drawableStart="@drawable/deposit"
+                                android:drawableLeft="@drawable/btcdeposit"
+                                android:drawableStart="@drawable/btcdeposit"
                                 android:onClick="deposit"
                                 android:text="@string/deposit" />
 
@@ -108,13 +103,14 @@
                                 android:layout_marginStart="5dp"
                                 android:layout_weight="0.5"
                                 android:background="@drawable/bet_background_deposit"
-                                android:drawableLeft="@drawable/withdraw"
-                                android:drawableStart="@drawable/withdraw"
+                                android:drawableLeft="@drawable/btcwithdraw"
+                                android:drawableStart="@drawable/btcwithdraw"
                                 android:onClick="withdraw"
                                 android:text="@string/withdraw" />
 
                         </LinearLayout>
 
+                        <!-- All bet info -->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -122,7 +118,7 @@
                             android:layout_marginLeft="20dp"
                             android:layout_marginRight="20dp"
                             android:layout_marginStart="20dp"
-                            android:layout_marginTop="10dp"
+                            android:layout_marginTop="5dp"
                             android:background="@color/white"
                             android:orientation="vertical"
                             android:paddingEnd="10dp"
@@ -130,6 +126,7 @@
                             android:paddingRight="10dp"
                             android:paddingStart="10dp">
 
+                            <!-- Label info -->
                             <LinearLayout
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
@@ -139,15 +136,16 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_weight="0.5"
-                                    android:text="Bet Amount" />
+                                    android:text="@string/bet_amount" />
 
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_weight="0.5"
-                                    android:text="Pofit on Win" />
+                                    android:text="@string/profitonwin" />
                             </LinearLayout>
 
+                            <!-- Betamount win info -->
                             <LinearLayout
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
@@ -155,24 +153,27 @@
 
                                 <EditText
                                     android:id="@+id/edBetAmount"
-                                    android:layout_width="wrap_content"
+                                    android:layout_width="0dip"
                                     android:layout_height="wrap_content"
                                     android:layout_weight="0.5"
                                     android:text="@string/zero_btc"
                                     android:textColor="@color/black"
-                                    android:numeric="decimal" />
+                                    android:inputType="numberDecimal"
+                                    />
 
                                 <EditText
                                     android:id="@+id/edProfitonWin"
-                                    android:layout_width="wrap_content"
+                                    android:layout_width="0dip"
                                     android:layout_height="wrap_content"
                                     android:layout_weight="0.5"
                                     android:enabled="false"
                                     android:text="@string/zero_btc"
                                     android:textColor="@color/black"
-                                    android:numeric="decimal" />
+                                    android:inputType="numberDecimal"
+                                     />
                             </LinearLayout>
 
+                            <!-- Betamount buttons -->
                             <LinearLayout
                                 android:id="@+id/betLayout"
                                 android:layout_width="match_parent"
@@ -205,6 +206,7 @@
 
                             </LinearLayout>
 
+                            <!-- Bet settings -->
                             <LinearLayout
                                 android:id="@+id/betInformationLayout"
                                 android:layout_width="match_parent"
@@ -222,28 +224,29 @@
                                     android:layout_weight="0.33"
                                     android:background="@drawable/bet_background_under_over"
                                     android:onClick="changeHighLow"
-                                    android:text="Under\n49.50" />
+                                    android:text="@string/undertwotimepayout" />
 
                                 <Button
                                     android:id="@+id/btnMultiplier"
                                     android:layout_width="0dip"
-                                    android:layout_height="match_parent"
+                                    android:layout_height="wrap_content"
                                     android:layout_weight="0.33"
                                     android:drawableTop="@drawable/change"
                                     android:onClick="changeMultiplier"
-                                    android:text="2.000x" />
+                                    android:text="@string/multiplier_two" />
 
                                 <Button
                                     android:id="@+id/btnPercentage"
                                     android:layout_width="0dip"
-                                    android:layout_height="match_parent"
+                                    android:layout_height="wrap_content"
                                     android:layout_weight="0.33"
                                     android:drawableTop="@drawable/change"
                                     android:onClick="changePercentage"
-                                    android:text="49.50%" />
+                                    android:text="@string/percentage" />
 
                             </LinearLayout>
 
+                            <!-- Roll button -->
                             <Button
                                 android:id="@+id/btnRollDice"
                                 android:layout_width="match_parent"
@@ -253,12 +256,12 @@
                         </LinearLayout>
                     </LinearLayout>
 
+                    <!-- Recent bets buttons -->
                     <LinearLayout
                         android:id="@+id/vieBetsLayout"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_margin="5dp"
-                        android:padding="5dp"
+                        android:layout_marginTop="2dp"
                         android:weightSum="1">
 
                         <TextView
@@ -269,7 +272,7 @@
                             android:textAppearance="?android:textAppearanceLarge"
                             android:layout_weight="0.33"
                             android:onClick="showMyBets"
-                            android:text="My bets" />
+                            android:text="@string/my_bets" />
 
                         <TextView
                             android:id="@+id/txtAllBets"
@@ -279,7 +282,7 @@
                             android:textAppearance="?android:textAppearanceLarge"
                             android:layout_weight="0.33"
                             android:onClick="showAllBets"
-                            android:text="All bets" />
+                            android:text="@string/latest_bets" />
 
                         <TextView
                             android:id="@+id/txtHighRollers"
@@ -289,20 +292,53 @@
                             android:textAppearance="?android:textAppearanceLarge"
                             android:layout_weight="0.33"
                             android:onClick="showHighRollers"
-                            android:text="High Rollers" />
-
-
+                            android:text="@string/high_rollers" />
                     </LinearLayout>
 
+                    <!-- Resent bets info -->
+                    <LinearLayout
+                        android:id="@+id/viewBetInfo"
+                        android:layout_width="match_parent"
+                        android:layout_height="30dp"
+                        android:background="@color/primedicecolor"
+                        android:weightSum="1">
+
+                        <TextView
+                            android:id="@+id/lblBetID"
+                            android:layout_width="0dip"
+                            android:gravity="center"
+                            android:layout_height="match_parent"
+                            android:textAppearance="?android:textAppearanceMedium"
+                            android:layout_weight="0.33"
+                            android:text="Bet ID" />
+
+                        <TextView
+                            android:id="@+id/lblPlayer"
+                            android:layout_width="0dip"
+                            android:gravity="center"
+                            android:layout_height="match_parent"
+                            android:textAppearance="?android:textAppearanceMedium"
+                            android:layout_weight="0.33"
+                            android:text="User" />
+
+                        <TextView
+                            android:id="@+id/lblProfit"
+                            android:layout_width="0dip"
+                            android:gravity="center"
+                            android:layout_height="match_parent"
+                            android:textAppearance="?android:textAppearanceMedium"
+                            android:layout_weight="0.33"
+                            android:text="Profit" />
+                    </LinearLayout>
+
+                    <!-- Recent bets -->
                     <ListView
                         android:id="@+id/betsListView"
+                        android:layout_gravity="center"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
+                        android:layout_height="400dp">
                     </ListView>
                 </LinearLayout>
-            </ScrollView>
-
-        </android.support.v4.widget.SwipeRefreshLayout>
     </FrameLayout>
 
     <!-- The navigation drawer -->
@@ -315,6 +351,5 @@
         android:divider="@android:color/darker_gray"
         android:dividerHeight="1dp"
         android:textColor="#000000" />
-
 
 </android.support.v4.widget.DrawerLayout>

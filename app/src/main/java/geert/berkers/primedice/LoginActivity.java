@@ -95,6 +95,8 @@ public class LoginActivity extends AppCompatActivity {
             if (user != null) {
                 Intent betActivityIntent = new Intent(this, BetActivity.class);
                 betActivityIntent.putExtra("userParcelable", user);
+                betActivityIntent.putExtra("userURL", userURL);
+                betActivityIntent.putExtra("access_token", access_token);
                 startActivity(betActivityIntent);
                 this.finish();
             } else {
@@ -144,70 +146,9 @@ public class LoginActivity extends AppCompatActivity {
         if (userResult == null || userResult == "NoUser") {
             user = null;
         } else {
-            user = parseJSONToUser(userResult);
+            user = new User(userResult);
         }
 
         return user;
-    }
-
-    // Get information from server and create User object
-    private User parseJSONToUser(String userResult) {
-        User user = null;
-
-        try {
-            JSONObject json = new JSONObject(userResult);
-
-            JSONObject jsonUser = json.getJSONObject("user");
-
-            int userID = jsonUser.getInt("userid");
-            String username = jsonUser.getString("username");
-            double balance = jsonUser.getDouble("balance");
-            boolean password = jsonUser.getBoolean("password");
-            String address = jsonUser.getString("address");
-            String registeredString = jsonUser.getString("registered");
-            Date registered = parseDate(registeredString);
-            boolean otp_enabled = jsonUser.getBoolean("otp_enabled");
-            boolean email_enabled = jsonUser.getBoolean("email_enabled");
-            boolean address_enabled = jsonUser.getBoolean("address_enabled");
-            int wagered = jsonUser.getInt("wagered");
-            double profit = jsonUser.getDouble("profit");
-            int bets = jsonUser.getInt("bets");
-            int wins = jsonUser.getInt("wins");
-            int losses = jsonUser.getInt("losses");
-            int win_risk = jsonUser.getInt("win_risk");
-            int lose_risk = jsonUser.getInt("lose_risk");
-            int messages = jsonUser.getInt("messages");
-            int reffered = jsonUser.getInt("referred");
-            int affiliate_total = jsonUser.getInt("affiliate_total");
-            int nonce = jsonUser.getInt("nonce");
-            String client = jsonUser.getString("client");
-            String previous_server = jsonUser.getString("previous_server");
-            String previous_client = jsonUser.getString("previous_client");
-            String previous_server_hashed = jsonUser.getString("previous_server_hashed");
-            String next_seed = jsonUser.getString("next_seed");
-            String server = jsonUser.getString("server");
-            String otp_token = jsonUser.getString("otp_token");
-            String otp_qr = jsonUser.getString("otp_qr");
-
-            user = new User(userID, username, balance, password, address, registered, otp_enabled, email_enabled, address_enabled, wagered, profit, bets, wins, losses, win_risk, lose_risk, messages, reffered, affiliate_total, nonce, client, previous_server, previous_client, previous_server_hashed, next_seed, server, otp_token, otp_qr);
-
-            Log.i("User", user.toString());
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return user;
-    }
-
-    // Parse date-text to date-object
-    // TODO: FIX MAKING A DATE FROM STRING. THIS STILL CRASHES
-    public static Date parseDate(String dateString) {
-        SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy'T'HH:mm:ss'Z'");
-        try {
-            Date date = format.parse(dateString);
-            return date;
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            return null;
-        }
     }
 }

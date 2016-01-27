@@ -2,7 +2,11 @@ package geert.berkers.primedice;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
+import org.json.JSONException;
+import org.json.JSONObject;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -16,39 +20,50 @@ public class User implements Parcelable {
     int userID, wagered, bets, wins, losses, win_risk, lose_risk, messages, reffered, nonce;
     String username, adress, client, previous_server, previous_client, previous_server_hashed, next_seed, server, otp_token, otp_qr;
 
-    // Create User
-    public User(int userID, String username, double balance, boolean password, String adress, Date registered, boolean otp_enabled, boolean email_enabled, boolean address_enabled, int wagered, double profit, int bets, int wins, int losses, int win_risk, int lose_risk, int messages, int reffered, double affiliate_total, int nonce, String client, String previous_server, String previous_client, String previous_server_hashed, String next_seed, String server, String otp_token, String otp_qr) {
-        this.userID = userID;
-        this.username = username;
-        this.balance = balance;
-        this.password = password;
-        this.adress = adress;
-        //TODO: FIX DATE
-        //this.registered = registered;
-        this.otp_enabled = otp_enabled;
-        this.email_enabled = email_enabled;
-        this.address_enabled = address_enabled;
-        this.wagered = wagered;
-        this.profit = profit;
-        this.bets = bets;
-        this.wins = wins;
-        this.losses = losses;
-        this.win_risk = win_risk;
-        this.lose_risk = lose_risk;
-        this.messages = messages;
-        this.reffered = reffered;
-        this.affiliate_total = affiliate_total;
-        this.nonce = nonce;
-        this.client = client;
-        this.previous_server = previous_server;
-        this.previous_client = previous_client;
-        this.previous_server_hashed = previous_server_hashed;
-        this.next_seed = next_seed;
-        this.server = server;
-        this.otp_token = otp_token;
-        this.otp_qr = otp_qr;
-    }
+    // Create User from JSON
+    public User(String jsonUserString)
+    {
+        try {
+            JSONObject json = new JSONObject(jsonUserString);
 
+            JSONObject jsonUser = json.getJSONObject("user");
+
+            this.userID = jsonUser.getInt("userid");
+            this.username = jsonUser.getString("username");
+            this.balance = jsonUser.getDouble("balance");
+            this.password = jsonUser.getBoolean("password");
+            this.adress = jsonUser.getString("address");
+            //TODO: Fix date
+            //String registeredString = jsonUser.getString("registered");
+            //Date registered = parseDate(registeredString);
+            this.otp_enabled = jsonUser.getBoolean("otp_enabled");
+            this.email_enabled = jsonUser.getBoolean("email_enabled");
+            this.address_enabled = jsonUser.getBoolean("address_enabled");
+            this.wagered = jsonUser.getInt("wagered");
+            this.profit = jsonUser.getDouble("profit");
+            this.bets = jsonUser.getInt("bets");
+            this.wins = jsonUser.getInt("wins");
+            this.losses = jsonUser.getInt("losses");
+            this.win_risk = jsonUser.getInt("win_risk");
+            this.lose_risk = jsonUser.getInt("lose_risk");
+            this.messages = jsonUser.getInt("messages");
+            this.reffered = jsonUser.getInt("referred");
+            this.affiliate_total = jsonUser.getInt("affiliate_total");
+            this.nonce = jsonUser.getInt("nonce");
+            this.client = jsonUser.getString("client");
+            this.previous_server = jsonUser.getString("previous_server");
+            this.previous_client = jsonUser.getString("previous_client");
+            this.previous_server_hashed = jsonUser.getString("previous_server_hashed");
+            this.next_seed = jsonUser.getString("next_seed");
+            this.server = jsonUser.getString("server");
+            this.otp_token = jsonUser.getString("otp_token");
+            this.otp_qr = jsonUser.getString("otp_qr");
+
+            Log.i("User", this.toString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
     // Create user from parcel
     public User(Parcel read){
         this.userID = read.readInt();
@@ -154,48 +169,61 @@ public class User implements Parcelable {
 
     @Override
     public String toString() {
-        //TODO: CHECK FOR DOTS IN STEAD OF COMMA
-        //TODO: CHECK FORMAT WITH 0 ON THE END
-        DecimalFormat format = new DecimalFormat("#.########");
-        return "Username: " + username + "\nBalance: " + format.format(balance / 100000000) + " BTC\nWagered: " + format.format((((double) wagered / 100000000)))+" BTC";
+        DecimalFormat format = new DecimalFormat("0.00000000");
+
+        String balanceString = format.format(balance / 100000000);
+        balanceString = balanceString.replace(",",".");
+
+        return "Username: " + username + "\nBalance: " + balanceString + " BTC\nWagered: " + format.format((((double) wagered / 100000000)))+" BTC";
     }
 
-    /* JSON EXAMPLE FROM GETTING USER INFORMATION
-    {
-        "user":{
-                "id":1,
-                "userid":"990311",
-                "username":"GeertBerkers",
-                "balance":1844.327,
-                "password":true,
-                "address":"1Fxt3cxzjGNAmovb8Hpwve9664G1kS3fzL",
-                "registered":"2015-11-11T10:10:36.825Z",
-                "otp_enabled":false,
-                "email_enabled":true,
-                "address_enabled":false,
-                "wagered":311163139,
-                "profit":-10125759.675,
-                "bets":26890,
-                "wins":13227,
-               "losses":13663,
-                "win_risk":51704011,
-                "lose_risk":51321007,
-                "messages":5310,
-                "referred":1,
-                "affiliate_total":334348.218,
-                "nonce":6794,
-                "client":"PnU7n2PAJBxUnrqO8JkRqKlxFbU4LY",
-                "previous_server":"4acd34f371ff366f6ccd3117240f5c9768a44b5c61250e7a432f1ab0808a0963",
-                "previous_client":"YQgYMd0yQJ0g95sRwMzwxzlObF9Eze",
-                "previous_server_hashed":"bc753fdaaeee2b452df4d33f1d1e8fb3ee1f87279244937abf2dd19ef9d3dd34",
-                "next_seed":"d31e2062d593c6309284c5cd361bfbe7f61bde71e7b0706f477e896b48226aeb",
-                "server":"89d6a5185b5df01ff07510e693b93a4a779c01912d29f485dfdbe80c0796d511",
-                "otp_token":"HBIF2WBFNNXEI7JYGVAVM23BJFRX2VS5",
-                "otp_qr":"https://chart.googleapis.com/chart?chs=166x166&chld=L|0&cht=qr&chl=otpauth://totp/Primedice%2FGeertBerkers%3Fsecret=HBIF2WBFNNXEI7JYGVAVM23BJFRX2VS5"
-            },
-        "meta":{
-                "blocked":false
-            }
+    // Parse date-text to date-object
+    // TODO: FIX MAKING A DATE FROM STRING. THIS STILL CRASHES
+    public static Date parseDate(String dateString) {
+        SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy'T'HH:mm:ss'Z'");
+        try {
+            return format.parse(dateString);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return null;
         }
-    */
+    }
+
+    public boolean updateUser(JSONObject jsonUser) {
+        try{
+            this.userID = jsonUser.getInt("userid");
+            this.username = jsonUser.getString("username");
+            this.balance = jsonUser.getDouble("balance");
+            this.password = jsonUser.getBoolean("password");
+            this.adress = jsonUser.getString("address");
+            //TODO: Fix date
+            //String registeredString = jsonUser.getString("registered");
+            //Date registered = parseDate(registeredString);
+            this.otp_enabled = jsonUser.getBoolean("otp_enabled");
+            this.email_enabled = jsonUser.getBoolean("email_enabled");
+            this.address_enabled = jsonUser.getBoolean("address_enabled");
+            this.wagered = jsonUser.getInt("wagered");
+            this.profit = jsonUser.getDouble("profit");
+            this.bets = jsonUser.getInt("bets");
+            this.wins = jsonUser.getInt("wins");
+            this.losses = jsonUser.getInt("losses");
+            this.win_risk = jsonUser.getInt("win_risk");
+            this.lose_risk = jsonUser.getInt("lose_risk");
+            this.messages = jsonUser.getInt("messages");
+            this.reffered = jsonUser.getInt("referred");
+            this.affiliate_total = jsonUser.getInt("affiliate_total");
+            this.nonce = jsonUser.getInt("nonce");
+            this.client = jsonUser.getString("client");
+            this.previous_server = jsonUser.getString("previous_server");
+            this.previous_client = jsonUser.getString("previous_client");
+            this.previous_server_hashed = jsonUser.getString("previous_server_hashed");
+            this.next_seed = jsonUser.getString("next_seed");
+            this.server = jsonUser.getString("server");
+            return true;
+        }
+        catch (Exception ex){
+            Log.e("Error", ex.toString());
+            return false;
+        }
+    }
 }

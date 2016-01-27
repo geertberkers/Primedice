@@ -8,4 +8,7 @@
     <color name="black">#000000</color>
     <color name="primedicecolor">#9ba3c7</color>
     <color name="depositwithdrawbutton">#7e879e</color>
+    <color name="red">#FF0000</color>
+    <color name="green">#006400</color>
+    <color name="background_bet">#f6f9fe</color>
 </resources>
