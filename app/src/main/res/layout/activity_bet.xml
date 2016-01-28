@@ -281,7 +281,7 @@
                             android:layout_height="match_parent"
                             android:textAppearance="?android:textAppearanceLarge"
                             android:layout_weight="0.33"
-                            android:onClick="showAllBets"
+                            android:onClick="getAndShowBets"
                             android:text="@string/latest_bets" />
 
                         <TextView
@@ -291,7 +291,7 @@
                             android:layout_height="match_parent"
                             android:textAppearance="?android:textAppearanceLarge"
                             android:layout_weight="0.33"
-                            android:onClick="showHighRollers"
+                            android:onClick="getAndShowBets"
                             android:text="@string/high_rollers" />
                     </LinearLayout>
 
@@ -336,7 +336,7 @@
                         android:id="@+id/betsListView"
                         android:layout_gravity="center"
                         android:layout_width="match_parent"
-                        android:layout_height="400dp">
+                        android:layout_height="match_parent">
                     </ListView>
                 </LinearLayout>
     </FrameLayout>

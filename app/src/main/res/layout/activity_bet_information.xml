@@ -1,0 +1,373 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/white">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingTop="10dp"
+        android:paddingEnd="20dp"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:paddingStart="20dp"
+        android:paddingBottom="10dp"
+        >
+
+        <!-- Username -->
+        <LinearLayout
+            android:weightSum="1"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:layout_weight="0.1"
+                android:id="@+id/ivUsername"
+                android:src="@drawable/user"
+                android:layout_gravity="center"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/username"/>
+
+            <TextView
+                android:gravity="center"
+                android:textStyle="bold"
+                android:layout_width="0dp"
+                android:layout_weight="0.3"
+                android:id="@+id/lblUsername"
+                android:text="@string/username"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_weight="0.6"
+                android:text="GeertBerkers"
+                android:id="@+id/txtUsername"
+                android:gravity="center_vertical"
+                android:layout_height="match_parent" />
+        </LinearLayout>
+
+        <!-- Roll -->
+        <LinearLayout
+            android:weightSum="1"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/ivRoll"
+                android:layout_weight="0.1"
+                android:src="@drawable/roll"
+                android:layout_gravity="center"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/roll_number" />
+
+            <TextView
+                android:textStyle="bold"
+                android:gravity="center"
+                android:id="@+id/lblRoll"
+                android:layout_width="0dp"
+                android:layout_weight="0.3"
+                android:text="@string/roll_number"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:text="99.99"
+                android:id="@+id/txtRoll"
+                android:layout_width="0dp"
+                android:layout_weight="0.6"
+                android:gravity="center_vertical"
+                android:layout_height="match_parent" />
+        </LinearLayout>
+
+        <!-- Server seed -->
+        <LinearLayout
+            android:weightSum="1"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:layout_weight="0.1"
+                android:id="@+id/ivServerseed"
+                android:layout_gravity="center"
+                android:src="@drawable/serverseed"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/serverseed"/>
+
+            <TextView
+                android:gravity="center"
+                android:textStyle="bold"
+                android:layout_width="0dp"
+                android:layout_weight="0.3"
+                android:id="@+id/lblServerseed"
+                android:text="@string/serverseed"
+                android:layout_height="match_parent" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_weight="0.6"
+                android:id="@+id/txtServerseed"
+                android:gravity="center_vertical"
+                android:layout_height="wrap_content"
+                android:text="@string/serverseed_example"
+                android:background="@color/generate_formula_bg"/>
+        </LinearLayout>
+
+        <!-- Client seed -->
+        <LinearLayout
+            android:weightSum="1"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:layout_weight="0.1"
+                android:id="@+id/ivClientSeed"
+                android:layout_gravity="center"
+                android:src="@drawable/clientseed"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/clientseed"/>
+
+            <TextView
+                android:gravity="center"
+                android:textStyle="bold"
+                android:layout_width="0dp"
+                android:layout_weight="0.3"
+                android:id="@+id/lblClientseed"
+                android:text="@string/clientseed"
+                android:layout_height="match_parent" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_weight="0.6"
+                android:id="@+id/txtClientseed"
+                android:gravity="center_vertical"
+                android:layout_height="wrap_content"
+                android:text="@string/clientseed_example"
+                android:background="@color/generate_formula_bg"/>
+        </LinearLayout>
+
+        <!-- Time of bet -->
+        <LinearLayout
+            android:weightSum="1"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:layout_weight="0.1"
+                android:id="@+id/ivTimeOfBet"
+                android:layout_gravity="center"
+                android:src="@drawable/time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/timebet"/>
+
+            <TextView
+                android:gravity="center"
+                android:textStyle="bold"
+                android:layout_width="0dp"
+                android:layout_weight="0.3"
+                android:id="@+id/lblTimeOfBet"
+                android:text="@string/timebet"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_weight="0.6"
+                android:id="@+id/txtTimeOfBet"
+                android:gravity="center_vertical"
+                android:layout_height="match_parent"
+                android:text="Jan 27th 2016, 9:55:31 am"/>
+        </LinearLayout>
+
+        <!-- Amount wagered -->
+        <LinearLayout
+            android:weightSum="1"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:layout_weight="0.1"
+                android:id="@+id/ivWagered"
+                android:layout_gravity="center"
+                android:src="@drawable/wagered"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/wageredbet"/>
+
+            <TextView
+                android:gravity="center"
+                android:textStyle="bold"
+                android:layout_width="0dp"
+                android:layout_weight="0.3"
+                android:id="@+id/lblWagered"
+                android:text="@string/wageredbet"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_weight="0.6"
+                android:id="@+id/txtWagered"
+                android:gravity="center_vertical"
+                android:layout_height="match_parent"
+                android:text="0.01234567"/>
+        </LinearLayout>
+
+        <!-- Bet payout -->
+        <LinearLayout
+            android:weightSum="1"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:layout_weight="0.1"
+                android:id="@+id/ivBetPayout"
+                android:layout_gravity="center"
+                android:src="@drawable/payout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/payoutbet"/>
+
+            <TextView
+                android:gravity="center"
+                android:textStyle="bold"
+                android:layout_width="0dp"
+                android:layout_weight="0.3"
+                android:id="@+id/lblPayout"
+                android:text="@string/payoutbet"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_weight="0.6"
+                android:id="@+id/txtPayout"
+                android:gravity="center_vertical"
+                android:layout_height="match_parent"
+                android:text="2.000x"/>
+        </LinearLayout>
+
+        <!-- Bet game -->
+        <LinearLayout
+            android:weightSum="1"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:layout_weight="0.1"
+                android:id="@+id/ivBetGame"
+                android:layout_gravity="center"
+                android:src="@drawable/betgame"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/gamebet"/>
+
+            <TextView
+                android:gravity="center"
+                android:textStyle="bold"
+                android:layout_width="0dp"
+                android:layout_weight="0.3"
+                android:id="@+id/lblBetGame"
+                android:text="@string/gamebet"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_weight="0.6"
+                android:id="@+id/txtBetGame"
+                android:gravity="center_vertical"
+                android:layout_height="match_parent"
+                android:text=">75.00"/>
+        </LinearLayout>
+
+        <!-- Bet profit -->
+        <LinearLayout
+            android:weightSum="1"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:layout_weight="0.1"
+                android:id="@+id/ivBetProfit"
+                android:layout_gravity="center"
+                android:src="@drawable/betprofit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/profitbet"/>
+
+            <TextView
+                android:gravity="center"
+                android:textStyle="bold"
+                android:layout_width="0dp"
+                android:layout_weight="0.3"
+                android:id="@+id/lblBetProfit"
+                android:text="@string/profitbet"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:textStyle="bold"
+                android:layout_width="0dp"
+                android:layout_weight="0.6"
+                android:id="@+id/txtBetProfit"
+                android:gravity="center_vertical"
+                android:layout_height="match_parent"
+                android:text="0.01234567"/>
+        </LinearLayout>
+
+        <!-- More information -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/txtGenerateInfo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/generate_info" />
+
+            <TextView
+                android:layout_marginTop="10dp"
+                android:id="@+id/txtGenerateFormule"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/generate_formula_bg"
+                android:text="@string/generate_formula" />
+
+            <TextView
+                android:layout_marginTop="10dp"
+                android:id="@+id/txtObtainInfo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/obtain_roll_info" />
+
+            <TextView
+                android:layout_marginTop="10dp"
+                android:id="@+id/txtVerificate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/verification" />
+        </LinearLayout>
+    </LinearLayout>
+
+</ScrollView>

@@ -1,0 +1,352 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingEnd="20dp"
+    android:paddingLeft="20dp"
+    android:paddingRight="20dp"
+    android:paddingStart="20dp"
+    android:paddingTop="10dp">
+
+    <!-- Wagered -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="1">
+
+        <ImageView
+            android:id="@+id/ivWagered"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="0.1"
+            android:contentDescription="@string/total_wagered"
+            android:src="@drawable/wagered" />
+
+        <TextView
+            android:id="@+id/lblUsername"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.3"
+            android:gravity="center"
+            android:text="@string/total_wagered"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/txtWagered"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.6"
+            android:gravity="center_vertical"
+            android:paddingLeft="20dp"
+            android:paddingStart="20dp"
+            android:text="0.01234567" />
+    </LinearLayout>
+
+    <!-- Profit -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal"
+        android:weightSum="1">
+
+        <ImageView
+            android:id="@+id/ivProfit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="0.1"
+            android:contentDescription="@string/total_profit"
+            android:src="@drawable/betprofit" />
+
+        <TextView
+            android:id="@+id/lblRoll"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.3"
+            android:gravity="center"
+            android:text="@string/total_profit"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/txtProfit"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.6"
+            android:gravity="center_vertical"
+            android:paddingLeft="20dp"
+            android:paddingStart="20dp"
+            android:text="0.00500000" />
+    </LinearLayout>
+
+    <!-- Bets made -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal"
+        android:weightSum="1">
+
+        <ImageView
+            android:id="@+id/ivBetsMade"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="0.1"
+            android:contentDescription="@string/bets_made"
+            android:src="@drawable/betsmade" />
+
+        <TextView
+            android:id="@+id/lblBetsMade"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.3"
+            android:gravity="center"
+            android:text="@string/bets_made"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/txtBetsMade"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.6"
+            android:gravity="center_vertical"
+            android:paddingLeft="20dp"
+            android:paddingStart="20dp"
+            android:text="249,999" />
+    </LinearLayout>
+
+    <!-- Messages -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal"
+        android:weightSum="1">
+
+        <ImageView
+            android:id="@+id/ivMessages"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="0.1"
+            android:contentDescription="@string/chat_messages"
+            android:src="@drawable/messages" />
+
+        <TextView
+            android:id="@+id/lblChatMessages"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.3"
+            android:gravity="center"
+            android:text="@string/chat_messages"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/txtMessages"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.6"
+            android:gravity="center_vertical"
+            android:paddingLeft="20dp"
+            android:paddingStart="20dp"
+            android:text="5,000" />
+    </LinearLayout>
+
+    <!-- Date joined -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal"
+        android:weightSum="1">
+
+        <ImageView
+            android:id="@+id/ivDateJoined"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="0.1"
+            android:contentDescription="@string/datejoined"
+            android:src="@drawable/datejoined" />
+
+        <TextView
+            android:id="@+id/lblDateJoined"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.3"
+            android:gravity="center"
+            android:text="@string/datejoined"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/txtDateJoined"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.6"
+            android:gravity="center_vertical"
+            android:paddingLeft="20dp"
+            android:paddingStart="20dp"
+            android:text="Jan 27th 2016" />
+    </LinearLayout>
+
+    <!-- Wins -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/wins_bg"
+        android:orientation="horizontal"
+        android:paddingBottom="5dp"
+        android:paddingTop="5dp"
+        android:weightSum="1">
+
+        <ImageView
+            android:id="@+id/ivWins"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="0.1"
+            android:contentDescription="@string/wins"
+            android:src="@drawable/wins" />
+
+        <TextView
+            android:id="@+id/lblWins"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.3"
+            android:gravity="center"
+            android:text="@string/wins"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/txtWins"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.6"
+            android:gravity="center_vertical"
+            android:paddingLeft="20dp"
+            android:paddingStart="20dp"
+            android:text="231,123" />
+    </LinearLayout>
+
+    <!-- Losses -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/losses_bg"
+        android:orientation="horizontal"
+        android:paddingBottom="5dp"
+        android:paddingTop="5dp"
+        android:weightSum="1">
+
+        <ImageView
+            android:id="@+id/ivLosses"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="0.1"
+            android:contentDescription="@string/losses"
+            android:src="@drawable/losses" />
+
+        <TextView
+            android:id="@+id/lblLosses"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.3"
+            android:gravity="center"
+            android:text="@string/losses"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/txtLosses"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.6"
+            android:gravity="center_vertical"
+            android:paddingLeft="20dp"
+            android:paddingStart="20dp"
+            android:text="231,123" />
+    </LinearLayout>
+
+    <!-- Luck -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/luck_bg"
+        android:orientation="horizontal"
+        android:paddingBottom="5dp"
+        android:paddingTop="5dp"
+        android:weightSum="1">
+
+        <ImageView
+            android:id="@+id/ivLuck"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="0.1"
+            android:contentDescription="@string/luck"
+            android:src="@drawable/luck" />
+
+        <TextView
+            android:id="@+id/lblLuck"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.3"
+            android:gravity="center"
+            android:text="@string/luck"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/txtLuck"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.6"
+            android:gravity="center_vertical"
+            android:paddingLeft="20dp"
+            android:paddingStart="20dp"
+            android:text="99.87%" />
+    </LinearLayout>
+
+    <!-- Power -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal"
+        android:weightSum="1">
+
+        <ImageView
+            android:id="@+id/ivPowerLevel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="0.1"
+            android:contentDescription="@string/power"
+            android:src="@drawable/powerlvl" />
+
+        <TextView
+            android:id="@+id/lblPower"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.3"
+            android:gravity="center"
+            android:text="@string/power"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/txtPower"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.6"
+            android:gravity="center_vertical"
+            android:paddingLeft="20dp"
+            android:paddingStart="20dp"
+            android:text="15.03" />
+    </LinearLayout>
+</LinearLayout>

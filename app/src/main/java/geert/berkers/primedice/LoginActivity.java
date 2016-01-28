@@ -15,8 +15,6 @@ import android.widget.TextView;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.concurrent.ExecutionException;
 
 public class LoginActivity extends AppCompatActivity {
@@ -43,8 +41,22 @@ public class LoginActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setIcon(R.mipmap.primedice);
         getSupportActionBar().setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.primedicecolor)));
-
+/*
         //TODO FIX THIS. NEED TO LOGIN AFTER CRASH!
+        try {
+            Bundle b = getIntent().getExtras();
+            txtResult.setText(b.getString("info"));
+        } catch (Exception ex) {
+            // Check if access_token is saved in SharedPreferences from your mobile
+            SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+            access_token = sharedPref.getString("access_token", null);
+            loginFromAccestoken(access_token);
+        }*/
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
         try {
             Bundle b = getIntent().getExtras();
             txtResult.setText(b.getString("info"));
@@ -134,16 +146,16 @@ public class LoginActivity extends AppCompatActivity {
     public User getUser() {
 
         User user;
-        String userResult = "NoUser";
+        String userResult = "NoResult";
 
-        GetUserTask userTask = new GetUserTask();
+        GetJSONResultFromURLTask userTask = new GetJSONResultFromURLTask();
 
         try {
             userResult = userTask.execute(userURL + access_token).get();
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         }
-        if (userResult == null || userResult == "NoUser") {
+        if (userResult == null || userResult.equals("NoResult")) {
             user = null;
         } else {
             user = new User(userResult);

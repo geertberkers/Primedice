@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#6d738c</color>
-    <color name="colorAccent">#FF4081</color>
+    <color name="colorPrimaryDark">#3F51B5</color>
+    <color name="colorPrimary">#6d738c</color>
+    <color name="colorAccent">#3F51B5</color>
     <color name="background_bet_info">#f7f7f7</color>
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
@@ -11,4 +11,5 @@
     <color name="red">#FF0000</color>
     <color name="green">#006400</color>
     <color name="background_bet">#f6f9fe</color>
+    <color name="generate_formula_bg">#eeeeee</color>
 </resources>

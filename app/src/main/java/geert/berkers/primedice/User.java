@@ -6,23 +6,20 @@ import android.util.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 /**
- * Created by Geert on 23-1-2016.
+ * Primedice Application Created by Geert on 23-1-2016.
  */
 public class User implements Parcelable {
 
-    Date registered;
     double balance, profit, affiliate_total;
     boolean password, otp_enabled, email_enabled, address_enabled;
-    int userID, wagered, bets, wins, losses, win_risk, lose_risk, messages, reffered, nonce;
-    String username, adress, client, previous_server, previous_client, previous_server_hashed, next_seed, server, otp_token, otp_qr;
+    Long wagered;
+    int userID, bets, wins, losses, win_risk, lose_risk, messages, referred, nonce;
+    String username, address, registered, client, previous_server, previous_client, previous_server_hashed, next_seed, server, otp_token, otp_qr;
 
     // Create User from JSON
-    public User(String jsonUserString)
-    {
+    public User(String jsonUserString) {
         try {
             JSONObject json = new JSONObject(jsonUserString);
 
@@ -32,14 +29,12 @@ public class User implements Parcelable {
             this.username = jsonUser.getString("username");
             this.balance = jsonUser.getDouble("balance");
             this.password = jsonUser.getBoolean("password");
-            this.adress = jsonUser.getString("address");
-            //TODO: Fix date
-            //String registeredString = jsonUser.getString("registered");
-            //Date registered = parseDate(registeredString);
+            this.address = jsonUser.getString("address");
+            this.registered = jsonUser.getString("registered");
             this.otp_enabled = jsonUser.getBoolean("otp_enabled");
             this.email_enabled = jsonUser.getBoolean("email_enabled");
             this.address_enabled = jsonUser.getBoolean("address_enabled");
-            this.wagered = jsonUser.getInt("wagered");
+            this.wagered = jsonUser.getLong("wagered");
             this.profit = jsonUser.getDouble("profit");
             this.bets = jsonUser.getInt("bets");
             this.wins = jsonUser.getInt("wins");
@@ -47,7 +42,7 @@ public class User implements Parcelable {
             this.win_risk = jsonUser.getInt("win_risk");
             this.lose_risk = jsonUser.getInt("lose_risk");
             this.messages = jsonUser.getInt("messages");
-            this.reffered = jsonUser.getInt("referred");
+            this.referred = jsonUser.getInt("referred");
             this.affiliate_total = jsonUser.getInt("affiliate_total");
             this.nonce = jsonUser.getInt("nonce");
             this.client = jsonUser.getString("client");
@@ -64,17 +59,45 @@ public class User implements Parcelable {
             e.printStackTrace();
         }
     }
+
+    // Create User to show
+    public User(boolean yourself, String jsonUserString) {
+        Log.i("Info", "Own account: " + String.valueOf(yourself));
+
+        try{
+            JSONObject json = new JSONObject(jsonUserString);
+            JSONObject jsonUser = json.getJSONObject("user");
+
+            this.userID = jsonUser.getInt("userid");
+            this.username = jsonUser.getString("username");
+            this.registered = jsonUser.getString("registered");
+            this.wagered = jsonUser.getLong("wagered");
+            this.profit = jsonUser.getDouble("profit");
+            this.bets = jsonUser.getInt("bets");
+            this.wins = jsonUser.getInt("wins");
+            this.losses = jsonUser.getInt("losses");
+            this.win_risk = jsonUser.getInt("win_risk");
+            this.lose_risk = jsonUser.getInt("lose_risk");
+            this.messages = jsonUser.getInt("messages");
+        }
+        catch (JSONException ex)
+        {
+            Log.e("JSONError", ex.toString());
+        }
+    }
+
     // Create user from parcel
     public User(Parcel read){
         this.userID = read.readInt();
         this.username = read.readString();
         this.balance = read.readDouble();
-        if(read.readString().equals("Y")) { password = true; } else { password = false;}
-        this.adress = read.readString();
-        if(read.readString().equals("Y")) { otp_enabled = true; } else { otp_enabled = false;}
-        if(read.readString().equals("Y")) { email_enabled = true; } else { email_enabled = false;}
-        if(read.readString().equals("Y")) { address_enabled = true; } else { address_enabled = false;}
-        this.wagered = read.readInt();
+        password = read.readString().equals("Y");
+        this.address = read.readString();
+        this.registered = read.readString();
+        otp_enabled = read.readString().equals("Y");
+        email_enabled = read.readString().equals("Y");
+        address_enabled = read.readString().equals("Y");
+        this.wagered = read.readLong();
         this.profit = read.readDouble();
         this.bets = read.readInt();
         this.wins = read.readInt();
@@ -82,7 +105,7 @@ public class User implements Parcelable {
         this.win_risk = read.readInt();
         this.lose_risk = read.readInt();
         this.messages = read.readInt();
-        this.reffered = read.readInt();
+        this.referred = read.readInt();
         this.affiliate_total = read.readDouble();
         this.nonce = read.readInt();
         this.client = read.readString();
@@ -93,17 +116,6 @@ public class User implements Parcelable {
         this.server = read.readString();
         this.otp_token = read.readString();
         this.otp_qr = read.readString();
-
-        //TODO: FIX DATE
-        /*
-        try {
-            this.registered = DateFormat.getDateInstance().parse(read.readString());
-        }
-        catch (ParseException ex)
-        {
-            Log.e("ParseError", ex.toString());
-        }
-        */
     }
 
     // Create from parcel
@@ -125,18 +137,18 @@ public class User implements Parcelable {
         return 0;
     }
 
-    // Save the object as parcel
-    @Override
+    @Override // Save the object as parcel
     public void writeToParcel(Parcel arg0, int arg1) {
         arg0.writeInt(userID);
         arg0.writeString(username);
         arg0.writeDouble(balance);
         if(password)  { arg0.writeString("Y"); } else { arg0.writeString("N"); }
-        arg0.writeString(adress);
+        arg0.writeString(address);
+        arg0.writeString(registered);
         if(otp_enabled)  { arg0.writeString("Y"); } else { arg0.writeString("N"); }
         if(email_enabled)  { arg0.writeString("Y"); } else { arg0.writeString("N"); }
         if(address_enabled)  { arg0.writeString("Y"); } else { arg0.writeString("N"); }
-        arg0.writeInt(wagered);
+        arg0.writeLong(wagered);
         arg0.writeDouble(profit);
         arg0.writeInt(bets);
         arg0.writeInt(wins);
@@ -144,7 +156,7 @@ public class User implements Parcelable {
         arg0.writeInt(win_risk );
         arg0.writeInt(lose_risk );
         arg0.writeInt(messages);
-        arg0.writeInt(reffered );
+        arg0.writeInt(referred);
         arg0.writeDouble(affiliate_total);
         arg0.writeInt(nonce);
         arg0.writeString(client);
@@ -155,38 +167,6 @@ public class User implements Parcelable {
         arg0.writeString(server);
         arg0.writeString(otp_token);
         arg0.writeString(otp_qr);
-
-        //TODO: FIX DATE (PARSE EXCEPTION)
-        /*
-        try{
-        arg0.writeString(DateFormat.getDateInstance().format(registered));
-    }catch (Exception ex)
-        {
-            ex.printStackTrace();
-        }
-        */
-    }
-
-    @Override
-    public String toString() {
-        DecimalFormat format = new DecimalFormat("0.00000000");
-
-        String balanceString = format.format(balance / 100000000);
-        balanceString = balanceString.replace(",",".");
-
-        return "Username: " + username + "\nBalance: " + balanceString + " BTC\nWagered: " + format.format((((double) wagered / 100000000)))+" BTC";
-    }
-
-    // Parse date-text to date-object
-    // TODO: FIX MAKING A DATE FROM STRING. THIS STILL CRASHES
-    public static Date parseDate(String dateString) {
-        SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy'T'HH:mm:ss'Z'");
-        try {
-            return format.parse(dateString);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            return null;
-        }
     }
 
     public boolean updateUser(JSONObject jsonUser) {
@@ -195,14 +175,12 @@ public class User implements Parcelable {
             this.username = jsonUser.getString("username");
             this.balance = jsonUser.getDouble("balance");
             this.password = jsonUser.getBoolean("password");
-            this.adress = jsonUser.getString("address");
-            //TODO: Fix date
-            //String registeredString = jsonUser.getString("registered");
-            //Date registered = parseDate(registeredString);
+            this.address = jsonUser.getString("address");
+            this.registered = jsonUser.getString("registered");
             this.otp_enabled = jsonUser.getBoolean("otp_enabled");
             this.email_enabled = jsonUser.getBoolean("email_enabled");
             this.address_enabled = jsonUser.getBoolean("address_enabled");
-            this.wagered = jsonUser.getInt("wagered");
+            this.wagered = jsonUser.getLong("wagered");
             this.profit = jsonUser.getDouble("profit");
             this.bets = jsonUser.getInt("bets");
             this.wins = jsonUser.getInt("wins");
@@ -210,7 +188,7 @@ public class User implements Parcelable {
             this.win_risk = jsonUser.getInt("win_risk");
             this.lose_risk = jsonUser.getInt("lose_risk");
             this.messages = jsonUser.getInt("messages");
-            this.reffered = jsonUser.getInt("referred");
+            this.referred = jsonUser.getInt("referred");
             this.affiliate_total = jsonUser.getInt("affiliate_total");
             this.nonce = jsonUser.getInt("nonce");
             this.client = jsonUser.getString("client");
@@ -225,5 +203,80 @@ public class User implements Parcelable {
             Log.e("Error", ex.toString());
             return false;
         }
+    }
+
+    @Override
+    public String toString() {
+        return "Username: " + username + "\nWagered: " + satToBTC(Double.valueOf(wagered)) + " BTC";
+    }
+
+    public String getWagered() {
+        return satToBTC(Double.valueOf(wagered));
+    }
+
+    public String getProfit() {
+        return satToBTC((int)profit);
+    }
+
+    public String getBalance() {
+        // Use cast int to round it down
+        int value = (int) balance;
+        return satToBTC(value);
+    }
+
+    public String getBets() {
+        return intToDottedString(bets);
+    }
+
+    public String getMessages() {
+        return intToDottedString(messages);
+    }
+
+    public String getRegistered() {
+        return registered.substring(0, 10);
+    }
+
+    public String getWins() {
+        return intToDottedString(wins);
+    }
+
+    public String getLosses() {
+        return intToDottedString(losses);
+    }
+
+    private String intToDottedString(int integer) {
+        String id = String.valueOf(integer);
+
+        StringBuilder str = new StringBuilder(id);
+        int idx = str.length() - 3;
+
+        while (idx > 0)
+        {
+            str.insert(idx, ",");
+            idx = idx - 3;
+        }
+
+        return str.toString();
+    }
+
+    public String satToBTC(double satoshi) {
+        DecimalFormat format = new DecimalFormat("0.00000000");
+
+        String resultBTC = format.format(satoshi / 100000000);
+        resultBTC = resultBTC.replace(",",".");
+
+        return resultBTC;
+    }
+
+    public String getLuck() {
+        DecimalFormat format = new DecimalFormat("0.00");
+
+        double luckValue = (double) win_risk/lose_risk*100;
+
+        String luck = format.format(luckValue);
+        luck = luck.replace(",", ".");
+        luck = luck + "%";
+
+        return luck;
     }
 }

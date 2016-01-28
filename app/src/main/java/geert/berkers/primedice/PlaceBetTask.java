@@ -3,6 +3,9 @@ package geert.berkers.primedice;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.InputStream;
@@ -12,34 +15,39 @@ import java.net.URL;
 import java.net.URLEncoder;
 
 /**
- * Created by Geert on 23-1-2016.
+ * Primedice Application Created by Geert on 26-1-2016.
  */
-public class GetUserTask extends AsyncTask<String, Void, String> {
+public class PlaceBetTask extends AsyncTask<String, Void, String> {
 
     HttpURLConnection connection;
 
     @Override
     protected String doInBackground(String... params) {
-        return getBalance(params[0]);
+        return placeBetUpdateUser(params[0], params[1], params[2], params[3]);
     }
 
-    private String getBalance(String userURL){
-        String balance = "NoBalance";
+    public String placeBetUpdateUser(String betURL, String amount, String target, String condition) {
+        String betResult = null;
 
         try {
-            URL url = new URL(userURL);
+            URL url = new URL(betURL);
 
-            /*
             String urlParameters =
-                    "acces_token=" + URLEncoder.encode(acces_token, "UTF-8") +
-                            "&password=" + URLEncoder.encode(password, "UTF-8");
-            */
+                    "amount=" + URLEncoder.encode(amount, "UTF-8") +
+                            "&target=" + URLEncoder.encode(target, "UTF-8") +
+                            "&condition=" + URLEncoder.encode(condition, "UTF-8");
 
             connection = (HttpURLConnection) url.openConnection();
             connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-            connection.setRequestMethod("GET");
+            connection.setRequestMethod("POST");
             connection.setDoInput(true);
             connection.connect();
+
+            // Send request to site
+            DataOutputStream dataOutputStream = new DataOutputStream(connection.getOutputStream());
+            dataOutputStream.writeBytes(urlParameters);
+            dataOutputStream.flush();
+            dataOutputStream.close();
 
             // Get Response from site
             InputStream inputStream = connection.getInputStream();
@@ -55,8 +63,8 @@ public class GetUserTask extends AsyncTask<String, Void, String> {
 
             bufferedReader.close();
 
-            balance = response.toString();
-            Log.i("balance", balance);
+            betResult = response.toString();
+            Log.i("response", betResult);
 
         } catch (Exception ex) {
 
@@ -69,7 +77,6 @@ public class GetUserTask extends AsyncTask<String, Void, String> {
                 connection.disconnect();
             }
         }
-
-        return balance;
+        return betResult;
     }
 }

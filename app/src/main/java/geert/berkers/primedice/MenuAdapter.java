@@ -10,7 +10,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 /**
- * Created by Geert on 24-1-2016.
+ * Primedice Application Created by Geert on 24-1-2016.
  */
 public class MenuAdapter extends BaseAdapter {
     private Context context;
