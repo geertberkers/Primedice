@@ -131,8 +131,7 @@ class MySQLiteHelper extends SQLiteOpenHelper {
                 Double roll = Double.valueOf(cursor.getString(7));
                 int nonce = Integer.valueOf(cursor.getString(8));
                 String client = cursor.getString(9);
-                //todo: remove replace when bets deleted
-                Double multiplier = Double.valueOf(cursor.getString(10).replace(",","."));
+                Double multiplier = Double.valueOf(cursor.getString(10));
                 String timestamp = cursor.getString(11);
                 String server = cursor.getString(12);
 

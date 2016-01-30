@@ -55,8 +55,8 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
+    protected void onResume() {
+        super.onResume();
         try {
             Bundle b = getIntent().getExtras();
             txtResult.setText(b.getString("info"));

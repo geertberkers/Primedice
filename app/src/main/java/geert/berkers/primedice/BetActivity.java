@@ -1,8 +1,13 @@
 package geert.berkers.primedice;
 
 import android.app.AlertDialog;
+import android.content.ActivityNotFoundException;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -16,6 +21,8 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -23,6 +30,7 @@ import android.widget.Toast;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
@@ -36,9 +44,11 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
     private boolean betHigh;
     private DecimalFormat format;
     private ArrayList<Bet> recentBets, myBets;
-    private String betURL, access_token;
+    private String tipURL, betURL, withdrawalURL, access_token;
 
+    Bitmap resultImage;
     private int betAmount;
+    private boolean maxPressed;
     private double betMultiplier, betPercentage, target;
 
     private ListView listView;
@@ -51,7 +61,7 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
     private ListView betListView;
     private EditText edBetAmount, edProfitonWin;
     private TextView txtBalance;
-    private Button btnHighLow, btnMultiplier, btnPercentage;
+    private Button btnHighLow, btnMultiplier, btnPercentage, btnRollDice;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,8 +95,8 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
                     double satoshi = betAmountDouble * toSatoshiMultiplier;
 
                     // Dirty fix for rounding math problems
-                    if(satoshi - Double.valueOf(satoshi).intValue() >= 0.999){
-                            satoshi += 0.1;
+                    if (satoshi - Double.valueOf(satoshi).intValue() >= 0.999) {
+                        satoshi += 0.1;
                     }
                     betAmount = (int) satoshi;
 
@@ -112,6 +122,7 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
         btnHighLow = (Button) findViewById(R.id.btnHighLow);
         btnMultiplier = (Button) findViewById(R.id.btnMultiplier);
         btnPercentage = (Button) findViewById(R.id.btnPercentage);
+        btnRollDice = (Button) findViewById(R.id.btnRollDice);
 
         menuAdapter = new MenuAdapter(this);
         listView.setAdapter(menuAdapter);
@@ -134,15 +145,18 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
     }
 
     private void setInformation() {
+        maxPressed = false;
         betHigh = false;
         betAmount = 0;
         betMultiplier = 2.0;
         betPercentage = 49.50;
         target = betPercentage;
 
+        tipURL = "https://api.primedice.com/api/tip?access_token=";
         betURL = "https://api.primedice.com/api/bet?access_token=";
-        recentBets = new ArrayList<>();
+        withdrawalURL = "https://api.primedice.com/api/withdraw?access_token=";
 
+        recentBets = new ArrayList<>();
 
         Bundle b = getIntent().getExtras();
 
@@ -151,13 +165,16 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
             access_token = b.getString("access_token");
 
             if (user != null) {
-                int maxBet = (int) (Double.valueOf(user.getBalance()) * 100000000);
-
-                txtBalance.setText(format.format((double)maxBet/100000000).replace(",","."));
-
+                txtBalance.setText(user.getBalance());
                 myBets = db.getAllBetsFromUser(user.username);
                 showBets(myBets);
 
+                try {
+                    DownloadImageTask downloadImageTask = new DownloadImageTask();
+                    resultImage = downloadImageTask.execute("https://chart.googleapis.com/chart?chs=500x500&cht=qr&chl=" + user.address).get();
+                } catch (InterruptedException | ExecutionException e) {
+                    e.printStackTrace();
+                }
             } else throw new Exception("User is null");
         } catch (Exception ex) {
             Log.e("NoUserFound", "Didn't find a user!");
@@ -174,19 +191,114 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
         //TODO: Find a way for implementing faucet
     }
 
+    // Deposit some BTC!
     public void deposit(View v) {
-        //TODO: Find a way to deposit
-        //SHOW DEPOSIT ADDRESS IN POPUP
-        //OPTION TO COPY ADRESS
+        ImageView depositAdressImage = new ImageView(this);
+        depositAdressImage.setImageBitmap(resultImage);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("DEPOSIT");
+        builder.setMessage("Your deposit adress is: " + user.address);
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        builder.setNeutralButton("Copy", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                ClipData clip = ClipData.newPlainText("BTC adress", user.address);
+                clipboard.setPrimaryClip(clip);
+
+                Toast.makeText(getApplicationContext(), "Copied BTC address!", Toast.LENGTH_SHORT).show();
+            }
+        });
+        builder.setNegativeButton("Open", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                try {
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("bitcoin:" + user.address));
+                    startActivity(browserIntent);
+                } catch (ActivityNotFoundException ex) {
+                    Toast.makeText(getApplicationContext(), "No apps to open this!", Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+        builder.setView(depositAdressImage);
+        builder.show();
     }
 
+    // Withdraw some btc!
+    //TODO SCAN QR CODE FOR ADRESS
     public void withdraw(View v) {
-        //TODO: Ask amount and btc address
-        //TODO: Implement withdraw
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+
+        final EditText edWithdrawalAdress = new EditText(this);
+        edWithdrawalAdress.setHint("BTC Address");
+        layout.addView(edWithdrawalAdress);
+
+        final EditText edWithdrawalAmount = new EditText(this);
+        edWithdrawalAmount.setHint("Amount");
+        layout.addView(edWithdrawalAmount);
+
+        final AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+        alertDialog.setTitle("PLACE A WITHDRAWAL");
+        alertDialog.setMessage("Withdrawal fee: 0.0001 BTC.");
+        alertDialog.setView(layout);
+
+        alertDialog.setPositiveButton("WITHDRAW", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                String withdrawalAdress = edWithdrawalAdress.getText().toString();
+                String withdrawalAmount = edWithdrawalAmount.getText().toString();
+
+                withdrawalAmount = withdrawalAmount.replace(",", ".");
+                Double amountToWithdraw = Double.valueOf(withdrawalAmount);
+
+                double toSatoshiMultiplier = 100000000;
+                double satoshiDouble = amountToWithdraw * toSatoshiMultiplier;
+                // Dirty fix for rounding math problems
+                if (satoshiDouble - Double.valueOf(satoshiDouble).intValue() >= 0.999) {
+                    satoshiDouble += 0.1;
+                }
+                int satoshiWithdrawAmount = (int) satoshiDouble;
+
+                if(user.balance < satoshiDouble){
+                    Toast.makeText(getApplicationContext(), "Not enough balance to withdraw!", Toast.LENGTH_LONG).show();
+                }
+                else {
+                    try {
+                        PlaceWithdrawalTask placeWithdrawalTask = new PlaceWithdrawalTask();
+
+                        String result = placeWithdrawalTask.execute((withdrawalURL + access_token), String.valueOf(satoshiWithdrawAmount), withdrawalAdress).get();
+                        //{"amount":100000,"sent":100000,"txid":"8f0159c9af5ba2b325bf93085632e91a65595f0fb8e4bca2f9507bd1be619ddf","address":"19ZgWmESFWmhcQKDP9ZxhUeLvTACXNyUjS","confirmed":true,"timestamp":"2016-01-30T01:20:33.580Z"}
+
+                        //TODO: Check what to change after withdrawal. For now only balance
+                        // Give more information as feedback (toast?)
+                        user.balance = user.balance - satoshiDouble;
+                        txtBalance.setText(user.getBalance());
+                    } catch (InterruptedException | ExecutionException e) {
+
+                        Toast.makeText(getApplicationContext(), "Withdrawal failed!", Toast.LENGTH_LONG).show();
+
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+        alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                //Do nothing
+            }
+        });
+        alertDialog.show();
     }
 
     // Update bet amount
     public void updateBetAmount() {
+        String rollDice = "ROLL DICE";
+        btnRollDice.setText(rollDice);
         String betAmountString = format.format((double) betAmount / 100000000);
         betAmountString = betAmountString.replace(",", ".");
         edBetAmount.setText(betAmountString);
@@ -194,12 +306,14 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
 
     // Halve the betAmount
     public void halfBet(View v) {
+        maxPressed = false;
         betAmount = betAmount / 2;
         updateBetAmount();
     }
 
     // Double the betAmount
     public void doubleBet(View v) {
+        maxPressed = false;
         betAmount = betAmount * 2;
         updateBetAmount();
     }
@@ -209,6 +323,7 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
         String btcBalance = user.getBalance();
         betAmount = (int) (Double.valueOf(btcBalance) * 100000000);
         updateBetAmount();
+        maxPressed = true;
     }
 
     // Switch High/Low bet
@@ -219,7 +334,7 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
         if (betHigh) {
             betHigh = false;
             target = betPercentage;
-            betOverUnder = "Under\n" + overUnderFormat.format(target).replace(",",".");
+            betOverUnder = "Under\n" + overUnderFormat.format(target).replace(",", ".");
         } else {
             betHigh = true;
             target = 99.99 - betPercentage;
@@ -228,7 +343,7 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
         btnHighLow.setText(betOverUnder);
     }
 
-    //TODO: SEE CHANGEBETPERCENTAGE
+    // Change multiplier
     public void changeMultiplier(View v) {
         final boolean[] firstEdit = {true};
         final EditText inputText = new EditText(this);
@@ -265,8 +380,8 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
                     String percentage = df.format(betPercentage).replace(",", ".") + "%";
 
                     df = new DecimalFormat("0.000");
-                    double percentageDouble = Double.valueOf(percentage.replace("%",""));
-                    newBetMultiplier = 99/percentageDouble;
+                    double percentageDouble = Double.valueOf(percentage.replace("%", ""));
+                    newBetMultiplier = 99 / percentageDouble;
                     String multiplier = df.format(newBetMultiplier).replace(",", ".");
                     if (multiplier.indexOf(".") == 4) {
                         multiplier = multiplier.substring(0, 4);
@@ -291,6 +406,7 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
         alertDialog.show();
     }
 
+    // Change percentage
     public void changePercentage(View v) {
         final boolean[] firstEdit = {true};
         final EditText inputText = new EditText(this);
@@ -351,11 +467,19 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
         alertDialog.show();
     }
 
+    // Roll dice
     public void rollDice(View v) {
 
-        if (betAmount > (int) user.balance) {
+        String rollDice;
+        if (maxPressed) {
+            maxPressed = false;
+            rollDice = "Confirm MAX bet";
+            btnRollDice.setText(rollDice);
+        } else if (betAmount > (int) user.balance) {
             Toast.makeText(this.getApplicationContext(), "Insufficient balance", Toast.LENGTH_LONG).show();
         } else {
+            rollDice = "ROLL DICE";
+            btnRollDice.setText(rollDice);
             PlaceBetTask placeBetTask = new PlaceBetTask();
 
             String condition;
@@ -368,54 +492,62 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
                 condition = "<";
             }
 
-            String betResult;
             try {
-                betResult = placeBetTask.execute((betURL + access_token), amount, target, condition).get();
+                String result = placeBetTask.execute((betURL + access_token), amount, target, condition).get();
 
-                //TODO: Fix fast betting problem. It crashes becayse betresult isnt loaded yet.
-                JSONObject jsonObject = new JSONObject(betResult);
-                JSONObject jsonBet = jsonObject.getJSONObject("bet");
-                JSONObject jsonUser = jsonObject.getJSONObject("user");
+                if (result != null) {
+                    JSONObject jsonObject = new JSONObject(result);
+                    JSONObject jsonBet = jsonObject.getJSONObject("bet");
+                    JSONObject jsonUser = jsonObject.getJSONObject("user");
 
-                // Create bet and put in betslist/database
-                Bet bet = new Bet(jsonBet);
-                user.updateUser(jsonUser);
-                myBets.add(0, bet);
-                db.addBet(bet);
+                    // Create bet and put in betslist/database
+                    Bet bet = new Bet(jsonBet);
+                    user.updateUser(jsonUser);
+                    myBets.add(0, bet);
+                    db.addBet(bet);
 
-                // Remove bet if saved more than 30 bets
-                if (myBets.size() > 30) {
-                    for(int i = 30; i<myBets.size(); i++) {
-                        db.deleteBet(myBets.get(i - 1));
-                        myBets.remove(i - 1);
+                    // Remove bet if saved more than 30 bets
+                    if (myBets.size() > 30) {
+                        for (int i = 30; i < myBets.size(); i++) {
+                            db.deleteBet(myBets.get(i));
+                            myBets.remove(i);
+                        }
                     }
                 }
-            } catch (InterruptedException | ExecutionException | JSONException e) {
-                e.printStackTrace();
+                else
+                {
+                    Toast.makeText(getApplicationContext(), "Betting to fast!",Toast.LENGTH_LONG).show();
+                }
+                }catch(InterruptedException | ExecutionException | JSONException e){
+                    e.printStackTrace();
+                }
+
+                txtBalance.setText(user.getBalance());
+                showBets(myBets);
             }
 
-            txtBalance.setText(user.getBalance());
-            showBets(myBets);
-        }
     }
 
+    // Show my bets
     public void showMyBets(View v) {
         showBets(myBets);
     }
 
+    // Get and show bets
     public void getAndShowBets(View v) {
         String URL;
         String getThese;
-        if(v.getId() == R.id.txtHighRollers){
+        if (v.getId() == R.id.txtHighRollers) {
             getThese = "highrollers";
             URL = "https://api.primedice.com/api/highrollers";
         } else {
             getThese = "bets";
             URL = "https://api.primedice.com/api/bets";
         }
-        GetJSONResultFromURLTask getBetsTask = new GetJSONResultFromURLTask();
 
         try {
+            GetJSONResultFromURLTask getBetsTask = new GetJSONResultFromURLTask();
+
             String result = getBetsTask.execute(URL).get();
 
             recentBets = getBetsListFromJSON(result, getThese);
@@ -426,12 +558,14 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
         showBets(recentBets);
     }
 
+    // Get bets from json
     public ArrayList<Bet> getBetsListFromJSON(String betsJSON, String getThese) {
         ArrayList<Bet> betArrayList = new ArrayList<>();
+
         try {
             JSONObject jsonObject = new JSONObject(betsJSON);
-
             JSONArray jsonArray = jsonObject.getJSONArray(getThese);
+
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject jsonBet = jsonArray.getJSONObject(i);
                 betArrayList.add(new Bet(jsonBet));
@@ -443,6 +577,7 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
         return betArrayList;
     }
 
+    // Show bets
     public void showBets(ArrayList<Bet> bets) {
         BetAdapter betAdapter = new BetAdapter(this.getApplicationContext(), bets);
         betListView.setAdapter(betAdapter);
@@ -470,6 +605,21 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
             setTitle("Provably fair");
         } else if (menuAdapter.getItem(position).equals("Faucet")) {
             setTitle("Faucet");
+        } else if (menuAdapter.getItem(position).equals("Tip Developer")) {
+            TipDeveloperTask tipDeveloperTask = new TipDeveloperTask();
+
+            try {
+                String result = tipDeveloperTask.execute((tipURL + access_token), "GeertBank", "50001").get();
+                Log.i("Result", result);
+
+                JSONObject jsonObject = new JSONObject(result);
+                JSONObject jsonUser = jsonObject.getJSONObject("user");
+                user.updateUserBalance(jsonUser.getString("balance"));
+                txtBalance.setText(user.getBalance());
+            } catch (InterruptedException | ExecutionException | JSONException e) {
+                e.printStackTrace();
+            }
+
         }
         menuAdapter.setSelectedMenuItem(getTitle().toString());
         drawerLayout.closeDrawer(listView);

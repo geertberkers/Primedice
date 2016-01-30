@@ -279,4 +279,8 @@ public class User implements Parcelable {
 
         return luck;
     }
+
+    public void updateUserBalance(String balance) {
+        this.balance = Double.valueOf(balance);
+    }
 }

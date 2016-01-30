@@ -30,7 +30,7 @@ public class BetInformationActivity extends AppCompatActivity {
         TextView txtBetProtif = (TextView) findViewById(R.id.txtBetProfit);
 
   /*
-        //TODO: Check if you want to keep it
+        //TO-DO: Check if you want to keep it
         TextView txtVerification = (TextView) findViewById(R.id.txtVerificate);
 
         txtVerification.setOnClickListener(new View.OnClickListener() {

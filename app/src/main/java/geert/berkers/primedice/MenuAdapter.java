@@ -16,9 +16,9 @@ public class MenuAdapter extends BaseAdapter {
     private Context context;
     private String selectedMenuItem;
 
-    private String[] sort = {"Home", "Profile", "Stats", "Chat", "Automated betting", "Provably fair", "Faucet"};
-    private Integer[] images = {R.drawable.home, R.drawable.profile, R.drawable.stats, R.drawable.chat, R.drawable.automatedbetting, R.drawable.provablyfair, R.drawable.faucet};
-    private Integer[] imagesPressed = {R.drawable.homepressed, R.drawable.profilepressed, R.drawable.statspressed, R.drawable.chatpressed, R.drawable.automatedbettingpressed, R.drawable.provablyfairpressed, R.drawable.faucetpressed};
+    private String[] sort = {"Home", "Profile", "Stats", "Chat", "Automated betting", "Provably fair", "Faucet", "Tip Developer"};
+    private Integer[] images = {R.drawable.home, R.drawable.profile, R.drawable.stats, R.drawable.chat, R.drawable.automatedbetting, R.drawable.provablyfair, R.drawable.faucet, R.drawable.tipdeveloper};
+    private Integer[] imagesPressed = {R.drawable.homepressed, R.drawable.profilepressed, R.drawable.statspressed, R.drawable.chatpressed, R.drawable.automatedbettingpressed, R.drawable.provablyfairpressed, R.drawable.faucetpressed, R.drawable.tipdeveloper};
 
     public MenuAdapter(Context context) {
         this.context = context;
