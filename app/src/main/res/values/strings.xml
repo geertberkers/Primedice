@@ -44,4 +44,8 @@
     <string name="losses">LOSSES</string>
     <string name="luck">LUCK</string>
     <string name="power">POWER</string>
+    <string name="scan_qr">Scan QR</string>
+    <string name="amount">Amount</string>
+    <string name="btcaddress">BTC Address</string>
+    <string name="max">MAX</string>
 </resources>

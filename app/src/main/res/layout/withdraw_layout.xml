@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/withdrawalLayout">
+
+
+    <EditText
+        android:hint="@string/btcaddress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/edWithdrawalAdress"
+        android:layout_alignTop="@+id/btnScan"
+        android:layout_alignBottom="@+id/btnScan"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_toLeftOf="@+id/btnScan"
+        android:layout_toStartOf="@+id/btnScan"/>
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/scan_qr"
+        android:id="@+id/btnScan"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
+
+    <EditText
+        android:hint="@string/amount"
+        android:id="@+id/edWithdrawalAmount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/btnMaxWithdawAmount"
+        android:layout_alignBottom="@+id/btnMaxWithdawAmount"
+        android:layout_below="@+id/edWithdrawalAdress"
+        android:layout_toLeftOf="@+id/btnMaxWithdawAmount"
+        android:layout_toStartOf="@+id/btnMaxWithdawAmount"
+        android:singleLine="true"/>
+
+    <Button
+        android:layout_alignLeft="@+id/btnScan"
+        android:layout_alignStart="@+id/btnScan"
+        android:id="@+id/btnMaxWithdawAmount"
+        android:layout_below="@+id/btnScan"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:text="@string/max"/>
+</RelativeLayout>

@@ -16,13 +16,15 @@ import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.InflateException;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -35,33 +37,35 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
+
 /**
  * Primedice Application Created by Geert on 23-1-2016.
  */
 public class BetActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
 
     private User user;
-    private boolean betHigh;
-    private DecimalFormat format;
-    private ArrayList<Bet> recentBets, myBets;
-    private String tipURL, betURL, withdrawalURL, access_token;
-
-    Bitmap resultImage;
     private int betAmount;
-    private boolean maxPressed;
-    private double betMultiplier, betPercentage, target;
-
-    private ListView listView;
+    private MySQLiteHelper db;
+    private Bitmap resultImage;
+    private View withdrawalView;
+    private TextView txtBalance;
+    private DecimalFormat format;
     private MenuAdapter menuAdapter;
     private DrawerLayout drawerLayout;
+    private boolean maxPressed, betHigh;
+    private ArrayList<Bet> recentBets, myBets;
+    private ListView menuListView, betListView;
     private ActionBarDrawerToggle drawerListener;
-
-    private MySQLiteHelper db;
-
-    private ListView betListView;
-    private EditText edBetAmount, edProfitonWin;
-    private TextView txtBalance;
+    private Double betMultiplier, betPercentage, target;
+    private EditText edBetAmount, edProfitonWin, edWithdrawalAdress;
     private Button btnHighLow, btnMultiplier, btnPercentage, btnRollDice;
+    private String tipURL;
+    private String betURL;
+    private String withdrawalURL;
+    private String access_token;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,12 +73,11 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
         setContentView(R.layout.activity_bet);
 
         initControls();
-
         setInformation();
     }
 
     private void initControls() {
-        listView = (ListView) findViewById(R.id.drawerList);
+        menuListView = (ListView) findViewById(R.id.drawerList);
         betListView = (ListView) findViewById(R.id.betsListView);
 
         txtBalance = (TextView) findViewById(R.id.txtBalance);
@@ -125,8 +128,8 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
         btnRollDice = (Button) findViewById(R.id.btnRollDice);
 
         menuAdapter = new MenuAdapter(this);
-        listView.setAdapter(menuAdapter);
-        listView.setOnItemClickListener(this);
+        menuListView.setAdapter(menuAdapter);
+        menuListView.setOnItemClickListener(this);
 
         drawerListener = new ActionBarDrawerToggle(this, drawerLayout, R.string.drawer_open, R.string.drawer_close) {
         };
@@ -196,16 +199,17 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
         ImageView depositAdressImage = new ImageView(this);
         depositAdressImage.setImageBitmap(resultImage);
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("DEPOSIT");
-        builder.setMessage("Your deposit adress is: " + user.address);
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+        alertDialog.setTitle("DEPOSIT");
+        alertDialog.setView(depositAdressImage);
+        alertDialog.setMessage("Your deposit adress is: " + user.address);
+        alertDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
             }
         });
-        builder.setNeutralButton("Copy", new DialogInterface.OnClickListener() {
+        alertDialog.setNeutralButton("Copy", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
                 ClipData clip = ClipData.newPlainText("BTC adress", user.address);
@@ -214,7 +218,7 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
                 Toast.makeText(getApplicationContext(), "Copied BTC address!", Toast.LENGTH_SHORT).show();
             }
         });
-        builder.setNegativeButton("Open", new DialogInterface.OnClickListener() {
+        alertDialog.setNegativeButton("Open", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 try {
@@ -225,71 +229,112 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
                 }
             }
         });
-        builder.setView(depositAdressImage);
-        builder.show();
+        alertDialog.show();
     }
 
     // Withdraw some btc!
-    //TODO SCAN QR CODE FOR ADRESS
     public void withdraw(View v) {
-        LinearLayout layout = new LinearLayout(this);
-        layout.setOrientation(LinearLayout.VERTICAL);
+        LayoutInflater factory = LayoutInflater.from(this);
 
-        final EditText edWithdrawalAdress = new EditText(this);
-        edWithdrawalAdress.setHint("BTC Address");
-        layout.addView(edWithdrawalAdress);
+        if (withdrawalView != null) {
+            ViewGroup parent = (ViewGroup) withdrawalView.getParent();
+            if (parent != null) {
+                parent.removeView(withdrawalView);
+            }
+        }
+        try {
+            withdrawalView = factory.inflate(R.layout.withdraw_layout, null);
+        } catch (InflateException e) {
+            e.printStackTrace();
+        }
 
-        final EditText edWithdrawalAmount = new EditText(this);
-        edWithdrawalAmount.setHint("Amount");
-        layout.addView(edWithdrawalAmount);
+        edWithdrawalAdress = (EditText) withdrawalView.findViewById(R.id.edWithdrawalAdress);
+        final EditText edWithdrawalAmount = (EditText) withdrawalView.findViewById(R.id.edWithdrawalAmount);
+
+        final Button btnScan = (Button) withdrawalView.findViewById(R.id.btnScan);
+        final Button btnMaxWithdawAmount = (Button) withdrawalView.findViewById(R.id.btnMaxWithdawAmount);
+
+        btnScan.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                IntentIntegrator integrator = new IntentIntegrator(BetActivity.this);
+                integrator.initiateScan();
+            }
+        });
+
+        btnMaxWithdawAmount.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                edWithdrawalAmount.setText(user.getBalance());
+            }
+        });
 
         final AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
         alertDialog.setTitle("PLACE A WITHDRAWAL");
         alertDialog.setMessage("Withdrawal fee: 0.0001 BTC.");
-        alertDialog.setView(layout);
-
+        alertDialog.setView(withdrawalView);
         alertDialog.setPositiveButton("WITHDRAW", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 String withdrawalAdress = edWithdrawalAdress.getText().toString();
                 String withdrawalAmount = edWithdrawalAmount.getText().toString();
 
-                withdrawalAmount = withdrawalAmount.replace(",", ".");
-                Double amountToWithdraw = Double.valueOf(withdrawalAmount);
+                try {
+                    withdrawalAmount = withdrawalAmount.replace(",", ".");
+                    Double amountToWithdraw = Double.valueOf(withdrawalAmount);
 
-                double toSatoshiMultiplier = 100000000;
-                double satoshiDouble = amountToWithdraw * toSatoshiMultiplier;
-                // Dirty fix for rounding math problems
-                if (satoshiDouble - Double.valueOf(satoshiDouble).intValue() >= 0.999) {
-                    satoshiDouble += 0.1;
-                }
-                int satoshiWithdrawAmount = (int) satoshiDouble;
+                    double toSatoshiMultiplier = 100000000;
+                    double satoshiDouble = amountToWithdraw * toSatoshiMultiplier;
 
-                if(user.balance < satoshiDouble){
-                    Toast.makeText(getApplicationContext(), "Not enough balance to withdraw!", Toast.LENGTH_LONG).show();
-                }
-                else {
-                    try {
-                        PlaceWithdrawalTask placeWithdrawalTask = new PlaceWithdrawalTask();
-
-                        String result = placeWithdrawalTask.execute((withdrawalURL + access_token), String.valueOf(satoshiWithdrawAmount), withdrawalAdress).get();
-                        //{"amount":100000,"sent":100000,"txid":"8f0159c9af5ba2b325bf93085632e91a65595f0fb8e4bca2f9507bd1be619ddf","address":"19ZgWmESFWmhcQKDP9ZxhUeLvTACXNyUjS","confirmed":true,"timestamp":"2016-01-30T01:20:33.580Z"}
-
-                        //TODO: Check what to change after withdrawal. For now only balance
-                        // Give more information as feedback (toast?)
-                        user.balance = user.balance - satoshiDouble;
-                        txtBalance.setText(user.getBalance());
-                    } catch (InterruptedException | ExecutionException e) {
-
-                        Toast.makeText(getApplicationContext(), "Withdrawal failed!", Toast.LENGTH_LONG).show();
-
-                        e.printStackTrace();
+                    // Dirty fix for rounding math problems
+                    if (satoshiDouble - Double.valueOf(satoshiDouble).intValue() >= 0.999) {
+                        satoshiDouble += 0.1;
                     }
+
+                    int satoshiWithdrawAmount = (int) satoshiDouble;
+
+                    if (user.balance < satoshiDouble) {
+                        Toast.makeText(getApplicationContext(), "Not enough balance to withdraw!", Toast.LENGTH_LONG).show();
+                    } else {
+                        try {
+
+                            //TODO Fix draaien van scherm verliezen popup
+                            PlaceWithdrawalTask placeWithdrawalTask = new PlaceWithdrawalTask();
+                            String result = placeWithdrawalTask.execute((withdrawalURL + access_token), String.valueOf(satoshiWithdrawAmount), withdrawalAdress).get();
+                            //String resultExample = "{\"amount\":100000,\"sent\":100000,\"txid\":\"8f0159c9af5ba2b325bf93085632e91a65595f0fb8e4bca2f9507bd1be619ddf\",\"address\":\"19ZgWmESFWmhcQKDP9ZxhUeLvTACXNyUjS\",\"confirmed\":true,\"timestamp\":\"2016-01-30T01:20:33.580Z\"}";
+
+                            try {
+                                JSONObject jsonResult = new JSONObject(result);
+                                String txid = jsonResult.getString("txid");
+                                Toast.makeText(getApplicationContext(), "Withdrawed " + withdrawalAmount + " BTC to " + withdrawalAdress + ".\nTXID: " + txid, Toast.LENGTH_LONG).show();
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+
+                            String userResult = "NoResult";
+                            try {
+                                GetJSONResultFromURLTask userTask = new GetJSONResultFromURLTask();
+                                userResult = userTask.execute("https://api.primedice.com/api/users/1?access_token=" + access_token).get();
+                            } catch (InterruptedException | ExecutionException e) {
+                                e.printStackTrace();
+                            }
+
+                            if (userResult != null || !userResult.equals("NoResult")) {
+                                user = new User(userResult);
+                                txtBalance.setText(user.getBalance());
+                            }
+                        } catch (InterruptedException | ExecutionException e) {
+
+                            Toast.makeText(getApplicationContext(), "Withdrawal failed!", Toast.LENGTH_LONG).show();
+                            e.printStackTrace();
+                        }
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
                 }
             }
         });
         alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
-                //Do nothing
             }
         });
         alertDialog.show();
@@ -344,6 +389,7 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
     }
 
     // Change multiplier
+    //TODO CHECK AND IMPROVE THIS METHOD
     public void changeMultiplier(View v) {
         final boolean[] firstEdit = {true};
         final EditText inputText = new EditText(this);
@@ -407,6 +453,7 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
     }
 
     // Change percentage
+    //TODO CHECK AND IMPROVE THIS METHOD
     public void changePercentage(View v) {
         final boolean[] firstEdit = {true};
         final EditText inputText = new EditText(this);
@@ -492,15 +539,17 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
                 condition = "<";
             }
 
+            // Place bet
             try {
                 String result = placeBetTask.execute((betURL + access_token), amount, target, condition).get();
 
+                // Check result
                 if (result != null) {
                     JSONObject jsonObject = new JSONObject(result);
                     JSONObject jsonBet = jsonObject.getJSONObject("bet");
                     JSONObject jsonUser = jsonObject.getJSONObject("user");
 
-                    // Create bet and put in betslist/database
+                    // Create bet and put in betlist/database
                     Bet bet = new Bet(jsonBet);
                     user.updateUser(jsonUser);
                     myBets.add(0, bet);
@@ -513,19 +562,16 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
                             myBets.remove(i);
                         }
                     }
+                } else {
+                    Toast.makeText(getApplicationContext(), "Betting to fast!", Toast.LENGTH_LONG).show();
                 }
-                else
-                {
-                    Toast.makeText(getApplicationContext(), "Betting to fast!",Toast.LENGTH_LONG).show();
-                }
-                }catch(InterruptedException | ExecutionException | JSONException e){
-                    e.printStackTrace();
-                }
-
-                txtBalance.setText(user.getBalance());
-                showBets(myBets);
+            } catch (InterruptedException | ExecutionException | JSONException e) {
+                e.printStackTrace();
             }
 
+            txtBalance.setText(user.getBalance());
+            showBets(myBets);
+        }
     }
 
     // Show my bets
@@ -539,17 +585,15 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
         String getThese;
         if (v.getId() == R.id.txtHighRollers) {
             getThese = "highrollers";
-            URL = "https://api.primedice.com/api/highrollers";
         } else {
             getThese = "bets";
-            URL = "https://api.primedice.com/api/bets";
         }
+
+        URL = "https://api.primedice.com/api/" + getThese;
 
         try {
             GetJSONResultFromURLTask getBetsTask = new GetJSONResultFromURLTask();
-
             String result = getBetsTask.execute(URL).get();
-
             recentBets = getBetsListFromJSON(result, getThese);
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
@@ -589,7 +633,7 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
     }
 
     public void selectItem(int position) {
-        listView.setItemChecked(position, true);
+        menuListView.setItemChecked(position, true);
 
         if (menuAdapter.getItem(position).equals("Home")) {
             setTitle("Home");
@@ -606,23 +650,77 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
         } else if (menuAdapter.getItem(position).equals("Faucet")) {
             setTitle("Faucet");
         } else if (menuAdapter.getItem(position).equals("Tip Developer")) {
-            TipDeveloperTask tipDeveloperTask = new TipDeveloperTask();
 
-            try {
-                String result = tipDeveloperTask.execute((tipURL + access_token), "GeertBank", "50001").get();
-                Log.i("Result", result);
+            String sathosiBaseTip = "0.00050001";
+            final boolean[] firstEdit = {true};
+            final EditText edTipAmount = new EditText(this);
+            edTipAmount.setText(sathosiBaseTip);
+            edTipAmount.setRawInputType(InputType.TYPE_CLASS_NUMBER);
+            edTipAmount.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (firstEdit[0]) {
+                        edTipAmount.setText(null);
+                        firstEdit[0] = false;
+                    }
+                }
+            });
 
-                JSONObject jsonObject = new JSONObject(result);
-                JSONObject jsonUser = jsonObject.getJSONObject("user");
-                user.updateUserBalance(jsonUser.getString("balance"));
-                txtBalance.setText(user.getBalance());
-            } catch (InterruptedException | ExecutionException | JSONException e) {
-                e.printStackTrace();
-            }
+            AlertDialog.Builder tipDialog = new AlertDialog.Builder(this);
+            tipDialog.setTitle("Tip developer");
+            tipDialog.setMessage("Enter amount:");
+            tipDialog.setView(edTipAmount);
+            tipDialog.setPositiveButton("Send", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            try {
+                                Double doubleTipValue = Double.valueOf(edTipAmount.getText().toString());
 
+                                double toSatoshiMultiplier = 100000000;
+                                double satoshi = doubleTipValue * toSatoshiMultiplier;
+
+                                // Dirty fix for rounding math problems
+                                if (satoshi - Double.valueOf(satoshi).intValue() >= 0.999) {
+                                    satoshi += 0.1;
+                                }
+
+                                int satoshiTip = (int) satoshi;
+
+                                if (satoshiTip >= 50001 || doubleTipValue > user.balance) {
+                                    TipDeveloperTask tipDeveloperTask = new TipDeveloperTask();
+
+                                    try {
+                                        String result = tipDeveloperTask.execute((tipURL + access_token), "GeertDev", String.valueOf(satoshiTip)).get();
+                                        Log.i("Result", result);
+
+                                        JSONObject jsonObject = new JSONObject(result);
+                                        JSONObject jsonUser = jsonObject.getJSONObject("user");
+                                        user.updateUserBalance(jsonUser.getString("balance"));
+                                        txtBalance.setText(user.getBalance());
+
+
+                                        Toast.makeText(getApplicationContext(), "Tipped " + edTipAmount.getText().toString() + " BTC to GeertDev.", Toast.LENGTH_LONG).show();
+                                    } catch (InterruptedException | ExecutionException | JSONException e) {
+                                        e.printStackTrace();
+                                    }
+                                } else {
+                                    Toast.makeText(getApplicationContext(), "Not enough balance to tip!", Toast.LENGTH_LONG).show();
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+            );
+            tipDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                        }
+                    }
+            );
+            tipDialog.show();
         }
+
         menuAdapter.setSelectedMenuItem(getTitle().toString());
-        drawerLayout.closeDrawer(listView);
+        drawerLayout.closeDrawer(menuListView);
     }
 
     @Override
@@ -634,5 +732,13 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
         drawerListener.syncState();
+    }
+
+    // Get result from QR Code scanner
+    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
+        if (scanResult != null) {
+            edWithdrawalAdress.setText(scanResult.getContents());
+        }
     }
 }
