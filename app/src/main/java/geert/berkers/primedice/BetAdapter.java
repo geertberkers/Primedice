@@ -46,7 +46,7 @@ public class BetAdapter extends BaseAdapter {
 
         if (convertView == null) {
             LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            row = inflater.inflate(R.layout.bet_layout, parent, false);
+            row = inflater.inflate(R.layout.bet_betlist_layout, parent, false);
         } else {
             row = convertView;
         }

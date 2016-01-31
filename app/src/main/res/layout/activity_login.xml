@@ -18,7 +18,8 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:text="Username" />
+        android:text=""
+        android:hint="@string/username_lower"/>
 
     <EditText
         android:layout_width="wrap_content"
@@ -31,12 +32,13 @@
         android:layout_alignParentStart="true"
         android:layout_alignRight="@+id/etUsername"
         android:layout_alignEnd="@+id/etUsername"
-        android:text="Password" />
+        android:hint="@string/password"
+        android:text=""/>
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Login"
+        android:text="@string/login"
         android:id="@+id/btnLogin"
         android:layout_below="@+id/etPassword"
         android:layout_alignParentLeft="true"
@@ -52,5 +54,5 @@
         android:id="@+id/txtResult"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
-        android:text="..." />
+        android:text="" />
 </RelativeLayout>

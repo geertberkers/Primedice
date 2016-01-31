@@ -25,6 +25,7 @@
     <string name="obtain_roll_info">To obtain the roll number from the resulting HMAC output, the first 5 characters are taken and interpreted as an integer. If the number is greater than 10^6, the next 5 characters skipping the first one are taken. The result is then modulo\'d by 10^4 to get a number 0-9999 and then divided by 10^2 to obtain a number 0-99.99.</string>
     <string name="verification">For more detailed info regarding the provably fair aspect, see the Verification page.</string>
     <string name="username">USER\nNAME</string>
+    <string name="username_lower">Username</string>
     <string name="roll_number">ROLL\nNUMBER</string>
     <string name="serverseed">SERVER\nSEED\n(HASHED)</string>
     <string name="clientseed">CLIENT\nSEED\n(NONCED)</string>
@@ -48,4 +49,6 @@
     <string name="amount">Amount</string>
     <string name="btcaddress">BTC Address</string>
     <string name="max">MAX</string>
+    <string name="login">Login</string>
+    <string name="password">Password</string>
 </resources>

@@ -1,14 +1,18 @@
 package geert.berkers.primedice;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -61,11 +65,7 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
     private Double betMultiplier, betPercentage, target;
     private EditText edBetAmount, edProfitonWin, edWithdrawalAdress;
     private Button btnHighLow, btnMultiplier, btnPercentage, btnRollDice;
-    private String tipURL;
-    private String betURL;
-    private String withdrawalURL;
-    private String access_token;
-
+    private String tipURL, betURL, withdrawalURL, logOutURL, access_token;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -157,6 +157,7 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
 
         tipURL = "https://api.primedice.com/api/tip?access_token=";
         betURL = "https://api.primedice.com/api/bet?access_token=";
+        logOutURL = "https://api.primedice.com/api/logout?access_token=";
         withdrawalURL = "https://api.primedice.com/api/withdraw?access_token=";
 
         recentBets = new ArrayList<>();
@@ -191,7 +192,6 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
     }
 
     public void claimFaucet(View v) {
-        //TODO: Find a way for implementing faucet
     }
 
     // Deposit some BTC!
@@ -389,7 +389,6 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
     }
 
     // Change multiplier
-    //TODO CHECK AND IMPROVE THIS METHOD
     public void changeMultiplier(View v) {
         final boolean[] firstEdit = {true};
         final EditText inputText = new EditText(this);
@@ -453,7 +452,6 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
     }
 
     // Change percentage
-    //TODO CHECK AND IMPROVE THIS METHOD
     public void changePercentage(View v) {
         final boolean[] firstEdit = {true};
         final EditText inputText = new EditText(this);
@@ -627,6 +625,114 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
         betListView.setAdapter(betAdapter);
     }
 
+    // Tip the developer
+    private void tipDeveloper() {
+        String sathosiBaseTip = "0.00050001";
+        final boolean[] firstEdit = {true};
+        final EditText edTipAmount = new EditText(this);
+        edTipAmount.setText(sathosiBaseTip);
+        edTipAmount.setRawInputType(InputType.TYPE_CLASS_NUMBER);
+        edTipAmount.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (firstEdit[0]) {
+                    edTipAmount.setText(null);
+                    firstEdit[0] = false;
+                }
+            }
+        });
+
+        AlertDialog.Builder tipDialog = new AlertDialog.Builder(this);
+        tipDialog.setTitle("Tip developer");
+        tipDialog.setMessage("Enter amount:");
+        tipDialog.setView(edTipAmount);
+        tipDialog.setPositiveButton("Send", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        try {
+                            Double doubleTipValue = Double.valueOf(edTipAmount.getText().toString());
+
+                            double toSatoshiMultiplier = 100000000;
+                            double satoshi = doubleTipValue * toSatoshiMultiplier;
+
+                            // Dirty fix for rounding math problems
+                            if (satoshi - Double.valueOf(satoshi).intValue() >= 0.999) {
+                                satoshi += 0.1;
+                            }
+
+                            int satoshiTip = (int) satoshi;
+
+                            if (satoshiTip >= 50001 || doubleTipValue > user.balance) {
+                                TipDeveloperTask tipDeveloperTask = new TipDeveloperTask();
+
+                                try {
+                                    String result = tipDeveloperTask.execute((tipURL + access_token), "GeertDev", String.valueOf(satoshiTip)).get();
+                                    Log.i("Result", result);
+
+                                    JSONObject jsonObject = new JSONObject(result);
+                                    JSONObject jsonUser = jsonObject.getJSONObject("user");
+                                    user.updateUserBalance(jsonUser.getString("balance"));
+                                    txtBalance.setText(user.getBalance());
+
+
+                                    Toast.makeText(getApplicationContext(), "Tipped " + edTipAmount.getText().toString() + " BTC to GeertDev.", Toast.LENGTH_LONG).show();
+                                } catch (InterruptedException | ExecutionException | JSONException e) {
+                                    e.printStackTrace();
+                                }
+                            } else {
+                                Toast.makeText(getApplicationContext(), "Not enough balance to tip!", Toast.LENGTH_LONG).show();
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+        );
+        tipDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                    }
+                }
+        );
+        tipDialog.show();
+    }
+
+    // Log out
+    private void logOut(final Activity a) {
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+        alertDialog.setTitle("Log out");
+        alertDialog.setMessage("Are you sure?");
+        alertDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialogInterface, int i) {
+
+                String result = "NoResult";
+                try {
+                    LogOutTask logOutTask = new LogOutTask();
+
+                    result = logOutTask.execute(logOutURL + access_token).get();
+                } catch (InterruptedException | ExecutionException e) {
+                    e.printStackTrace();
+                }
+
+                if (result != null || result.equals("NoResult")) {
+                    SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                    SharedPreferences.Editor editor = sharedPref.edit();
+                    editor.clear();
+                    editor.apply();
+
+                    Intent loginActivityIntent = new Intent(a, LoginActivity.class);
+                    loginActivityIntent.putExtra("info", "Succesfully logged out.");
+                    startActivity(loginActivityIntent);
+                    a.finish();
+                }
+            }
+        });
+        alertDialog.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                    }
+                }
+        );
+        alertDialog.show();
+    }
+
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         selectItem(position);
@@ -650,75 +756,10 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
         } else if (menuAdapter.getItem(position).equals("Faucet")) {
             setTitle("Faucet");
         } else if (menuAdapter.getItem(position).equals("Tip Developer")) {
-
-            String sathosiBaseTip = "0.00050001";
-            final boolean[] firstEdit = {true};
-            final EditText edTipAmount = new EditText(this);
-            edTipAmount.setText(sathosiBaseTip);
-            edTipAmount.setRawInputType(InputType.TYPE_CLASS_NUMBER);
-            edTipAmount.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (firstEdit[0]) {
-                        edTipAmount.setText(null);
-                        firstEdit[0] = false;
-                    }
-                }
-            });
-
-            AlertDialog.Builder tipDialog = new AlertDialog.Builder(this);
-            tipDialog.setTitle("Tip developer");
-            tipDialog.setMessage("Enter amount:");
-            tipDialog.setView(edTipAmount);
-            tipDialog.setPositiveButton("Send", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            try {
-                                Double doubleTipValue = Double.valueOf(edTipAmount.getText().toString());
-
-                                double toSatoshiMultiplier = 100000000;
-                                double satoshi = doubleTipValue * toSatoshiMultiplier;
-
-                                // Dirty fix for rounding math problems
-                                if (satoshi - Double.valueOf(satoshi).intValue() >= 0.999) {
-                                    satoshi += 0.1;
-                                }
-
-                                int satoshiTip = (int) satoshi;
-
-                                if (satoshiTip >= 50001 || doubleTipValue > user.balance) {
-                                    TipDeveloperTask tipDeveloperTask = new TipDeveloperTask();
-
-                                    try {
-                                        String result = tipDeveloperTask.execute((tipURL + access_token), "GeertDev", String.valueOf(satoshiTip)).get();
-                                        Log.i("Result", result);
-
-                                        JSONObject jsonObject = new JSONObject(result);
-                                        JSONObject jsonUser = jsonObject.getJSONObject("user");
-                                        user.updateUserBalance(jsonUser.getString("balance"));
-                                        txtBalance.setText(user.getBalance());
-
-
-                                        Toast.makeText(getApplicationContext(), "Tipped " + edTipAmount.getText().toString() + " BTC to GeertDev.", Toast.LENGTH_LONG).show();
-                                    } catch (InterruptedException | ExecutionException | JSONException e) {
-                                        e.printStackTrace();
-                                    }
-                                } else {
-                                    Toast.makeText(getApplicationContext(), "Not enough balance to tip!", Toast.LENGTH_LONG).show();
-                                }
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-            );
-            tipDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                        }
-                    }
-            );
-            tipDialog.show();
+            tipDeveloper();
+        } else if (menuAdapter.getItem(position).equals("Log out")) {
+            logOut(this);
         }
-
         menuAdapter.setSelectedMenuItem(getTitle().toString());
         drawerLayout.closeDrawer(menuListView);
     }

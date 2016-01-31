@@ -22,7 +22,7 @@ public class PlayerInformationActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_player_information);
+        setContentView(R.layout.player_information_layout);
 
         txtWagered = (TextView) findViewById(R.id.txtWagered);
         txtProfit = (TextView) findViewById(R.id.txtProfit);
@@ -32,7 +32,7 @@ public class PlayerInformationActivity extends AppCompatActivity {
         txtWins = (TextView) findViewById(R.id.txtWins);
         txtLosses = (TextView) findViewById(R.id.txtLosses);
         txtLuck = (TextView) findViewById(R.id.txtLuck);
-        txtPowerLevel = (TextView) findViewById(R.id.txtPower);
+        //txtPowerLevel = (TextView) findViewById(R.id.txtPower);
 
         Bundle b = getIntent().getExtras();
         try {
@@ -49,7 +49,7 @@ public class PlayerInformationActivity extends AppCompatActivity {
                 txtWins.setText(player.getWins());
                 txtLosses.setText(player.getLosses());
                 txtLuck.setText(player.getLuck());
-                txtPowerLevel.setText("Not implemented yet");
+                //txtPowerLevel.setText("Not implemented yet");
 
                 setTitle(player.username.toUpperCase() + "'S INFO");
             } else throw new Exception("Player is null");

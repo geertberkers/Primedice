@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.ColorDrawable;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -41,17 +42,6 @@ public class LoginActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setIcon(R.mipmap.primedice);
         getSupportActionBar().setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.primedicecolor)));
-/*
-        //TODO FIX THIS. NEED TO LOGIN AFTER CRASH!
-        try {
-            Bundle b = getIntent().getExtras();
-            txtResult.setText(b.getString("info"));
-        } catch (Exception ex) {
-            // Check if access_token is saved in SharedPreferences from your mobile
-            SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
-            access_token = sharedPref.getString("access_token", null);
-            loginFromAccestoken(access_token);
-        }*/
     }
 
     @Override
@@ -59,16 +49,37 @@ public class LoginActivity extends AppCompatActivity {
         super.onResume();
         try {
             Bundle b = getIntent().getExtras();
-            txtResult.setText(b.getString("info"));
+            String info = b.getString("info");
+            if(info == null){
+                throw new Exception("No info found");
+            }
+            txtResult.setText(info);
         } catch (Exception ex) {
             // Check if access_token is saved in SharedPreferences from your mobile
-            SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+            SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
             access_token = sharedPref.getString("access_token", null);
-            loginFromAccestoken(access_token);
+            if (access_token != null) {
+                loginFromAccestoken(access_token);
+            }
         }
     }
 
-    //TODO: Make something for registering a user!
+    // TODO: Important:
+    // Auto Bet
+    // Chat
+    // Tips
+
+    // TODO: Later:
+    // Register account
+    // Set password
+    // Set Email
+    // Set Emergency adress
+    // Use 2FA Authentication
+    // Implement Affiliate information
+    // Get deposits/withdrawals
+    // Change seed
+    // Site statistics
+    // Claim faucet
 
     public void login(View v) {
 
@@ -127,8 +138,9 @@ public class LoginActivity extends AppCompatActivity {
             access_token = oneObject.optString("access_token");
 
             if (access_token != null) {
-                // Save accces_token in shared preferences for automatic login next time
-                SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+                // Save access_token in shared preferences for automatic login next time
+                SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+                //this.getPreferences(Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPref.edit();
                 editor.clear();
                 editor.putString("access_token", access_token);

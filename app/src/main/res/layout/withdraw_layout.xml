@@ -6,6 +6,7 @@
 
 
     <EditText
+        android:text=""
         android:hint="@string/btcaddress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -16,7 +17,9 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_toLeftOf="@+id/btnScan"
-        android:layout_toStartOf="@+id/btnScan"/>
+        android:layout_toStartOf="@+id/btnScan"
+        android:inputType="text"
+        android:maxLines="1" />
 
     <Button
         style="?android:attr/buttonStyleSmall"
@@ -30,6 +33,7 @@
 
     <EditText
         android:hint="@string/amount"
+        android:text=""
         android:id="@+id/edWithdrawalAmount"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -38,7 +42,9 @@
         android:layout_below="@+id/edWithdrawalAdress"
         android:layout_toLeftOf="@+id/btnMaxWithdawAmount"
         android:layout_toStartOf="@+id/btnMaxWithdawAmount"
-        android:singleLine="true"/>
+        android:singleLine="true"
+        android:maxLines="1"
+        android:inputType="numberDecimal" />
 
     <Button
         android:layout_alignLeft="@+id/btnScan"

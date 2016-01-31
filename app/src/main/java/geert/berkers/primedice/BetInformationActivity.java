@@ -17,7 +17,7 @@ public class BetInformationActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_bet_information);
+        setContentView(R.layout.bet_information_layout);
 
         TextView txtUsername = (TextView) findViewById(R.id.txtUsername);
         TextView txtRoll = (TextView) findViewById(R.id.txtRoll);
