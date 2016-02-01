@@ -5,7 +5,6 @@ import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.ClipData;
 import android.content.ClipboardManager;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -278,58 +277,66 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
                 String withdrawalAdress = edWithdrawalAdress.getText().toString();
                 String withdrawalAmount = edWithdrawalAmount.getText().toString();
 
-                try {
-                    withdrawalAmount = withdrawalAmount.replace(",", ".");
-                    Double amountToWithdraw = Double.valueOf(withdrawalAmount);
+                if (withdrawalAdress.length() == 0) {
+                    Toast.makeText(getApplicationContext(), "Fill in a BTC Address!", Toast.LENGTH_SHORT).show();
+                } else if (withdrawalAmount.length() == 0) {
+                    Toast.makeText(getApplicationContext(), "Fill in an amount!", Toast.LENGTH_SHORT).show();
+                } else {
 
-                    double toSatoshiMultiplier = 100000000;
-                    double satoshiDouble = amountToWithdraw * toSatoshiMultiplier;
+                    try {
+                        withdrawalAmount = withdrawalAmount.replace(",", ".");
+                        Double amountToWithdraw = Double.valueOf(withdrawalAmount);
 
-                    // Dirty fix for rounding math problems
-                    if (satoshiDouble - Double.valueOf(satoshiDouble).intValue() >= 0.999) {
-                        satoshiDouble += 0.1;
-                    }
+                        double toSatoshiMultiplier = 100000000;
+                        double satoshiDouble = amountToWithdraw * toSatoshiMultiplier;
 
-                    int satoshiWithdrawAmount = (int) satoshiDouble;
-
-                    if (user.balance < satoshiDouble) {
-                        Toast.makeText(getApplicationContext(), "Not enough balance to withdraw!", Toast.LENGTH_LONG).show();
-                    } else {
-                        try {
-
-                            //TODO Fix draaien van scherm verliezen popup
-                            PlaceWithdrawalTask placeWithdrawalTask = new PlaceWithdrawalTask();
-                            String result = placeWithdrawalTask.execute((withdrawalURL + access_token), String.valueOf(satoshiWithdrawAmount), withdrawalAdress).get();
-                            //String resultExample = "{\"amount\":100000,\"sent\":100000,\"txid\":\"8f0159c9af5ba2b325bf93085632e91a65595f0fb8e4bca2f9507bd1be619ddf\",\"address\":\"19ZgWmESFWmhcQKDP9ZxhUeLvTACXNyUjS\",\"confirmed\":true,\"timestamp\":\"2016-01-30T01:20:33.580Z\"}";
-
-                            try {
-                                JSONObject jsonResult = new JSONObject(result);
-                                String txid = jsonResult.getString("txid");
-                                Toast.makeText(getApplicationContext(), "Withdrawed " + withdrawalAmount + " BTC to " + withdrawalAdress + ".\nTXID: " + txid, Toast.LENGTH_LONG).show();
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-
-                            String userResult = "NoResult";
-                            try {
-                                GetJSONResultFromURLTask userTask = new GetJSONResultFromURLTask();
-                                userResult = userTask.execute("https://api.primedice.com/api/users/1?access_token=" + access_token).get();
-                            } catch (InterruptedException | ExecutionException e) {
-                                e.printStackTrace();
-                            }
-
-                            if (userResult != null || !userResult.equals("NoResult")) {
-                                user = new User(userResult);
-                                txtBalance.setText(user.getBalance());
-                            }
-                        } catch (InterruptedException | ExecutionException e) {
-
-                            Toast.makeText(getApplicationContext(), "Withdrawal failed!", Toast.LENGTH_LONG).show();
-                            e.printStackTrace();
+                        // Dirty fix for rounding math problems
+                        if (satoshiDouble - Double.valueOf(satoshiDouble).intValue() >= 0.999) {
+                            satoshiDouble += 0.1;
                         }
+
+                        int satoshiWithdrawAmount = (int) satoshiDouble;
+
+                        if (user.balance < satoshiDouble) {
+                            Toast.makeText(getApplicationContext(), "Not enough balance to withdraw!", Toast.LENGTH_LONG).show();
+                        } else if (satoshiWithdrawAmount < 50001) {
+                            Toast.makeText(getApplicationContext(), "Tip must be at least 0.00050001 BTC!", Toast.LENGTH_LONG).show();
+                        } else {
+                            try {
+
+                                PlaceWithdrawalTask placeWithdrawalTask = new PlaceWithdrawalTask();
+                                String result = placeWithdrawalTask.execute((withdrawalURL + access_token), String.valueOf(satoshiWithdrawAmount), withdrawalAdress).get();
+                                //String resultExample = "{\"amount\":100000,\"sent\":100000,\"txid\":\"8f0159c9af5ba2b325bf93085632e91a65595f0fb8e4bca2f9507bd1be619ddf\",\"address\":\"19ZgWmESFWmhcQKDP9ZxhUeLvTACXNyUjS\",\"confirmed\":true,\"timestamp\":\"2016-01-30T01:20:33.580Z\"}";
+
+                                try {
+                                    JSONObject jsonResult = new JSONObject(result);
+                                    String txid = jsonResult.getString("txid");
+                                    Toast.makeText(getApplicationContext(), "Withdrawed " + withdrawalAmount + " BTC to " + withdrawalAdress + ".\nTXID: " + txid, Toast.LENGTH_LONG).show();
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+
+                                String userResult = "NoResult";
+                                try {
+                                    GetJSONResultFromURLTask userTask = new GetJSONResultFromURLTask();
+                                    userResult = userTask.execute("https://api.primedice.com/api/users/1?access_token=" + access_token).get();
+                                } catch (InterruptedException | ExecutionException e) {
+                                    e.printStackTrace();
+                                }
+
+                                if (userResult != null || !userResult.equals("NoResult")) {
+                                    user = new User(userResult);
+                                    txtBalance.setText(user.getBalance());
+                                }
+                            } catch (InterruptedException | ExecutionException e) {
+
+                                Toast.makeText(getApplicationContext(), "Withdrawal failed!", Toast.LENGTH_LONG).show();
+                                e.printStackTrace();
+                            }
+                        }
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
                     }
-                } catch (Exception ex) {
-                    ex.printStackTrace();
                 }
             }
         });
@@ -649,7 +656,7 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
         tipDialog.setPositiveButton("Send", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialogInterface, int i) {
                         try {
-                            Double doubleTipValue = Double.valueOf(edTipAmount.getText().toString());
+                            double doubleTipValue = Double.valueOf(edTipAmount.getText().toString());
 
                             double toSatoshiMultiplier = 100000000;
                             double satoshi = doubleTipValue * toSatoshiMultiplier;
@@ -661,7 +668,12 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
 
                             int satoshiTip = (int) satoshi;
 
-                            if (satoshiTip >= 50001 || doubleTipValue > user.balance) {
+                            if (user.balance < satoshi) {
+                                Toast.makeText(getApplicationContext(), "Not enough balance to tip!", Toast.LENGTH_LONG).show();
+                            } else if (satoshiTip < 50001) {
+                                Toast.makeText(getApplicationContext(), "Tip must be at least 0.00050001 BTC!", Toast.LENGTH_LONG).show();
+                            } else {
+                                // if (satoshiTip >= 50001 && doubleTipValue > user.balance) {
                                 TipDeveloperTask tipDeveloperTask = new TipDeveloperTask();
 
                                 try {
@@ -678,8 +690,6 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
                                 } catch (InterruptedException | ExecutionException | JSONException e) {
                                     e.printStackTrace();
                                 }
-                            } else {
-                                Toast.makeText(getApplicationContext(), "Not enough balance to tip!", Toast.LENGTH_LONG).show();
                             }
                         } catch (Exception e) {
                             e.printStackTrace();

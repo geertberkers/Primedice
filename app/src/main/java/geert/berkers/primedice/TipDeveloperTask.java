@@ -12,7 +12,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 
 /**
- * Created by Geert on 28-1-2016.
+ * Primedice Application Created by Geert on 28-1-2016.
  */
 public class TipDeveloperTask extends AsyncTask<String, Void, String>{
 

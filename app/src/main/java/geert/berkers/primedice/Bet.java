@@ -61,7 +61,7 @@ public class Bet implements Parcelable {
         this.profit = read.readInt();
         win = read.readString().equals("Y");
         this.condition = read.readString();
-        this.roll = read.readDouble();;
+        this.roll = read.readDouble();
         this.nonce = read.readInt();
         this.client = read.readString();
         this.multiplier = read.readDouble();
@@ -124,7 +124,6 @@ public class Bet implements Parcelable {
         arg0.writeString(server);
     }
 
-
     public String getIDString(){
         String id = String.valueOf(this.id);
 
@@ -167,6 +166,7 @@ public class Bet implements Parcelable {
     public String getTimeOfBet() {
         return timestamp.substring(0, 10) + " " + timestamp.substring(11, 19) + " GMT";
     }
+
     public String getWagered() {
         return satToBTC(amount);
     }
@@ -176,7 +176,7 @@ public class Bet implements Parcelable {
         String payoutString = format.format(multiplier);
         payoutString = payoutString.replace(",",".");
         payoutString = payoutString.substring(0,4);
-        return  payoutString;//+ "x";
+        return  payoutString;
     }
 
     public String getBetGame() {

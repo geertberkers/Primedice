@@ -1,6 +1,5 @@
 package geert.berkers.primedice;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.ColorDrawable;
@@ -12,6 +11,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -87,29 +87,34 @@ public class LoginActivity extends AppCompatActivity {
             String username = txtUsername.getText().toString();
             String password = txtPassword.getText().toString();
 
-            String loginResult = "NoResult";
-            LoginTask login = new LoginTask();
-
-            try {
-                loginResult = login.execute(loginUrl, username, password).get();
-            } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
-            }
-
-            if (loginResult == null) {
-                loginResult = "null";
-                txtResult.setText("Couldn't log in! Try again.");
-            } else if (loginResult == "NoResult") {
-                txtResult.setText("Couldn't log in! Try again.");
+            if (username.length() == 0) {
+                Toast.makeText(getApplicationContext(), "Fill in a username!", Toast.LENGTH_SHORT).show();
+            } else if (password.length() == 0) {
+                Toast.makeText(getApplicationContext(), "Fill in a password!", Toast.LENGTH_SHORT).show();
             } else {
-                getAccestokenFromLoginResult(loginResult);
+                String loginResult = "NoResult";
+                LoginTask login = new LoginTask();
 
-                loginFromAccestoken(access_token);
+                try {
+                    loginResult = login.execute(loginUrl, username, password).get();
+                } catch (InterruptedException | ExecutionException e) {
+                    e.printStackTrace();
+                }
+
+                if (loginResult == null) {
+                    loginResult = "null";
+                    txtResult.setText("Couldn't log in! Try again.");
+                } else if (loginResult == "NoResult") {
+                    txtResult.setText("Couldn't log in! Try again.");
+                } else {
+                    getAccestokenFromLoginResult(loginResult);
+
+                    loginFromAccestoken(access_token);
+                }
+                Log.i("result", loginResult);
             }
-            Log.i("result", loginResult);
         }
     }
-
     // Login with your accestoken
     private void loginFromAccestoken(String access_token) {
         if (access_token != null) {

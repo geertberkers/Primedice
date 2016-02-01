@@ -15,30 +15,29 @@ import java.util.concurrent.ExecutionException;
  */
 public class PlayerInformationActivity extends AppCompatActivity {
 
-    private User player;
     private String playerName;
-    private TextView txtWagered,txtProfit,txtBetsMade,txtMessages,txtRegistered,txtWins,txtLosses,txtLuck,txtPowerLevel;
+    private TextView txtPowerLevel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.player_information_layout);
 
-        txtWagered = (TextView) findViewById(R.id.txtWagered);
-        txtProfit = (TextView) findViewById(R.id.txtProfit);
-        txtBetsMade = (TextView) findViewById(R.id.txtBetsMade);
-        txtMessages = (TextView) findViewById(R.id.txtMessages);
-        txtRegistered = (TextView) findViewById(R.id.txtDateJoined);
-        txtWins = (TextView) findViewById(R.id.txtWins);
-        txtLosses = (TextView) findViewById(R.id.txtLosses);
-        txtLuck = (TextView) findViewById(R.id.txtLuck);
+        TextView txtWagered = (TextView) findViewById(R.id.txtWagered);
+        TextView txtProfit = (TextView) findViewById(R.id.txtProfit);
+        TextView txtBetsMade = (TextView) findViewById(R.id.txtBetsMade);
+        TextView txtMessages = (TextView) findViewById(R.id.txtMessages);
+        TextView txtRegistered = (TextView) findViewById(R.id.txtDateJoined);
+        TextView txtWins = (TextView) findViewById(R.id.txtWins);
+        TextView txtLosses = (TextView) findViewById(R.id.txtLosses);
+        TextView txtLuck = (TextView) findViewById(R.id.txtLuck);
         //txtPowerLevel = (TextView) findViewById(R.id.txtPower);
 
         Bundle b = getIntent().getExtras();
         try {
             playerName = b.getString("playerName");
 
-            player = getUser();
+            User player = getUser();
 
             if (player != null) {
                 txtWagered.setText(player.getWagered());
