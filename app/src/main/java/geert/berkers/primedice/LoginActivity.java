@@ -101,11 +101,10 @@ public class LoginActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
 
-                if (loginResult == null) {
-                    loginResult = "null";
-                    txtResult.setText("Couldn't log in! Try again.");
-                } else if (loginResult == "NoResult") {
-                    txtResult.setText("Couldn't log in! Try again.");
+                if (loginResult == null||loginResult.equals("NoResult")) {
+                    loginResult = "Couldn't log in! Try again.";
+
+                    txtResult.setText(loginResult);
                 } else {
                     getAccestokenFromLoginResult(loginResult);
 
@@ -117,6 +116,7 @@ public class LoginActivity extends AppCompatActivity {
     }
     // Login with your accestoken
     private void loginFromAccestoken(String access_token) {
+        String loginRegister = "Login or register!";
         if (access_token != null) {
             User user = getUser();
 
@@ -128,10 +128,10 @@ public class LoginActivity extends AppCompatActivity {
                 startActivity(betActivityIntent);
                 this.finish();
             } else {
-                txtResult.setText("Log in or register!");
+                txtResult.setText(loginRegister);
             }
         } else{
-            txtResult.setText("Log in or register!");
+            txtResult.setText(loginRegister);
         }
     }
 

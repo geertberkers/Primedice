@@ -64,7 +64,7 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
     private Double betMultiplier, betPercentage, target;
     private EditText edBetAmount, edProfitonWin, edWithdrawalAdress;
     private Button btnHighLow, btnMultiplier, btnPercentage, btnRollDice;
-    private String tipURL, betURL, withdrawalURL, logOutURL, access_token;
+    private String tipURL, betURL, userURL, withdrawalURL, logOutURL, access_token;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -156,6 +156,7 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
 
         tipURL = "https://api.primedice.com/api/tip?access_token=";
         betURL = "https://api.primedice.com/api/bet?access_token=";
+        userURL = "https://api.primedice.com/api/users/1?access_token=";
         logOutURL = "https://api.primedice.com/api/logout?access_token=";
         withdrawalURL = "https://api.primedice.com/api/withdraw?access_token=";
 
@@ -568,7 +569,21 @@ public class BetActivity extends AppCompatActivity implements AdapterView.OnItem
                         }
                     }
                 } else {
-                    Toast.makeText(getApplicationContext(), "Betting to fast!", Toast.LENGTH_LONG).show();
+                    GetJSONResultFromURLTask userTask = new GetJSONResultFromURLTask();
+                    String userResult = userTask.execute(userURL + access_token).get();
+
+                    if (userResult != null || !userResult.equals("NoResult")) {
+                        user = new User(userResult);
+
+                        String error;
+                        if (betAmount > (int) user.balance) {
+                            error = "Insufficient funds!";
+                        } else {
+                            error = "Betting to fast!";
+                        }
+
+                        Toast.makeText(getApplicationContext(), error, Toast.LENGTH_LONG).show();
+                    }
                 }
             } catch (InterruptedException | ExecutionException | JSONException e) {
                 e.printStackTrace();

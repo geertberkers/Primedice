@@ -16,7 +16,6 @@ import java.util.concurrent.ExecutionException;
 public class PlayerInformationActivity extends AppCompatActivity {
 
     private String playerName;
-    private TextView txtPowerLevel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,7 +30,7 @@ public class PlayerInformationActivity extends AppCompatActivity {
         TextView txtWins = (TextView) findViewById(R.id.txtWins);
         TextView txtLosses = (TextView) findViewById(R.id.txtLosses);
         TextView txtLuck = (TextView) findViewById(R.id.txtLuck);
-        //txtPowerLevel = (TextView) findViewById(R.id.txtPower);
+        //TextView txtPowerLevel = (TextView) findViewById(R.id.txtPower);
 
         Bundle b = getIntent().getExtras();
         try {
