@@ -121,7 +121,7 @@ public class LoginActivity extends AppCompatActivity {
             User user = getUser();
 
             if (user != null) {
-                Intent betActivityIntent = new Intent(this, BetActivity.class);
+                Intent betActivityIntent = new Intent(this, MainActivity.class);
                 betActivityIntent.putExtra("userParcelable", user);
                 betActivityIntent.putExtra("userURL", userURL);
                 betActivityIntent.putExtra("access_token", access_token);
@@ -145,14 +145,12 @@ public class LoginActivity extends AppCompatActivity {
             if (access_token != null) {
                 // Save access_token in shared preferences for automatic login next time
                 SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-                //this.getPreferences(Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPref.edit();
                 editor.clear();
                 editor.putString("access_token", access_token);
                 editor.apply();
             }
         } catch (JSONException e) {
-            // Oops
             Log.e("error", e.toString());
         }
 

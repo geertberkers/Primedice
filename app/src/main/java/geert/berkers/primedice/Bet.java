@@ -175,7 +175,7 @@ public class Bet implements Parcelable {
         DecimalFormat format = new DecimalFormat("0.000");
         String payoutString = format.format(multiplier);
         payoutString = payoutString.replace(",",".");
-        payoutString = payoutString.substring(0,4);
+        payoutString = payoutString.substring(0,5);
         return  payoutString;
     }
 

@@ -23,7 +23,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".BetActivity"
+        <activity android:name=".MainActivity"
             android:screenOrientation="portrait"
             android:launchMode="singleTop">
 
@@ -32,14 +32,14 @@
             android:screenOrientation="portrait">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".BetActivity" />
+                android:value=".MainActivity" />
 
         </activity>
         <activity android:name=".PlayerInformationActivity"
             android:screenOrientation="portrait">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".BetActivity" />
+                android:value=".MainActivity" />
 
         </activity>
     </application>

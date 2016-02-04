@@ -11,7 +11,7 @@ import java.util.ArrayList;
 /**
  * Primedice Application Created by Geert on 23-9-2015
  */
-class MySQLiteHelper extends SQLiteOpenHelper {
+public class MySQLiteHelper extends SQLiteOpenHelper {
 
     // Database Version
     private static final int DATABASE_VERSION = 1;

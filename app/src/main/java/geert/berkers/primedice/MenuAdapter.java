@@ -2,6 +2,7 @@ package geert.berkers.primedice;
 
 
 import android.content.Context;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,13 +17,12 @@ public class MenuAdapter extends BaseAdapter {
     private Context context;
     private String selectedMenuItem;
 
-    private String[] sort = {"Home", /*"Profile", "Stats", "Chat", "Automated betting", "Provably fair", "Faucet", */"Log out","Tip Developer"};
-    private Integer[] images = {R.drawable.home,/* R.drawable.profile, R.drawable.stats, R.drawable.chat, R.drawable.automatedbetting, R.drawable.provablyfair, R.drawable.faucet,*/R.drawable.logoutt, R.drawable.tipdeveloper};
-    private Integer[] imagesPressed = {R.drawable.homepressed,/* R.drawable.profilepressed, R.drawable.statspressed, R.drawable.chatpressed, R.drawable.automatedbettingpressed, R.drawable.provablyfairpressed, R.drawable.faucetpressed,*/ R.drawable.logoutt, R.drawable.tipdeveloper};
+    private String[] sort = {"Bet", "Profile", "Stats", "Chat", "Automated betting", "Provably fair", "Faucet", "Log out","Tip Developer"};
+    private Integer[] images = {R.drawable.home, R.drawable.profile, R.drawable.stats, R.drawable.chat, R.drawable.automatedbetting, R.drawable.provablyfair, R.drawable.faucet,R.drawable.logout, R.drawable.tipdeveloper};
 
     public MenuAdapter(Context context) {
         this.context = context;
-        this.selectedMenuItem = "Home";
+        this.selectedMenuItem = "Bet";
     }
 
     @Override
@@ -52,13 +52,16 @@ public class MenuAdapter extends BaseAdapter {
         TextView titleMenuItem = (TextView) row.findViewById(R.id.menuItem);
         ImageView titleImageView = (ImageView) row.findViewById(R.id.menuPicture);
 
-        titleMenuItem.setText(sort[position]);
-        if (selectedMenuItem.equals(sort[position])) {
-            titleImageView.setImageResource(imagesPressed[position]);
-
-        } else {
-            titleImageView.setImageResource(images[position]);
+        if (selectedMenuItem.equals(sort[position])){
+            row.setBackgroundColor(ContextCompat.getColor(context, R.color.colorPrimary));
         }
+        else{
+            row.setBackgroundColor(ContextCompat.getColor(context, R.color.primedicecolor));
+        }
+
+        titleMenuItem.setText(sort[position]);
+        titleImageView.setImageResource(images[position]);
+
         return row;
     }
 
