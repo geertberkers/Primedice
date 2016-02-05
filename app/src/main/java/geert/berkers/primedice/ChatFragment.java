@@ -15,6 +15,7 @@ import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.socketio.client.IO;
 import com.github.nkzawa.socketio.client.Socket;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -30,12 +31,12 @@ public class ChatFragment extends Fragment {
 
     private View view;
     private MainActivity activity;
-    private String access_token, sendMessageURL;
+    private String access_token, sendMessageURL, receiveMessageURL, currentRoom;
 
     private EditText mInputMessageView;
     private RecyclerView mMessagesView;
     private List<Message> mMessages = new ArrayList<>();
-    private RecyclerView.Adapter mAdapter;
+    private MessageAdapter mAdapter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -43,6 +44,7 @@ public class ChatFragment extends Fragment {
 
         initControls();
 
+        //TODO: Change rooms
         return view;
     }
 
@@ -59,7 +61,9 @@ public class ChatFragment extends Fragment {
         ImageButton sendButton = (ImageButton) view.findViewById(R.id.send_button);
         mInputMessageView = (EditText) view.findViewById(R.id.message_input);
 
+        currentRoom = "English";
         sendMessageURL = "https://api.primedice.com/api/send?access_token=";
+        receiveMessageURL = "https://api.primedice.com/api/messages?access_token=";
 
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -68,101 +72,224 @@ public class ChatFragment extends Fragment {
             }
         });
 
-        //TODO: Get latest chat messages
-        /*
-        GET /messages
-        A URL parameter room can be used to specify which room, such as "en". Defaults to "en" for the english chat room. Requires authentication.
-        */
+        String result = "NoResult";
+        try {
+            GetJSONResultFromURLTask sendMessage = new GetJSONResultFromURLTask();
+            result = sendMessage.execute((receiveMessageURL + access_token + "&room=" + currentRoom)).get();
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
+
+        if(result != null || !result.equals("NoResult")) {
+            try {
+                JSONObject json = new JSONObject(result);
+                JSONArray msgArray = json.getJSONArray("messages");
+
+                for (int i = 0; i < msgArray.length(); i++) {
+                    JSONObject msg = msgArray.getJSONObject(i);
+
+                    String room = msg.getString("room");
+                    String message = msg.getString("message");
+                    String sender = msg.getString("username");
+                    String time = msg.getString("timestamp");
+
+                    // {"room":"English","userid":"1180493","username":"kamleshwaran","message":"For me it's slow maybe becoz I m on phone","toUsername":null,"timestamp":"2016-02-05T15:15:01.568Z","admin":false,"prefix":false,"id":3632800,"you":false,"linked":false},
+                    addMessage(room,message,sender,time);
+                }
+
+                scrollToBottom();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
         mSocket.connect();
     }
 
-    private Socket mSocket;
+    private final Emitter.Listener socketioConnect = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            Log.i("ChatFragment", "Socket connected");
+            mSocket.emit("user", access_token);
+            mSocket.emit("chat");
+            mSocket.emit("stats");
+        }
+    };
 
+    private final Emitter.Listener socketioMSG = new Emitter.Listener() {
+
+        @Override
+        public void call(final Object... args) {
+
+            final JSONObject obj = (JSONObject) args[0];
+            Log.d("ChatFragment: ", "message back: " + obj.toString());
+
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        //TODO: Get all other information (vip/mod)
+                        String room = obj.getString("room");
+                        String message = obj.getString("message");
+                        String sender = obj.getString("username");
+                        String time = obj.getString("timestamp");
+
+                        removeMessage();
+                        addMessage(room, message, sender, time);
+
+                    } catch (JSONException e) {
+                        // return;
+                    }
+                }
+            });
+        }
+    };
+
+    //TODO: Handle TIP
+    private final Emitter.Listener socketioTip = new Emitter.Listener() {
+            @Override
+        public void call(Object... args) {
+            JSONObject obj = (JSONObject) args[0];
+            Log.w("ChatFragment", "TIP RResult: " + obj.toString());
+            // Tip response: {"userid":"990311","user":"GeertBerkers","amount":50001,"sender":"GeertBank","senderid":"1022127"}
+        }
+    };
+
+    //TODO: Handle PM
+    private final Emitter.Listener socketioPM = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            JSONObject obj = (JSONObject) args[0];
+            Log.w("ChatFragment", "PM Result: " + obj.toString());
+            // PM response {"room":"English","userid":"1004533","username":"testqwerty3","message":"Testing PM :)","toUsername":"GeertBerkers","timestamp":"2016-02-05T12:52:19.706Z","admin":false,"prefix":"PM"}
+        }
+    };
+
+    //TODO: Handle Bet
+    private final Emitter.Listener socketioBet = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            JSONObject obj = (JSONObject) args[0];
+            //This gets all new bets for all bets tab.
+            //Log.w("ChatFragment", "Bet Result: " + obj.toString());
+            //Bet Result: {"id":8738847242,"player":"otax2","player_id":"1225873","amount":1024000,"target":50.49,"profit":1024000,"win":true,"condition":">","roll":84.72,"nonce":1470,"client":"e91be697d8f2256e4b8d656836cd68b5","multiplier":2,"timestamp":"2016-02-05T14:48:28.213Z","jackpot":false,"server":"eb484667a46b7afbaa7b185921e2a34e85efac881e8d90ba8dbcefff44883ffd"}
+        }
+    };
+
+    //TODO: Handle Deposit
+    private final Emitter.Listener socketioDeposit = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            JSONObject obj = (JSONObject) args[0];
+            Log.w("ChatFragment", "Deposit Result: " + obj.toString());
+        }
+    };
+
+    //TODO: Handle Alert
+    private final Emitter.Listener socketioAlert = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            JSONObject obj = (JSONObject) args[0];
+            Log.w("ChatFragment", "Alert Result: " + obj.toString());
+        }
+    };
+
+    //TODO: Handle Stats
+    private final Emitter.Listener socketioStats = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            JSONObject obj = (JSONObject) args[0];
+            // This gets stats (BTC WON LAST 24 HOURS)
+            //Log.w("ChatFragment", "Stats Result: " + obj.toString());
+            //Stats Result: {"bets24":19462106,"wagered24":1.1444498764200024E11}
+        }
+    };
+
+    //TODO: Handle Success
+    private final Emitter.Listener socketioSuccess = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            JSONObject obj = (JSONObject) args[0];
+            Log.w("ChatFragment", "Succes Result: " + obj.toString());
+        }
+    };
+
+    //TODO: Handle Error
+    private final Emitter.Listener socketioError = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            JSONObject obj = (JSONObject) args[0];
+            Log.w("ChatFragment", "Error Result: " + obj.toString());
+        }
+    };
+
+    private final Emitter.Listener socketioDisconnect = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            Log.i("Chatfragment", "Socket disconnected");
+        }
+    };
+
+    private Socket mSocket;
     {
         try {
             mSocket = IO.socket("https://sockets.primedice.com");
-            mSocket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
+            mSocket.on(Socket.EVENT_CONNECT, socketioConnect)
+                    .on("msg", socketioMSG)
+                    .on("tip", socketioTip)
+                    .on("pm", socketioPM)
+                    .on("bet", socketioBet)
+                    .on("deposit", socketioDeposit)
+                    .on("alert", socketioAlert)
+                    .on("stats", socketioStats)
+                    .on("success", socketioSuccess)
+                    .on("err", socketioError)
+                    .on(Socket.EVENT_DISCONNECT, socketioDisconnect);
 
-                @Override
-                public void call(Object... args) {
-                    Log.d("ChatFragment: ", "socket connected");
-                    mSocket.emit("user", access_token);
-                    mSocket.emit("chat");
-                    mSocket.emit("stats");
-                }
-
-            }).on("msg", new Emitter.Listener() {
-
-                @Override
-                public void call(final Object... args) {
-
-                    final JSONObject obj = (JSONObject) args[0];
-                    Log.d("ChatFragment: ", "message back: " + obj.toString());
-
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                //TODO: Get alll other information
-                                String room = obj.getString("room");
-                                String message = obj.getString("message");
-                                String sender = obj.getString("username");
-                                String time = obj.getString("timestamp");
-
-                                addMessage(room, message, sender, time);
-
-                            } catch (JSONException e) {
-                                // return;
-                            }
-                        }
-                    });
-                }
-
-            }).on(Socket.EVENT_DISCONNECT, new Emitter.Listener() {
-
-                @Override
-                public void call(Object... args) {
-                }
-
-            });
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
     }
 
     private void sendMessage() {
+        //TODO: Handle tips/pm's while sending messages
         String message = mInputMessageView.getText().toString().trim();
         mInputMessageView.setText("");
 
         String result = "NoResult";
-        String room = "English"; //TODO: Set room in ChatFragment
         String toUsername = null; //TODO: Get this when sending PM
         try {
             SendMessageTask sendMessage = new SendMessageTask();
-            result = sendMessage.execute((sendMessageURL + access_token), room, message, toUsername).get();
+            result = sendMessage.execute((sendMessageURL + access_token), currentRoom, message, toUsername).get();
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         }
 
         Log.w("Result", result);
-        //TODO: Implement REST API POST message
-/*
-POST /send
-Expects a room and message, optionally specify a username in toUsername to send a PM. Requires authentication.
-*/
     }
 
+    private void removeMessage(){
+
+
+    }
     private void addMessage(String roomString, String message, String sender, String time) {
 
         int room = Message.ENGLISH;
         if (roomString.equals("Russian")) {
             room = Message.RUSSIAN;
         }
-        //TODO: Remove latest messages if over 30
-        mMessages.add(new Message.Builder(room, Message.TYPE_MESSAGE)
-                .message(message, sender, time).build());
-        mAdapter = new MessageAdapter(mMessages);
-        mAdapter.notifyItemInserted(0);
+
+
+        // Add message
+        mMessages.add(new Message.Builder(room, Message.TYPE_MESSAGE).message(message, sender, time).build());
+
+        // Remove oldest messages when reaches over 50
+        while(mMessages.size() > 50){
+            Log.w("Remove",mMessages.get(0).getMessage());
+            mMessages.remove(0);
+        }
+
+        mAdapter.setUpdatedList(mMessages);
         scrollToBottom();
     }
 
@@ -176,39 +303,7 @@ Expects a room and message, optionally specify a username in toUsername to send 
 
     @Override
     public void onStop() {
-        //TODO: Stop when close
+        mSocket.disconnect();
         super.onStop();
     }
-
 }
-
-/*
-I implemented the socket.io protocol for PD in C++ easily enough
-
-you just emit user and emit chat
-
-as long as the token is valid you will get msgs/pms
-
-sock = io.connect('https://sockets.primedice.com').
-on("connect", sockioConnect).
-on("disconnect", sockioDisconnect).
-on("tip", sockioTip).
-on("msg", sockioMSG).
-on("pm", sockioPM).
-on("bet", sockioBet).
-on("deposit", sockioDeposit).
-on("alert", sockioAlert).
-on("stats", sockioStats).
-on("success", sockioSuccess).
-on("err", sockioErr);
-
-function sockioConnect() {
-console.log('socket.io connected');
-
-sock.emit("user", access_token);
-sock.emit("chat");
-sock.emit("stats");
-}
-21:16:07
-that's about it
- */

@@ -2,27 +2,39 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingTop="@dimen/spacing">
+    android:paddingTop="@dimen/spacing"
+    android:paddingLeft="2dp"
+    android:paddingRight="2dp">
+
+    <ImageView
+        android:id="@+id/btnUserInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/sender"
+        android:layout_alignBottom="@+id/sender"
+        android:paddingRight="5dp"
+        android:scaleType="centerInside"
+        android:src="@drawable/info"
+        android:contentDescription="User info"/>
 
     <TextView
+        android:text="Sender"
         android:id="@+id/sender"
         android:textStyle="bold"
         style="?android:textAppearanceMedium"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingLeft="@dimen/spacing"
         android:paddingRight="@dimen/spacing"
-        android:text="Sender"
-        android:textColor="?android:textColorPrimary" />
+        android:textColor="@color/black"
+        android:layout_toRightOf="@+id/btnUserInfo"
+        android:layout_toEndOf="@+id/btnUserInfo" />
 
     <TextView
+        android:text="Time"
         android:id="@+id/time"
         style="?android:textAppearanceMedium"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingLeft="@dimen/spacing"
-        android:paddingRight="@dimen/spacing"
-        android:text="Time"
         android:textColor="?android:textColorPrimary"
         android:layout_alignParentTop="true"
         android:layout_alignParentRight="true"
@@ -30,15 +42,15 @@
 
     <TextView
         android:id="@+id/message"
+        android:padding="2dp"
         style="?android:textAppearanceMedium"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingLeft="@dimen/spacing"
-        android:paddingRight="@dimen/spacing"
         android:text="These all are messages! "
-        android:textColor="?android:textColorPrimary"
+        android:textColor="@color/black"
         android:layout_below="@+id/sender"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:background="@drawable/chat_background_message"/>
 
 </RelativeLayout>

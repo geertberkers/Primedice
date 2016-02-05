@@ -385,7 +385,6 @@ public class BetFragment extends Fragment {
                                     e.printStackTrace();
                                 }
 
-                                //TODO Update user in MainActivity
                                 if (userResult != null || !userResult.equals("NoResult")) {
                                     activity.updateUser(new User(userResult));
                                     txtBalance.setText(activity.getUser().getBalance());
@@ -675,5 +674,9 @@ public class BetFragment extends Fragment {
 
     public void setWithdrawalAdress(String withdrawalAdress) {
         edWithdrawalAdress.setText(withdrawalAdress);
+    }
+
+    public void updateBalance(String balance) {
+        this.txtBalance.setText(balance);
     }
 }

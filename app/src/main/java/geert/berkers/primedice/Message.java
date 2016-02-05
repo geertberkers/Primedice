@@ -55,6 +55,7 @@ public class Message {
             mType = type;
         }
 
+        //TODO: Parse time to local time
         public Builder message(String message, String sender, String time) {
             mMessage = message;
             mSender = sender;

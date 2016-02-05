@@ -65,6 +65,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     // TODO: Important:
+    // Encrypt access_token
     // Auto Bet
     // Chat
     // Tips

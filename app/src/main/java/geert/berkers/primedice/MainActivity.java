@@ -62,7 +62,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private ProvablyFairFragment provablyFairFragment;
     private AutomatedBetFragment automatedBetFragment;
 
-
     public User getUser() {
         return user;
     }
@@ -375,4 +374,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         this.profitStart = user.profit;
         this.betsStart = user.bets;
     }
+
+
 }
