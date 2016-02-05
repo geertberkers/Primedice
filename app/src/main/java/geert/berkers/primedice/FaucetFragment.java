@@ -11,18 +11,23 @@ import android.view.ViewGroup;
  */
 public class FaucetFragment extends Fragment {
 
+    private View view;
+    private MainActivity activity;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_faucet, container, false);
+        this.view = inflater.inflate(R.layout.fragment_profile, container, false);
+
+        initControls();
+
+        return view;
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        initControls();
-    }
 
     private void initControls() {
+        activity = (MainActivity) getActivity();
 
+        //TextView txtWins = (TextView)  view.findViewById(R.id.txtWins);
     }
 }
+

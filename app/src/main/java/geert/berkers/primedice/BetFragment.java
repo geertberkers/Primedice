@@ -121,7 +121,6 @@ public class BetFragment extends Fragment {
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         }
-
     }
 
     // Handle all button clicks

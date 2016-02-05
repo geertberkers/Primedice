@@ -1,10 +1,440 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:layout_height="wrap_content">
 
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="Not implemented yet!"/>
-</LinearLayout>
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/stats"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/colorPrimary" />
+
+        <!-- Wins -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/wins_bg"
+            android:orientation="horizontal"
+            android:paddingBottom="5dp"
+            android:paddingTop="5dp"
+            android:weightSum="1">
+
+            <ImageView
+                android:id="@+id/ivWins"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="0.1"
+                android:contentDescription="@string/wins"
+                android:src="@drawable/wins" />
+
+            <TextView
+                android:id="@+id/lblWins"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.3"
+                android:gravity="center"
+                android:text="@string/wins"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txtWins"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.6"
+                android:gravity="center_vertical"
+                android:paddingLeft="20dp"
+                android:paddingStart="20dp"
+                android:text="231,123" />
+        </LinearLayout>
+
+        <!-- Losses -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/losses_bg"
+            android:orientation="horizontal"
+            android:paddingBottom="5dp"
+            android:paddingTop="5dp"
+            android:weightSum="1">
+
+            <ImageView
+                android:id="@+id/ivLosses"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="0.1"
+                android:contentDescription="@string/losses"
+                android:src="@drawable/losses" />
+
+            <TextView
+                android:id="@+id/lblLosses"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.3"
+                android:gravity="center"
+                android:text="@string/losses"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txtLosses"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.6"
+                android:gravity="center_vertical"
+                android:paddingLeft="20dp"
+                android:paddingStart="20dp"
+                android:text="231,123" />
+        </LinearLayout>
+
+        <!-- Luck -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/luck_bg"
+            android:orientation="horizontal"
+            android:paddingBottom="5dp"
+            android:paddingTop="5dp"
+            android:weightSum="1">
+
+            <ImageView
+                android:id="@+id/ivLuck"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="0.1"
+                android:contentDescription="@string/luck"
+                android:src="@drawable/luck" />
+
+            <TextView
+                android:id="@+id/lblLuck"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.3"
+                android:gravity="center"
+                android:text="@string/luck"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txtLuck"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.6"
+                android:gravity="center_vertical"
+                android:paddingLeft="20dp"
+                android:paddingStart="20dp"
+                android:text="99.87%" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/overall"
+            android:textSize="20sp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginBottom="10dp"
+            android:background="@color/colorPrimary" />
+
+        <!-- Wagered -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:weightSum="1">
+
+            <ImageView
+                android:id="@+id/ivWagered"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="0.1"
+                android:contentDescription="@string/total_wagered"
+                android:src="@drawable/wagered" />
+
+            <TextView
+                android:id="@+id/lblWagered"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.3"
+                android:gravity="center"
+                android:text="@string/total_wagered"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txtWagered"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.6"
+                android:gravity="center_vertical"
+                android:paddingLeft="20dp"
+                android:paddingStart="20dp"
+                android:text="0.01234567" />
+        </LinearLayout>
+
+        <!-- Profit -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal"
+            android:weightSum="1">
+
+            <ImageView
+                android:id="@+id/ivProfit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="0.1"
+                android:contentDescription="@string/total_profit"
+                android:src="@drawable/betprofit" />
+
+            <TextView
+                android:id="@+id/lblRoll"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.3"
+                android:gravity="center"
+                android:text="@string/total_profit"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txtProfit"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.6"
+                android:gravity="center_vertical"
+                android:paddingLeft="20dp"
+                android:paddingStart="20dp"
+                android:text="0.00500000" />
+        </LinearLayout>
+
+        <!-- Bets made -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal"
+            android:weightSum="1">
+
+            <ImageView
+                android:id="@+id/ivBetsMade"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="0.1"
+                android:contentDescription="@string/bets_made"
+                android:src="@drawable/betsmade" />
+
+            <TextView
+                android:id="@+id/lblBetsMade"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.3"
+                android:gravity="center"
+                android:text="@string/bets_made"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txtBetsMade"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.6"
+                android:gravity="center_vertical"
+                android:paddingLeft="20dp"
+                android:paddingStart="20dp"
+                android:text="249,999" />
+        </LinearLayout>
+
+        <!-- Messages -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal"
+            android:weightSum="1">
+
+            <ImageView
+                android:id="@+id/ivMessages"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="0.1"
+                android:contentDescription="@string/chat_messages"
+                android:src="@drawable/messages" />
+
+            <TextView
+                android:id="@+id/lblChatMessages"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.3"
+                android:gravity="center"
+                android:text="@string/chat_messages"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txtMessages"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.6"
+                android:gravity="center_vertical"
+                android:paddingLeft="20dp"
+                android:paddingStart="20dp"
+                android:text="5,000" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Current Session - "
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/resetSession"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/reset"
+                android:textSize="20sp" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginBottom="10dp"
+            android:background="@color/colorPrimary" />
+
+        <!-- Session Wagered -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:weightSum="1">
+
+            <ImageView
+                android:id="@+id/ivSessionWagered"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="0.1"
+                android:contentDescription="@string/session_wagered"
+                android:src="@drawable/wagered" />
+
+            <TextView
+                android:id="@+id/lblSesssionWagered"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.3"
+                android:gravity="center"
+                android:text="@string/session_wagered"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txtSessionWagered"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.6"
+                android:gravity="center_vertical"
+                android:paddingLeft="20dp"
+                android:paddingStart="20dp"
+                android:text="0.01234567" />
+        </LinearLayout>
+
+        <!-- Session Profit -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal"
+            android:weightSum="1">
+
+            <ImageView
+                android:id="@+id/ivSessionProfit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="0.1"
+                android:contentDescription="@string/session_profit"
+                android:src="@drawable/betprofit" />
+
+            <TextView
+                android:id="@+id/lblSessionRoll"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.3"
+                android:gravity="center"
+                android:text="@string/session_profit"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txtSessionProfit"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.6"
+                android:gravity="center_vertical"
+                android:paddingLeft="20dp"
+                android:paddingStart="20dp"
+                android:text="0.00500000" />
+        </LinearLayout>
+
+        <!-- Session Bets made -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal"
+            android:weightSum="1">
+
+            <ImageView
+                android:id="@+id/ivSessionBetsMade"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="0.1"
+                android:contentDescription="@string/session_bets_made"
+                android:src="@drawable/betsmade" />
+
+            <TextView
+                android:id="@+id/lblSessionBetsMade"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.3"
+                android:gravity="center"
+                android:text="@string/session_bets_made"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txtSessionBetsMade"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.6"
+                android:gravity="center_vertical"
+                android:paddingLeft="20dp"
+                android:paddingStart="20dp"
+                android:text="2,999" />
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

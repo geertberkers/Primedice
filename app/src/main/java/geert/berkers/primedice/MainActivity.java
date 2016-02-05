@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -17,6 +18,7 @@ import android.text.InputType;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -29,6 +31,7 @@ import com.google.zxing.integration.android.IntentResult;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.DecimalFormat;
 import java.util.concurrent.ExecutionException;
 
 
@@ -39,6 +42,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     private User user;
     private String access_token, tipURL, logOutURL;
+
+    private int betsStart;
+    private Long wageredStart;
+    private double profitStart;
 
     private LinearLayout drawer;
     private ListView menuListView;
@@ -54,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private ProfileFragment profileFragment;
     private ProvablyFairFragment provablyFairFragment;
     private AutomatedBetFragment automatedBetFragment;
+
 
     public User getUser() {
         return user;
@@ -84,7 +92,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         menuListView.setOnItemClickListener(this);
         menuListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 
+        final InputMethodManager fimm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+
         drawerListener = new ActionBarDrawerToggle(this, drawerLayout, R.string.drawer_open, R.string.drawer_close) {
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                fimm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
+                super.onDrawerOpened(drawerView);
+            }
         };
 
         drawerLayout.setDrawerListener(drawerListener);
@@ -119,6 +134,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             access_token = b.getString("access_token");
 
             if (user != null) {
+                this.wageredStart = user.wagered;
+                this.profitStart = user.profit;
+                this.betsStart = user.bets;
+
                 Log.w("User", user.toString());
 
                 FragmentTransaction transaction = manager.beginTransaction();
@@ -253,18 +272,34 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         menuListView.setItemChecked(position, true);
-        setTitle(menuAdapter.getItem(position));
+        getSupportActionBar().setTitle(menuAdapter.getItem(position));
 
         int backStack = manager.getBackStackEntryCount();
         int backStackIndex = backStack - 1;
 
-        if (menuAdapter.getItem(position).equals("Home")) {
+        if (menuAdapter.getItem(position).equals("Bet")) {
             manager.popBackStack("Bet", 0);
         } else if (menuAdapter.getItem(position).equals("Profile")) {
             showFragment(profileFragment, backStackIndex, "Profile");
         } else if (menuAdapter.getItem(position).equals("Stats")) {
+            DecimalFormat format = new DecimalFormat("0.00000000");
+
+            double wageredSessionDouble = (double) user.wagered - wageredStart;
+            double profitSessionDouble = user.profit - profitStart;
+            int betsSessionInt = user.bets - betsStart;
+
+            String wageredSession = format.format(wageredSessionDouble / 100000000);
+            wageredSession = wageredSession.replace(",",".");
+
+            String profitSession = format.format(profitSessionDouble / 100000000);
+            profitSession = profitSession.replace(",",".");
+
+            String betsSession = String.valueOf(betsSessionInt);
+
+            statsFragment.setInformation(user, wageredSession, profitSession, betsSession);
             showFragment(statsFragment, backStackIndex, "Stats");
         } else if (menuAdapter.getItem(position).equals("Chat")) {
+            chatFragment.setInformation(access_token);
             showFragment(chatFragment, backStackIndex, "Chat");
         } else if (menuAdapter.getItem(position).equals("Automated betting")) {
             showFragment(automatedBetFragment, backStackIndex, "Automated betting");
@@ -315,35 +350,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             String menuItem = manager.getBackStackEntryAt(index).getName();
             getSupportActionBar().setTitle(menuItem);
 
-            int menuItemID;
-            switch (menuItem) {
-                case "Bet":
-                    menuItemID = 0;
-                    break;
-                case "Profile":
-                    menuItemID = 1;
-                    break;
-                case "Stats":
-                    menuItemID = 2;
-                    break;
-                case "Chat":
-                    menuItemID = 3;
-                    break;
-                case "Automated betting":
-                    menuItemID = 4;
-                    break;
-                case "Provably fair":
-                    menuItemID = 5;
-                    break;
-                case "Faucet":
-                    menuItemID = 6;
-                    break;
-                default:
-                    menuItemID = 0;
-                    break;
-            }
+            menuAdapter.setSelectedMenuItem(menuItem);
 
-            menuListView.setItemChecked(menuItemID, true);
         } else {
             Log.i("MainActivity", "Close");
             super.onBackPressed();
@@ -360,5 +368,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     public void updateUser(User user) {
         this.user = user;
+    }
+
+    public void resetSessionStats(){
+        this.wageredStart = user.wagered;
+        this.profitStart = user.profit;
+        this.betsStart = user.bets;
     }
 }

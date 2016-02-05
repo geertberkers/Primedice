@@ -51,4 +51,12 @@
     <string name="max">MAX</string>
     <string name="login">Login</string>
     <string name="password">Password</string>
+    <string name="stats">Statistics</string>
+    <string name="overall">Overall</string>
+    <string name="session_wagered">SESSION\nWAGERED</string>
+    <string name="session_profit">SESSION\nPROFIT</string>
+    <string name="session_bets_made">SESSION\nBETS</string>
+    <string name="reset">Reset</string>
+    <string name="action_send">Send</string>
+    <string name="prompt_message">Message</string>
 </resources>
