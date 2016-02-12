@@ -64,24 +64,6 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
-    // TODO: Important:
-    // Encrypt access_token
-    // Auto Bet
-    // Chat
-    // Tips
-
-    // TODO: Later:
-    // Register account
-    // Set password
-    // Set Email
-    // Set Emergency adress
-    // Use 2FA Authentication
-    // Implement Affiliate information
-    // Get deposits/withdrawals
-    // Change seed
-    // Site statistics
-    // Claim faucet
-
     public void login(View v) {
 
         if (v.getId() == btnLogin.getId()) {

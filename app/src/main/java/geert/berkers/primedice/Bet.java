@@ -20,7 +20,7 @@ public class Bet implements Parcelable {
 
     public Bet(JSONObject bet) {
         try {
-            Log.i("Bet", bet.toString());
+            //Log.i("Bet", bet.toString());
             this.id = bet.getLong("id");
             this.player = bet.getString("player");
             this.playerID = bet.getString("player_id");
@@ -165,6 +165,10 @@ public class Bet implements Parcelable {
 
     public String getTimeOfBet() {
         return timestamp.substring(0, 10) + " " + timestamp.substring(11, 19) + " GMT";
+    }
+
+    public int getAmount(){
+        return amount;
     }
 
     public String getWagered() {

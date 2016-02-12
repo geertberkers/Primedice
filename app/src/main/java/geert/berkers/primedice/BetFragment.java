@@ -43,6 +43,11 @@ public class BetFragment extends Fragment {
     private View view;
     private MainActivity activity;
 
+    private int openedBet;
+    private static int MY_BETS = 1;
+    private static int ALL_BETS = 2;
+    private static int HR_BETS = 3;
+
     private int betAmount;
     private MySQLiteHelper db;
     private Bitmap resultImage;
@@ -50,13 +55,14 @@ public class BetFragment extends Fragment {
     private DecimalFormat format;
     private ListView betListView;
     private boolean maxPressed, betHigh;
-    private ArrayList<Bet> recentBets, myBets;
     private String withdrawalURL, betURL, userURL;
+    private ArrayList<Bet> myBets, allBets, hrBets;
     private Double betMultiplier, betPercentage, target;
     private EditText edBetAmount, edProfitonWin, edWithdrawalAdress;
     private TextView txtBalance, txtMyBets, txtAllBets, txtHighRollers;
     private Button btnDeposit, btnWithdraw, btnHalfBet, btnDoubleBet, btnMaxBet, btnHighLow, btnMultiplier, btnPercentage, btnRollDice;
 
+    //TODO: Check if this can be done once. Not every time when opened
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         this.view = inflater.inflate(R.layout.fragment_bet, container, false);
@@ -103,7 +109,12 @@ public class BetFragment extends Fragment {
         betPercentage = 49.50;
         target = betPercentage;
 
-        recentBets = new ArrayList<>();
+        myBets = new ArrayList<>();
+        allBets = new ArrayList<>();
+        hrBets = new ArrayList<>();
+
+        openedBet = MY_BETS;
+
         db = new MySQLiteHelper(activity);
         format = new DecimalFormat("0.00000000");
 
@@ -114,6 +125,9 @@ public class BetFragment extends Fragment {
         txtBalance.setText(activity.getUser().getBalance());
         myBets = db.getAllBetsFromUser(activity.getUser().username);
         showBets(myBets);
+
+        allBets = getBets("bets");
+        hrBets = getBets("highrollers");
 
         try {
             DownloadImageTask downloadImageTask = new DownloadImageTask();
@@ -236,22 +250,26 @@ public class BetFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 showBets(myBets);
+                openedBet = MY_BETS;
             }
         });
 
         txtAllBets.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getAndShowBets("bets");
+                showBets(allBets);
+                openedBet = ALL_BETS;
             }
         });
 
         txtHighRollers.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getAndShowBets("highrollers");
+                showBets(hrBets);
+                openedBet = HR_BETS;
             }
         });
+        openedBet = MY_BETS;
     }
 
     // Deposit some BTC!
@@ -639,18 +657,23 @@ public class BetFragment extends Fragment {
     }
 
     // Get and show bets
-    public void getAndShowBets(String getThese) {
+    public ArrayList<Bet> getBets(String getThese) {
         String URL = "https://api.primedice.com/api/" + getThese;
 
         try {
             GetJSONResultFromURLTask getBetsTask = new GetJSONResultFromURLTask();
             String result = getBetsTask.execute(URL).get();
-            recentBets = getBetsListFromJSON(result, getThese);
+            if (getThese.equals("bets")) {
+                allBets = getBetsListFromJSON(result, getThese);
+                return allBets;
+            } else {
+                hrBets = getBetsListFromJSON(result, getThese);
+                return hrBets;
+            }
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
+            return null;
         }
-
-        showBets(recentBets);
     }
 
     // Get bets from json
@@ -676,7 +699,33 @@ public class BetFragment extends Fragment {
         edWithdrawalAdress.setText(withdrawalAdress);
     }
 
-    public void updateBalance(String balance) {
-        this.txtBalance.setText(balance);
+    // Add bet to the list and show if opened
+    //TODO: (Later) Update UI graphics. Scroll to position in stead of adding it
+    public void addBet(Bet b, boolean highRoller) {
+        if (highRoller) {
+            this.hrBets.remove(hrBets.size() - 1);
+            this.hrBets.add(0, b);
+
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (openedBet == HR_BETS) {
+                        showBets(hrBets);
+                    }
+                }
+            });
+        } else {
+            this.allBets.remove(allBets.size() - 1);
+            this.allBets.add(0, b);
+
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (openedBet == ALL_BETS) {
+                        showBets(allBets);
+                    }
+                }
+            });
+        }
     }
 }

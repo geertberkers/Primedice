@@ -1,29 +1,66 @@
-<android.support.v4.widget.DrawerLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent">
+
     <!-- The main content view -->
-    <FrameLayout
-        android:id="@+id/content_frame"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent">
+
+
+        <FrameLayout
+            android:id="@+id/content_frame_main"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <FrameLayout
+                android:id="@+id/content_frame"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+            </FrameLayout>
+
+            <TextView
+                android:padding="25dp"
+                android:gravity="center"
+                android:layout_height="100dp"
+
+                android:textColor="@color/white"
+                android:id="@+id/txtNotification"
+                android:layout_width="match_parent"
+                android:background="@drawable/notification"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:text="Received tip of 0.00050001 BTC from GeertBank"/>
+
+            <ImageView
+                android:id="@+id/closeNotification"
+                android:layout_marginRight="10dp"
+                android:layout_marginEnd="10dp"
+                android:layout_gravity="right"
+                android:layout_height="100dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/close"
+                android:layout_width="wrap_content"
+                android:contentDescription="Close notification"/>
+        </FrameLayout>
+    </RelativeLayout>
     <!-- The navigation drawer -->
     <LinearLayout
         android:id="@+id/drawer"
         android:layout_width="240dp"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:layout_gravity="start" >
- 
-        <ListView android:id="@+id/drawer_list"
+        android:layout_gravity="start"
+        android:orientation="vertical">
+
+        <ListView
+            android:id="@+id/drawer_list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:background="@color/primedicecolor"
             android:choiceMode="singleChoice"
             android:divider="@color/colorPrimary"
             android:dividerHeight="0.3dp"
-            android:textColor="@android:color/white"
-            android:background="@color/primedicecolor" />
- 
+            android:textColor="@android:color/white" />
+
     </LinearLayout>
 </android.support.v4.widget.DrawerLayout>

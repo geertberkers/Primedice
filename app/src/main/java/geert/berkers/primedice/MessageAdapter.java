@@ -18,11 +18,9 @@ import java.util.List;
 public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHolder> {
 
     private List<Message> mMessages;
-    //private MainActivity mActivity;
 
-    public MessageAdapter(List<Message> messages/*, MainActivity activity*/) {
+    public MessageAdapter(List<Message> messages) {
         mMessages = messages;
-        //mActivity = activity;
     }
 
     @Override

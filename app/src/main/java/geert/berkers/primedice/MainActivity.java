@@ -21,16 +21,22 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.github.nkzawa.emitter.Emitter;
+import com.github.nkzawa.socketio.client.IO;
+import com.github.nkzawa.socketio.client.Socket;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.net.URISyntaxException;
 import java.text.DecimalFormat;
 import java.util.concurrent.ExecutionException;
 
@@ -43,10 +49,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private User user;
     private String access_token, tipURL, logOutURL;
 
-    private int betsStart;
+    private int betsStart, betCounter;
     private Long wageredStart;
     private double profitStart;
+    private TextView notification;
+    private ImageView closeNotification;
 
+    private Activity activity;
     private LinearLayout drawer;
     private ListView menuListView;
     private FragmentManager manager;
@@ -81,9 +90,24 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     // Set all views
     private void initControls() {
+        activity = this;
+
         drawer = (LinearLayout) findViewById(R.id.drawer);
         menuListView = (ListView) findViewById(R.id.drawer_list);
+        notification = (TextView) findViewById(R.id.txtNotification);
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        closeNotification = (ImageView) findViewById(R.id.closeNotification);
+
+        notification.setVisibility(View.INVISIBLE);
+        closeNotification.setVisibility(View.INVISIBLE);
+
+        closeNotification.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                notification.setVisibility(View.INVISIBLE);
+                closeNotification.setVisibility(View.INVISIBLE);
+            }
+        });
 
         menuAdapter = new MenuAdapter(this);
         menuListView.setAdapter(menuAdapter);
@@ -91,12 +115,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         menuListView.setOnItemClickListener(this);
         menuListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 
-        final InputMethodManager fimm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        final InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 
         drawerListener = new ActionBarDrawerToggle(this, drawerLayout, R.string.drawer_open, R.string.drawer_close) {
             @Override
             public void onDrawerOpened(View drawerView) {
-                fimm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
+                imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
                 super.onDrawerOpened(drawerView);
             }
         };
@@ -123,6 +147,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private void setInformation() {
         setTitle("Bet");
 
+        betCounter = 0;
         tipURL = "https://api.primedice.com/api/tip?access_token=";
         logOutURL = "https://api.primedice.com/api/logout?access_token=";
 
@@ -137,13 +162,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 this.profitStart = user.profit;
                 this.betsStart = user.bets;
 
-                Log.w("User", user.toString());
+                Log.i("User", user.toString());
 
                 FragmentTransaction transaction = manager.beginTransaction();
                 transaction.add(R.id.content_frame, betFragment, "Bet");
                 transaction.addToBackStack("Bet");
                 transaction.commit();
 
+                mSocket.connect();
             } else throw new Exception("User is null");
         } catch (Exception ex) {
             Log.e("NoUserFound", "Didn't find a user!");
@@ -208,8 +234,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                                     JSONObject jsonUser = jsonObject.getJSONObject("user");
                                     user.updateUserBalance(jsonUser.getString("balance"));
 
-                                    //TODO Update balance in opened fragment!
-                                    //txtBalance.setText(user.getBalance());
+                                    updateBalanceInOpenedFragment();
 
                                     Toast.makeText(getApplicationContext(), "Tipped " + edTipAmount.getText().toString() + " BTC to GeertDev.", Toast.LENGTH_LONG).show();
                                 } catch (InterruptedException | ExecutionException | JSONException e) {
@@ -281,24 +306,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         } else if (menuAdapter.getItem(position).equals("Profile")) {
             showFragment(profileFragment, backStackIndex, "Profile");
         } else if (menuAdapter.getItem(position).equals("Stats")) {
-            DecimalFormat format = new DecimalFormat("0.00000000");
-
-            double wageredSessionDouble = (double) user.wagered - wageredStart;
-            double profitSessionDouble = user.profit - profitStart;
-            int betsSessionInt = user.bets - betsStart;
-
-            String wageredSession = format.format(wageredSessionDouble / 100000000);
-            wageredSession = wageredSession.replace(",",".");
-
-            String profitSession = format.format(profitSessionDouble / 100000000);
-            profitSession = profitSession.replace(",",".");
-
-            String betsSession = String.valueOf(betsSessionInt);
-
-            statsFragment.setInformation(user, wageredSession, profitSession, betsSession);
-            showFragment(statsFragment, backStackIndex, "Stats");
+            showStats(backStackIndex);
         } else if (menuAdapter.getItem(position).equals("Chat")) {
-            chatFragment.setInformation(access_token);
+            chatFragment.setInformation(access_token, mSocket);
             showFragment(chatFragment, backStackIndex, "Chat");
         } else if (menuAdapter.getItem(position).equals("Automated betting")) {
             showFragment(automatedBetFragment, backStackIndex, "Automated betting");
@@ -314,6 +324,25 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         menuAdapter.setSelectedMenuItem(menuAdapter.getItem(position));
         drawerLayout.closeDrawer(drawer);
+    }
+
+    private void showStats(int backStackIndex) {
+        DecimalFormat format = new DecimalFormat("0.00000000");
+
+        double wageredSessionDouble = (double) user.wagered - wageredStart;
+        double profitSessionDouble = user.profit - profitStart;
+        int betsSessionInt = user.bets - betsStart;
+
+        String wageredSession = format.format(wageredSessionDouble / 100000000);
+        wageredSession = wageredSession.replace(",", ".");
+
+        String profitSession = format.format(profitSessionDouble / 100000000);
+        profitSession = profitSession.replace(",", ".");
+
+        String betsSession = String.valueOf(betsSessionInt);
+
+        statsFragment.setInformation(user, wageredSession, profitSession, betsSession);
+        showFragment(statsFragment, backStackIndex, "Stats");
     }
 
     // Show the fragment
@@ -342,7 +371,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         if (drawerLayout.isDrawerOpen(drawer)) {
             drawerLayout.closeDrawer(drawer);
         } else if (manager.getBackStackEntryCount() > 1) {
-            Log.w("Backbutton", "Vorig fragment");
+            Log.i("Backbutton", "Vorig fragment");
 
             manager.popBackStack();
             int index = manager.getBackStackEntryCount() - 2;
@@ -353,6 +382,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         } else {
             Log.i("MainActivity", "Close");
+            mSocket.disconnect();
             super.onBackPressed();
         }
     }
@@ -369,11 +399,235 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         this.user = user;
     }
 
-    public void resetSessionStats(){
+    // Reset session wagered information
+    public void resetSessionStats() {
         this.wageredStart = user.wagered;
         this.profitStart = user.profit;
         this.betsStart = user.bets;
     }
 
+    // Show notification with text x for y seconds.
+    // Use 0 if user must click it away him/herself
+    private void showNotification(final String text, final int seconds) {
 
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                notification.setVisibility(View.VISIBLE);
+                closeNotification.setVisibility(View.VISIBLE);
+                notification.setText(text);
+
+                if (seconds != 0) {
+                    Thread thread = new Thread() {
+                        @Override
+                        public void run() {
+                            try {
+                                sleep(seconds * 1000);
+                                hideNotification();
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    };
+                    thread.start();
+                }
+            }
+        });
+    }
+
+    // Close (hide) current the notification
+    private void hideNotification() {
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                notification.setVisibility(View.INVISIBLE);
+                closeNotification.setVisibility(View.INVISIBLE);
+            }
+        });
+    }
+
+    private void updateBalanceInOpenedFragment() {
+        //TODO: Update balance in opened fragment
+    }
+
+    private final Emitter.Listener socketioConnect = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            Log.i("ChatFragment", "Socket connected");
+            mSocket.emit("user", access_token);
+            mSocket.emit("chat");
+            mSocket.emit("stats");
+        }
+    };
+
+    private final Emitter.Listener socketioTip = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            final JSONObject obj = (JSONObject) args[0];
+            Log.i("ChatFragment", "TIP Result: " + obj.toString());
+
+            try {
+                String sendername = obj.getString("sender");
+                int amount = obj.getInt("amount");
+                double amountDouble = (double) amount;
+                DecimalFormat format = new DecimalFormat("0.00000000");
+                String amountString = format.format(amountDouble / 100000000);
+                String notificationInformation = "Received tip of " + amountString + " BTC from " + sendername;
+
+                double balanceBeforeTip = user.balance;
+                user.balance = balanceBeforeTip + amountDouble;
+
+                updateBalanceInOpenedFragment();
+                showNotification(notificationInformation, 15);
+
+            } catch (JSONException ex) {
+                ex.printStackTrace();
+            }
+        }
+    };
+
+    // Get all new bets (all and HR)
+    private final Emitter.Listener socketioBet = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            JSONObject obj = (JSONObject) args[0];
+
+            try {
+                Bet b = new Bet(obj);
+
+                // Check if bet is HR bet or Normal bet
+                if (b.getAmount() >= 10000000) {
+                    betFragment.addBet(b, true);
+                } else {
+                    //Only add 1/3 else to fast for application
+                    betCounter++;
+                    if (betCounter == 3) {
+                        betFragment.addBet(b, false);
+                        betCounter = 0;
+                    }
+                }
+            } catch (Exception ex) {
+                Log.e("BetException", ex.toString());
+            }
+        }
+    };
+
+    private final Emitter.Listener socketioDeposit = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            JSONObject obj = (JSONObject) args[0];
+            Log.i("ChatFragment", "Deposit Result: " + obj.toString());
+
+            try {
+                boolean acredited = obj.getBoolean("acredited");
+
+                int amount = obj.getInt("amount");
+                double amountDouble = (double) amount;
+                DecimalFormat format = new DecimalFormat("0.00000000");
+                String amountString = format.format(amountDouble / 100000000);
+
+                if (!acredited) {
+                    // Show notification for receiving
+                    String text = "Received deposit of " + amountString + " BTC - Awaiting one confirmation";
+                    showNotification(text, 0);
+                } else {
+                    // Show notification for confirmed deposit
+                    double balanceBeforeTip = user.balance;
+                    user.balance = balanceBeforeTip + amountDouble;
+
+                    String text = "Confirmed deposit of " + amount + " BTC - Amount credited";
+                    updateBalanceInOpenedFragment();
+
+                    // Maybe even a notification in android!
+                    showNotification(text, 15);
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    };
+
+    private final Emitter.Listener socketioAlert = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            JSONObject obj = (JSONObject) args[0];
+            Log.w("ChatFragment", "Alert Result: " + obj.toString());
+        }
+    };
+
+    private final Emitter.Listener socketioSuccess = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            JSONObject obj = (JSONObject) args[0];
+            Log.w("ChatFragment", "Succes Result: " + obj.toString());
+        }
+    };
+
+    private final Emitter.Listener socketioError = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            JSONObject obj = (JSONObject) args[0];
+            Log.w("ChatFragment", "Error Result: " + obj.toString());
+        }
+    };
+
+    private final Emitter.Listener socketioDisconnect = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            Log.i("Chatfragment", "Socket disconnected");
+        }
+    };
+
+    private Socket mSocket;
+
+    {
+        try {
+            mSocket = IO.socket("https://sockets.primedice.com");
+
+            mSocket.on(Socket.EVENT_CONNECT, socketioConnect)         // Connect sockets
+                    .on("tip", socketioTip)                           // Get tip
+                    .on("bet", socketioBet)                           // Add bets to all bets or highrollers
+                    .on("deposit", socketioDeposit)                   // Get information about deposit
+
+                    .on("alert", socketioAlert)                       // ...??
+                    .on("success", socketioSuccess)                   // ...??
+                    .on("err", socketioError)                         // ...??
+
+                    .on(Socket.EVENT_DISCONNECT, socketioDisconnect); // Disconnect sockets
+                    //.on("stats", socketioStats)                     // Get stats from site (bets in 24h and wagered)
+
+                /*
+                    private final Emitter.Listener socketioStats = new Emitter.Listener() {
+                    @Override
+                    public void call(Object... args) {
+                        JSONObject obj = (JSONObject) args[0];
+                        // This gets stats (BTC WON LAST 24 HOURS)
+                        //Stats Result: {"bets24":19462106,"wagered24":1.1444498764200024E11}
+                        }
+                    };
+                */
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+    }
+
+    // TODO: General things to complete this application:
+    // Encrypt access_token
+    // Improve chat
+    // Automated betting
+    // Register account
+    // Set password
+    // Set Email
+    // Set Emergency adress
+    // Use 2FA Authentication
+    // Implement Affiliate information
+    // Get deposits/withdrawals
+    // Change seed
+    // Claim faucet
 }
+
