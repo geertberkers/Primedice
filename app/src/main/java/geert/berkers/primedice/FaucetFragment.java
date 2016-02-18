@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 /**
  * Primedice Application Created by Geert on 2-2-2016.
  */
+//TODO: Implement faucet
 public class FaucetFragment extends Fragment {
 
     private View view;
@@ -29,5 +30,15 @@ public class FaucetFragment extends Fragment {
 
         //TextView txtWins = (TextView)  view.findViewById(R.id.txtWins);
     }
+
+    public void updateBalance(final String balance) {
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                //txtBalance.setText(balance);
+            }
+        });
+    }
+
 }
 

@@ -3,8 +3,10 @@ package geert.berkers.primedice;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.text.DecimalFormat;
 
 /**
@@ -53,8 +55,6 @@ public class User implements Parcelable {
             this.server = jsonUser.getString("server");
             this.otp_token = jsonUser.getString("otp_token");
             this.otp_qr = jsonUser.getString("otp_qr");
-
-            Log.i("User", this.toString());
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -64,7 +64,7 @@ public class User implements Parcelable {
     public User(boolean yourself, String jsonUserString) {
         Log.i("Info", "Own account: " + String.valueOf(yourself));
 
-        try{
+        try {
             JSONObject json = new JSONObject(jsonUserString);
             JSONObject jsonUser = json.getJSONObject("user");
 
@@ -79,15 +79,13 @@ public class User implements Parcelable {
             this.win_risk = jsonUser.getInt("win_risk");
             this.lose_risk = jsonUser.getInt("lose_risk");
             this.messages = jsonUser.getInt("messages");
-        }
-        catch (JSONException ex)
-        {
+        } catch (JSONException ex) {
             Log.e("JSONError", ex.toString());
         }
     }
 
     // Create user from parcel
-    public User(Parcel read){
+    public User(Parcel read) {
         this.userID = read.readInt();
         this.username = read.readString();
         this.balance = read.readDouble();
@@ -119,18 +117,18 @@ public class User implements Parcelable {
     }
 
     // Create from parcel
-    public static final Parcelable.Creator<User> CREATOR = new Parcelable.Creator<User>(){
+    public static final Parcelable.Creator<User> CREATOR = new Parcelable.Creator<User>() {
 
-                @Override
-                public User createFromParcel(Parcel source) {
-                    return new User(source);
-                }
+        @Override
+        public User createFromParcel(Parcel source) {
+            return new User(source);
+        }
 
-                @Override
-                public User[] newArray(int size) {
-                    return new User[size];
-                }
-            };
+        @Override
+        public User[] newArray(int size) {
+            return new User[size];
+        }
+    };
 
     @Override
     public int describeContents() {
@@ -142,19 +140,35 @@ public class User implements Parcelable {
         arg0.writeInt(userID);
         arg0.writeString(username);
         arg0.writeDouble(balance);
-        if(password)  { arg0.writeString("Y"); } else { arg0.writeString("N"); }
+        if (password) {
+            arg0.writeString("Y");
+        } else {
+            arg0.writeString("N");
+        }
         arg0.writeString(address);
         arg0.writeString(registered);
-        if(otp_enabled)  { arg0.writeString("Y"); } else { arg0.writeString("N"); }
-        if(email_enabled)  { arg0.writeString("Y"); } else { arg0.writeString("N"); }
-        if(address_enabled)  { arg0.writeString("Y"); } else { arg0.writeString("N"); }
+        if (otp_enabled) {
+            arg0.writeString("Y");
+        } else {
+            arg0.writeString("N");
+        }
+        if (email_enabled) {
+            arg0.writeString("Y");
+        } else {
+            arg0.writeString("N");
+        }
+        if (address_enabled) {
+            arg0.writeString("Y");
+        } else {
+            arg0.writeString("N");
+        }
         arg0.writeLong(wagered);
         arg0.writeDouble(profit);
         arg0.writeInt(bets);
         arg0.writeInt(wins);
-        arg0.writeInt(losses );
-        arg0.writeInt(win_risk );
-        arg0.writeInt(lose_risk );
+        arg0.writeInt(losses);
+        arg0.writeInt(win_risk);
+        arg0.writeInt(lose_risk);
         arg0.writeInt(messages);
         arg0.writeInt(referred);
         arg0.writeDouble(affiliate_total);
@@ -170,7 +184,7 @@ public class User implements Parcelable {
     }
 
     public boolean updateUser(JSONObject jsonUser) {
-        try{
+        try {
             this.userID = jsonUser.getInt("userid");
             this.username = jsonUser.getString("username");
             this.balance = jsonUser.getDouble("balance");
@@ -198,8 +212,7 @@ public class User implements Parcelable {
             this.next_seed = jsonUser.getString("next_seed");
             this.server = jsonUser.getString("server");
             return true;
-        }
-        catch (Exception ex){
+        } catch (Exception ex) {
             Log.e("Error", ex.toString());
             return false;
         }
@@ -215,7 +228,7 @@ public class User implements Parcelable {
     }
 
     public String getProfit() {
-        return satToBTC((int)profit);
+        return satToBTC((int) profit);
     }
 
     public String getBalance() {
@@ -250,8 +263,7 @@ public class User implements Parcelable {
         StringBuilder str = new StringBuilder(id);
         int idx = str.length() - 3;
 
-        while (idx > 0)
-        {
+        while (idx > 0) {
             str.insert(idx, ",");
             idx = idx - 3;
         }
@@ -263,7 +275,7 @@ public class User implements Parcelable {
         DecimalFormat format = new DecimalFormat("0.00000000");
 
         String resultBTC = format.format(satoshi / 100000000);
-        resultBTC = resultBTC.replace(",",".");
+        resultBTC = resultBTC.replace(",", ".");
 
         return resultBTC;
     }
@@ -271,13 +283,27 @@ public class User implements Parcelable {
     public String getLuck() {
         DecimalFormat format = new DecimalFormat("0.00");
 
-        double luckValue = (double) win_risk/lose_risk*100;
+        double luckValue = (double) win_risk / lose_risk * 100;
 
         String luck = format.format(luckValue);
         luck = luck.replace(",", ".");
         luck = luck + "%";
 
         return luck;
+    }
+
+    public String getUsername(){
+        return  username;
+    }
+
+    public void updateSeeds(String client, String previous_server, String previous_client, String previous_server_hashed, String next_seed, String server) {
+        this.nonce = 0;
+        this.client = client;
+        this.previous_server = previous_server;
+        this.previous_client = previous_client;
+        this.previous_server_hashed = previous_server_hashed;
+        this.next_seed = next_seed;
+        this.server = server;
     }
 
     public void updateUserBalance(String balance) {

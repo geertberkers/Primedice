@@ -1,10 +1,189 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:background="@color/white">
 
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="Not implemented yet!"/>
-</LinearLayout>
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Provably fair"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/colorPrimary" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="Primedice employs a simple system for verification of bets. Server seeds are hashed and shown before a bet and the user can pick any seed they want. Server seed hashes are color-coded in-browser to simplify checking if the seed you see is the same. " />
+
+        <TextView
+            android:id="@+id/txtChangeSeed"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:layout_marginTop="10dp"
+            android:textColor="@color/link_blue"
+            android:text="Rerandomize (Change client seed)" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Current seed pair"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginBottom="10dp"
+            android:background="@color/colorPrimary" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="CLIENT SEED"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/txtClientseed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/generate_formula_bg"
+            android:text="hc8cqCEIAS49nBGsxhcHauFOJObkIG" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="SERVER SEED SHA-256 HASH"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/txtServerseed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/generate_formula_bg"
+            android:text="7d00ab2b27e5dbced84c3197dd4244af171d14fab03c7c7383dc4a95c831a768" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="BETS MADE WITH PAIR"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/txtBetsMade"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/generate_formula_bg"
+            android:text="2.500" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Previous seed pair"
+            android:textSize="24sp"
+            android:layout_marginTop="10dp"
+            android:textStyle="bold" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginBottom="10dp"
+            android:background="@color/colorPrimary" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="CLIENT SEED"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/txtPreviousClientseed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/generate_formula_bg"
+            android:text="hc8cqCEIAS49nBGsxhcHauFOJObkIG" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="SERVER SEED REVEALED"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/txtPreviousServerseedRevealed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/generate_formula_bg"
+            android:text="7d00ab2b27e5dbced84c3197dd4244af171d14fab03c7c7383dc4a95c831a768" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="SERVER SEED SHA-256 HASH"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/txtPreviousServerseedHashed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/generate_formula_bg"
+            android:text="7d00ab2b27e5dbced84c3197dd4244af171d14fab03c7c7383dc4a95c831a768" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Previous Bet Lookup"
+            android:textSize="24sp"
+            android:layout_marginTop="10dp"
+            android:textStyle="bold" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginBottom="10dp"
+            android:background="@color/colorPrimary" />
+        
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="You can use bet look up to verify the integrity of older rolls."/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:weightSum="1">
+
+            <EditText
+                android:id="@+id/edBetID"
+                android:layout_weight="0.7"
+                android:layout_width="0dip"
+                android:layout_height="wrap_content"
+                android:hint="Bet ID"/>
+
+            <Button
+                android:id="@+id/btnBetLookup"
+                android:layout_weight="0.3"
+                android:layout_width="0dip"
+                android:layout_height="match_parent"
+                android:text="LOOKUP"/>
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

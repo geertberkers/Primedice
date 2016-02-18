@@ -1,10 +1,378 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical">
 
-    <TextView
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="Not implemented yet!"/>
-</LinearLayout>
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:orientation="vertical">
+
+            <!-- Fragment info -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginBottom="10dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Automated Betting"
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/txtAutomatedBetHelp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:text="[?]"
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/colorPrimary" />
+
+            <!-- Balance info-->
+            <RelativeLayout
+                android:id="@+id/balanceLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bet_background_balance">
+
+                <ImageView
+                    android:id="@+id/btnFaucet"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:clickable="true"
+                    android:contentDescription="@string/faucet"
+                    android:onClick="claimFaucet"
+                    android:src="@drawable/btnfaucet" />
+
+                <View
+                    android:id="@+id/action_divider"
+                    android:layout_width="2dp"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/btnFaucet"
+                    android:layout_alignTop="@+id/btnFaucet"
+                    android:layout_toEndOf="@+id/btnFaucet"
+                    android:layout_toRightOf="@+id/btnFaucet"
+                    android:background="@drawable/bet_background_balance" />
+
+                <TextView
+                    android:id="@+id/txtBalance"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/btnFaucet"
+                    android:layout_alignTop="@+id/btnFaucet"
+                    android:layout_marginEnd="30dp"
+                    android:layout_marginRight="30dp"
+                    android:layout_toEndOf="@+id/btnFaucet"
+                    android:layout_toRightOf="@+id/btnFaucet"
+                    android:gravity="center"
+                    android:text="@string/zero_btc"
+                    android:textAppearance="?android:textAppearanceLarge"
+                    android:textColor="@color/white"
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
+            </RelativeLayout>
+
+            <!-- Bet info -->
+            <LinearLayout
+                android:id="@+id/betLayout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <Button
+                    android:id="@+id/btnHighLow"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/bet_background_under_over"
+                    android:text="@string/undertwotimepayout"
+                    android:layout_marginBottom="10dp" />
+
+                <!-- Buttons -->
+                <LinearLayout
+                    android:id="@+id/betInformationLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+
+                    android:weightSum="1">
+
+                    <Button
+                        android:id="@+id/btnMultiplier"
+                        android:layout_width="0dip"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.5"
+                        android:drawableTop="@drawable/change"
+                        android:text="@string/multiplier_two" />
+
+                    <Button
+                        android:id="@+id/btnPercentage"
+                        android:layout_width="0dip"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.5"
+                        android:drawableTop="@drawable/change"
+                        android:text="@string/percentage" />
+
+                </LinearLayout>
+
+                <!-- Base Bet info -->
+                <LinearLayout
+                    android:id="@+id/baseBetLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:weightSum="1">
+
+                    <TextView
+                        android:layout_width="0dip"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.5"
+                        android:text="BASE BET" />
+
+                    <EditText
+                        android:id="@+id/edBetAmount"
+                        android:layout_width="0dip"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.5"
+                        android:gravity="center"
+                        android:inputType="numberDecimal"
+                        android:text="@string/zero_btc"
+                        android:textColor="@color/black" />
+
+                </LinearLayout>
+
+                <!-- Extra info -->
+                <LinearLayout
+                    android:id="@+id/numberOfRollsLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <CheckBox
+                        android:id="@+id/cbLimitRolls"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:checked="false"
+                        android:text="Limit number of rolls" />
+
+                    <LinearLayout
+                        android:id="@+id/numberOfRollsSetLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:visibility="visible"
+                        android:weightSum="1">
+
+                        <TextView
+                            android:layout_width="0dip"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="0.5"
+                            android:text="NUMBER OF ROLLS" />
+
+                        <EditText
+                            android:id="@+id/edNumberOfRolls"
+                            android:layout_width="0dip"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="0.5"
+                            android:gravity="center"
+                            android:inputType="numberDecimal"
+                            android:text="10"
+                            android:textColor="@color/black" />
+
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- On Loss -->
+                <LinearLayout
+                    android:id="@+id/onLossLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="On Loss"
+                        android:textStyle="bold" />
+
+                    <CheckBox
+                        android:id="@+id/cbReturnBaseLoss"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="Return to Base" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal">
+
+                        <CheckBox
+                            android:id="@+id/cbIncreaseLoss"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:checked="false"
+                            android:text="Increase by" />
+
+                        <EditText
+                            android:id="@+id/edIncreaseBetLoss"
+                            android:layout_width="50dp"
+                            android:layout_height="match_parent"
+                            android:enabled="false"
+                            android:gravity="center"
+                            android:inputType="numberDecimal"
+                            android:text="0"
+                            android:textColor="@color/black" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center_vertical"
+                            android:text="%" />
+
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- On Win -->
+                <LinearLayout
+                    android:id="@+id/onWinLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="On Win"
+                        android:textStyle="bold" />
+
+                    <CheckBox
+                        android:id="@+id/cbReturnBaseWin"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="Return to Base" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal">
+
+                        <CheckBox
+                            android:id="@+id/cbIncreaseWin"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:checked="false"
+                            android:text="Increase by" />
+
+                        <EditText
+                            android:id="@+id/edIncreaseBetWin"
+                            android:layout_width="50dp"
+                            android:layout_height="match_parent"
+                            android:enabled="false"
+                            android:gravity="center"
+                            android:inputType="numberDecimal"
+                            android:text="0"
+                            android:textColor="@color/black" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center_vertical"
+                            android:text="%" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="20dp"
+                    android:orientation="vertical">
+
+                    <Button
+                        android:id="@+id/btnRollDice"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:onClick="rollDice"
+                        android:text="@string/roll_dice" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:singleLine="false"
+                        android:text="@string/autobet_limited_info" />
+                </LinearLayout>
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <!-- Resent bets info -->
+            <LinearLayout
+                android:id="@+id/viewBetInfo"
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                android:background="@color/primedicecolor"
+                android:weightSum="1">
+
+                <TextView
+                    android:id="@+id/lblBetID"
+                    android:layout_width="0dip"
+                    android:layout_height="match_parent"
+                    android:layout_weight="0.33"
+                    android:gravity="center"
+                    android:text="Bet ID"
+                    android:textAppearance="?android:textAppearanceMedium" />
+
+                <TextView
+                    android:id="@+id/lblPlayer"
+                    android:layout_width="0dip"
+                    android:layout_height="match_parent"
+                    android:layout_weight="0.33"
+                    android:gravity="center"
+                    android:text="User"
+                    android:textAppearance="?android:textAppearanceMedium" />
+
+                <TextView
+                    android:id="@+id/lblProfit"
+                    android:layout_width="0dip"
+                    android:layout_height="match_parent"
+                    android:layout_weight="0.33"
+                    android:gravity="center"
+                    android:text="Profit"
+                    android:textAppearance="?android:textAppearanceMedium" />
+
+            </LinearLayout>
+
+            <!-- Recent bets -->
+            <ListView
+                android:id="@+id/betsListView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:scrollbars="none" />
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

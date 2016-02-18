@@ -24,7 +24,6 @@
                 android:padding="25dp"
                 android:gravity="center"
                 android:layout_height="100dp"
-
                 android:textColor="@color/white"
                 android:id="@+id/txtNotification"
                 android:layout_width="match_parent"

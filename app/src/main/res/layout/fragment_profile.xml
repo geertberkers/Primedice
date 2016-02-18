@@ -1,10 +1,384 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:layout_height="match_parent"
+    android:background="@color/white">
 
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="Not implemented yet!"/>
-</LinearLayout>
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- Date joined and password -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/txtUsername"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_gravity="center"
+                android:text="Username's Account"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+
+            <View
+                android:id="@+id/usernameDivider"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_below="@+id/txtUsername"
+                android:layout_marginBottom="10dp"
+                android:layout_marginTop="10dp"
+                android:background="@color/colorPrimary" />
+
+
+            <TextView
+                android:id="@+id/lblDateJoined"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/usernameDivider"
+                android:layout_marginEnd="20dp"
+                android:layout_marginRight="20dp"
+                android:text="DATE JOINED"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txtDateJoined"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignTop="@+id/lblDateJoined"
+                android:layout_toEndOf="@+id/lblDateJoined"
+                android:layout_toRightOf="@+id/lblDateJoined"
+                android:text="31-01-2016"
+                android:textStyle="bold" />
+
+            <View
+                android:id="@+id/dateDivider"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_below="@+id/txtDateJoined"
+                android:layout_marginTop="10dp"
+                android:background="@color/colorPrimary" />
+
+            <TextView
+                android:id="@+id/lblPassword"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignBottom="@+id/btnSetPassword"
+                android:layout_alignParentBottom="false"
+                android:layout_alignTop="@+id/btnSetPassword"
+                android:layout_below="@id/dateDivider"
+                android:gravity="center_vertical"
+                android:text="PASSWORD"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btnSetPassword"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignLeft="@+id/txtDateJoined"
+                android:layout_alignStart="@+id/txtDateJoined"
+                android:layout_below="@id/dateDivider"
+                android:text="SET"
+                android:textStyle="bold" />
+
+            <View
+                android:id="@+id/passwordDivider"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_below="@+id/btnSetPassword"
+                android:layout_marginTop="10dp"
+                android:background="@color/colorPrimary" />
+
+            <TextView
+                android:id="@+id/lblEmail"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignBottom="@+id/btnEmail"
+                android:layout_alignParentBottom="false"
+                android:layout_alignTop="@+id/btnEmail"
+                android:layout_below="@id/passwordDivider"
+                android:gravity="center_vertical"
+                android:text="EMAIL"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btnEmail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignLeft="@+id/txtDateJoined"
+                android:layout_alignStart="@+id/txtDateJoined"
+                android:layout_below="@id/passwordDivider"
+                android:text="SET" />
+        </RelativeLayout>
+
+        <View
+            android:id="@+id/emailDivider"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/colorPrimary" />
+
+        <!-- Security -->
+        <RelativeLayout
+            android:id="@+id/securityLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="10dp"
+            android:paddingTop="10dp">
+
+            <TextView
+                android:id="@+id/lblSecurity"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:text="SECURITY"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/securityPlus"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_marginEnd="10dp"
+                android:layout_marginRight="10dp"
+                android:gravity="end"
+                android:text="+"
+                android:textStyle="bold" />
+        </RelativeLayout>
+
+        <View
+            android:id="@+id/securityDivider"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/colorPrimary" />
+
+        <!-- Security Opened-->
+        <RelativeLayout
+            android:id="@+id/showedSecurityLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/lblTwoFactor"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignBottom="@+id/btnTwoFactor"
+                android:layout_alignParentBottom="false"
+                android:layout_alignTop="@+id/btnTwoFactor"
+                android:layout_marginEnd="20dp"
+                android:layout_marginRight="20dp"
+                android:gravity="center_vertical"
+                android:text="PASSWORD"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btnTwoFactor"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_toEndOf="@id/lblTwoFactor"
+                android:layout_toRightOf="@id/lblTwoFactor"
+                android:text="TWO-FACTOR" />
+
+            <TextView
+                android:id="@+id/txtTwoFactorSet"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_toEndOf="@id/lblTwoFactor"
+                android:layout_toRightOf="@id/lblTwoFactor"
+                android:text="Enabled"
+                android:layout_alignBottom="@+id/btnTwoFactor"
+                android:layout_alignParentBottom="false"
+                android:layout_alignTop="@+id/btnTwoFactor"
+                android:gravity="center_vertical"
+                android:textStyle="bold" />
+            <View
+                android:id="@+id/securityOpenedDivider"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_below="@id/btnTwoFactor"
+                android:background="@color/colorPrimary" />
+
+
+            <TextView
+                android:id="@+id/lblSetEmergencyAddress"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignBottom="@+id/btnSetEmergencyAddress"
+                android:layout_alignParentBottom="false"
+                android:layout_alignTop="@+id/btnSetEmergencyAddress"
+                android:layout_below="@id/securityOpenedDivider"
+                android:gravity="center_vertical"
+                android:text="EMERGENCY\nADDRESS"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btnSetEmergencyAddress"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignLeft="@+id/btnTwoFactor"
+                android:layout_alignStart="@+id/btnTwoFactor"
+                android:layout_below="@id/securityOpenedDivider"
+                android:text="Change" />
+
+            <TextView
+                android:id="@+id/txtEmergencyAddressSet"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignLeft="@+id/btnTwoFactor"
+                android:layout_alignStart="@+id/btnTwoFactor"
+                android:layout_below="@id/securityOpenedDivider"
+                android:layout_alignBottom="@+id/btnSetEmergencyAddress"
+                android:layout_alignParentBottom="false"
+                android:layout_alignTop="@+id/btnSetEmergencyAddress"
+                android:gravity="center_vertical"
+                android:text="Enabled"
+                android:textStyle="bold"  />
+
+        </RelativeLayout>
+        <!-- Logs -->
+        <RelativeLayout
+            android:id="@+id/logsLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="10dp"
+            android:paddingTop="10dp">
+
+            <TextView
+                android:id="@+id/lblLogs"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:text="LOGS"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/logsPlus"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_marginEnd="10dp"
+                android:layout_marginRight="10dp"
+                android:gravity="right"
+                android:text="+"
+                android:textStyle="bold" />
+        </RelativeLayout>
+
+        <View
+            android:id="@+id/logsDivider"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/colorPrimary" />
+
+        <!-- Logs Opened -->
+        <LinearLayout
+            android:id="@+id/showedLogsLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/btnTransactionLog"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="TRANSACTION LOG" />
+
+            <Button
+                android:id="@+id/btnTipLog"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="TIPS LOG" />
+        </LinearLayout>
+
+        <!-- Affiliate -->
+        <RelativeLayout
+            android:id="@+id/affiliateLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="10dp"
+            android:paddingTop="10dp">
+
+            <TextView
+                android:id="@+id/lblAffiliate"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:text="AFFILIATE"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/affiliatePlus"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_marginEnd="10dp"
+                android:layout_marginRight="10dp"
+                android:gravity="right"
+                android:text="+"
+                android:textStyle="bold" />
+        </RelativeLayout>
+
+        <View
+            android:id="@+id/affiliateDivider"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/colorPrimary" />
+
+        <!-- Affiliate Opened -->
+        <LinearLayout
+            android:id="@+id/showedAffiliateLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Primedice offers state of the art affiliate system. You will forever receive commision from every user you refer. Every bet they make you will receive a percentage. This is regardless of whether the bet they make is a win or a loss." />
+
+
+            <TextView
+                android:id="@+id/showAffiliateInformation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="View your affiliate dashboard"
+                android:textColor="@color/link_blue" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Affiliate link"
+                android:textStyle="bold" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/colorPrimary" />
+
+            <TextView
+                android:id="@+id/affiliateLink"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:text="https://primedice.com/?ref=GeertBank"
+                android:textColor="@color/link_blue" />
+
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btnContactSupport"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="10dp"
+            android:text="CONTACT SUPPORT" />
+
+    </LinearLayout>
+</ScrollView>

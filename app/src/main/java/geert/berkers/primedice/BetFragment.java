@@ -62,15 +62,15 @@ public class BetFragment extends Fragment {
     private TextView txtBalance, txtMyBets, txtAllBets, txtHighRollers;
     private Button btnDeposit, btnWithdraw, btnHalfBet, btnDoubleBet, btnMaxBet, btnHighLow, btnMultiplier, btnPercentage, btnRollDice;
 
-    //TODO: Check if this can be done once. Not every time when opened
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        this.view = inflater.inflate(R.layout.fragment_bet, container, false);
+        if(view == null) {
+            this.view = inflater.inflate(R.layout.fragment_bet, container, false);
 
-        initControls();
-        setListeners();
-        setInformation();
-
+            initControls();
+            setListeners();
+            setInformation();
+        }
         return view;
     }
 
@@ -700,7 +700,6 @@ public class BetFragment extends Fragment {
     }
 
     // Add bet to the list and show if opened
-    //TODO: (Later) Update UI graphics. Scroll to position in stead of adding it
     public void addBet(Bet b, boolean highRoller) {
         if (highRoller) {
             this.hrBets.remove(hrBets.size() - 1);
@@ -727,5 +726,14 @@ public class BetFragment extends Fragment {
                 }
             });
         }
+    }
+
+    public void updateBalance(final String balance) {
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                txtBalance.setText(balance);
+            }
+        });
     }
 }

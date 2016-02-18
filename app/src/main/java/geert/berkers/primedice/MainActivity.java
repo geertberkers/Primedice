@@ -40,7 +40,6 @@ import java.net.URISyntaxException;
 import java.text.DecimalFormat;
 import java.util.concurrent.ExecutionException;
 
-
 /**
  * Primedice Application Created by Geert on 2-2-2016.
  */
@@ -302,7 +301,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         int backStackIndex = backStack - 1;
 
         if (menuAdapter.getItem(position).equals("Bet")) {
-            manager.popBackStack("Bet", 0);
+            manager.popBackStack("Bet",0);
         } else if (menuAdapter.getItem(position).equals("Profile")) {
             showFragment(profileFragment, backStackIndex, "Profile");
         } else if (menuAdapter.getItem(position).equals("Stats")) {
@@ -322,7 +321,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             logOut(this);
         }
 
-        menuAdapter.setSelectedMenuItem(menuAdapter.getItem(position));
+        if(!menuAdapter.getItem(position).equals("Tip Developer")){
+            menuAdapter.setSelectedMenuItem(menuAdapter.getItem(position));
+        }
+
         drawerLayout.closeDrawer(drawer);
     }
 
@@ -446,17 +448,30 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         });
     }
 
+    // Update balance in opened fragment
     private void updateBalanceInOpenedFragment() {
-        //TODO: Update balance in opened fragment
+
+        String currentFragment = manager.getBackStackEntryAt(manager.getBackStackEntryCount()-1).getName();
+
+        String balance = user.getBalance();
+
+        // These fragments have no current balance: Profile, Stats, Chat, Provably fair
+        switch (currentFragment) {
+            case "Bet": betFragment.updateBalance(balance); break;
+            case "Automated betting": automatedBetFragment.updateBalance(balance); break;
+            case "Faucet": faucetFragment.updateBalance(balance); break;
+            default: break;
+        }
     }
 
     private final Emitter.Listener socketioConnect = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
-            Log.i("ChatFragment", "Socket connected");
+            Log.i("MainActivity", "Socket connected");
             mSocket.emit("user", access_token);
             mSocket.emit("chat");
             mSocket.emit("stats");
+            mSocket.emit("alert");
         }
     };
 
@@ -464,7 +479,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         @Override
         public void call(Object... args) {
             final JSONObject obj = (JSONObject) args[0];
-            Log.i("ChatFragment", "TIP Result: " + obj.toString());
+            Log.i("MainActivity", "TIP Result: " + obj.toString());
 
             try {
                 String sendername = obj.getString("sender");
@@ -516,7 +531,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         @Override
         public void call(Object... args) {
             JSONObject obj = (JSONObject) args[0];
-            Log.i("ChatFragment", "Deposit Result: " + obj.toString());
+            Log.i("MainActivity", "Deposit Result: " + obj.toString());
 
             try {
                 boolean acredited = obj.getBoolean("acredited");
@@ -551,7 +566,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         @Override
         public void call(Object... args) {
             JSONObject obj = (JSONObject) args[0];
-            Log.w("ChatFragment", "Alert Result: " + obj.toString());
+            Log.w("MainActivity", "Alert Result: " + obj.toString());
         }
     };
 
@@ -559,7 +574,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         @Override
         public void call(Object... args) {
             JSONObject obj = (JSONObject) args[0];
-            Log.w("ChatFragment", "Succes Result: " + obj.toString());
+            Log.w("MainActivity", "Succes Result: " + obj.toString());
         }
     };
 
@@ -567,14 +582,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         @Override
         public void call(Object... args) {
             JSONObject obj = (JSONObject) args[0];
-            Log.w("ChatFragment", "Error Result: " + obj.toString());
+            Log.w("MainActivity", "Error Result: " + obj.toString());
         }
     };
 
     private final Emitter.Listener socketioDisconnect = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
-            Log.i("Chatfragment", "Socket disconnected");
+            Log.i("MainActivity", "Socket disconnected");
         }
     };
 
@@ -592,20 +607,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     .on("alert", socketioAlert)                       // ...??
                     .on("success", socketioSuccess)                   // ...??
                     .on("err", socketioError)                         // ...??
-
+                    .on("onError", socketioError)                         // ...??
                     .on(Socket.EVENT_DISCONNECT, socketioDisconnect); // Disconnect sockets
                     //.on("stats", socketioStats)                     // Get stats from site (bets in 24h and wagered)
 
-                /*
-                    private final Emitter.Listener socketioStats = new Emitter.Listener() {
-                    @Override
-                    public void call(Object... args) {
-                        JSONObject obj = (JSONObject) args[0];
-                        // This gets stats (BTC WON LAST 24 HOURS)
-                        //Stats Result: {"bets24":19462106,"wagered24":1.1444498764200024E11}
-                        }
-                    };
-                */
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
@@ -619,15 +624,24 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     // TODO: General things to complete this application:
     // Encrypt access_token
     // Improve chat
-    // Automated betting
-    // Register account
-    // Set password
-    // Set Email
-    // Set Emergency adress
-    // Use 2FA Authentication
-    // Implement Affiliate information
-    // Get deposits/withdrawals
-    // Change seed
+
+    // Register account (Add in login activity)
     // Claim faucet
+
+    // Update UI
+    // - Check differences with site and fix it
+    // - Update chat UI
+    // - Scroll to new bet when adding it
+
+    /*
+    private final Emitter.Listener socketioStats = new Emitter.Listener() {
+    @Override
+    public void call(Object... args) {
+       JSONObject obj = (JSONObject) args[0];
+       // This gets stats (BTC WON LAST 24 HOURS)
+       //Stats Result: {"bets24":19462106,"wagered24":1.1444498764200024E11}
+    }};
+
+    */
 }
 

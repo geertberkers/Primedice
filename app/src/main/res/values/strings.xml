@@ -59,4 +59,5 @@
     <string name="reset">Reset</string>
     <string name="action_send">Send</string>
     <string name="prompt_message">Message</string>
+    <string name="autobet_limited_info">If rolls aren\'t limited, rolling will continue until you repress the roll button or your session is ended.</string>
 </resources>

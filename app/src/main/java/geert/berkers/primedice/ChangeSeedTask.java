@@ -14,25 +14,23 @@ import java.net.URLEncoder;
 /**
  * Primedice Application Created by Geert on 26-1-2016.
  */
-public class PlaceBetTask extends AsyncTask<String, Void, String> {
+public class ChangeSeedTask extends AsyncTask<String, Void, String> {
 
     HttpURLConnection connection;
 
     @Override
     protected String doInBackground(String... params) {
-        return placeBetUpdateUser(params[0], params[1], params[2], params[3]);
+        return placeBetUpdateUser(params[0], params[1]);
     }
 
-    public String placeBetUpdateUser(String betURL, String amount, String target, String condition) {
+    public String placeBetUpdateUser(String URL, String seed) {
         String betResult = null;
 
         try {
-            URL url = new URL(betURL);
+            URL url = new URL(URL);
 
             String urlParameters =
-                    "amount=" + URLEncoder.encode(amount, "UTF-8") +
-                            "&target=" + URLEncoder.encode(target, "UTF-8") +
-                            "&condition=" + URLEncoder.encode(condition, "UTF-8");
+                    "seed=" + URLEncoder.encode(seed, "UTF-8");
 
             connection = (HttpURLConnection) url.openConnection();
             connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
@@ -64,6 +62,8 @@ public class PlaceBetTask extends AsyncTask<String, Void, String> {
             Log.i("response", betResult);
 
         } catch (Exception ex) {
+
+            Log.e("Exception", ex.toString());
             ex.printStackTrace();
 
         } finally {
