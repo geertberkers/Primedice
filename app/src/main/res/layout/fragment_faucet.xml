@@ -1,11 +1,87 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:layout_height="match_parent"
+    android:background="@color/white">
 
-    <TextView
+    <!-- BTC balance info -->
+    <RelativeLayout
+        android:id="@+id/balanceLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="20dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/bet_background_balance">
+
+        <ImageView
+            android:id="@+id/btnFaucet"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:contentDescription="@string/faucet"
+            android:src="@drawable/btnfaucet" />
+
+        <View
+            android:id="@+id/action_divider"
+            android:layout_width="2dp"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/btnFaucet"
+            android:layout_alignTop="@+id/btnFaucet"
+            android:layout_toEndOf="@+id/btnFaucet"
+            android:layout_toRightOf="@+id/btnFaucet"
+            android:background="@drawable/bet_background_balance" />
+
+        <TextView
+            android:id="@+id/txtBalance"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/btnFaucet"
+            android:layout_alignTop="@+id/btnFaucet"
+            android:layout_marginEnd="30dp"
+            android:layout_marginRight="30dp"
+            android:layout_toEndOf="@+id/btnFaucet"
+            android:layout_toRightOf="@+id/btnFaucet"
+            android:gravity="center"
+            android:text="@string/zero_btc"
+            android:textAppearance="?android:textAppearanceLarge"
+            android:textColor="@color/white"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+    </RelativeLayout>
+
+    <WebView
+        android:id="@+id/faucetWebView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="Not implemented yet!"/>
-</LinearLayout>
+        android:layout_below="@+id/balanceLayout"
+        android:layout_above="@+id/buttonLayout" />
+
+    <LinearLayout
+        android:id="@+id/buttonLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal"
+        android:weightSum="1">
+
+        <Button
+            android:text="CLAIM"
+            android:id="@+id/btnClaimFaucet"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@+id/btnCancelFaucet"
+            android:layout_weight="0.5" />
+
+        <Button
+            android:text="REFRESH"
+            android:id="@+id/btnCancelFaucet"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@+id/btnClaimFaucet"
+            android:layout_weight="0.5" />
+    </LinearLayout>
+</RelativeLayout>

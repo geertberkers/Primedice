@@ -1,5 +1,6 @@
 package geert.berkers.primedice;
 
+import android.net.UrlQuerySanitizer;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -14,23 +15,22 @@ import java.net.URLEncoder;
 /**
  * Primedice Application Created by Geert on 26-1-2016.
  */
-class ChangeSeedTask extends AsyncTask<String, Void, String> {
+class ClaimFaucetTask extends AsyncTask<String, Void, String> {
 
     private HttpURLConnection connection;
 
     @Override
     protected String doInBackground(String... params) {
-        return changeSeed(params[0], params[1]);
+        return claimFaucet(params[0], params[1]);
     }
 
-    private String changeSeed(String URL, String seed) {
+    private String claimFaucet(String URL, String faucetResponse) {
         String result = null;
 
         try {
             URL url = new URL(URL);
 
-            String urlParameters =
-                    "seed=" + URLEncoder.encode(seed, "UTF-8");
+            String urlParameters = "response=" + URLEncoder.encode(faucetResponse, "UTF-8");
 
             connection = (HttpURLConnection) url.openConnection();
             connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
@@ -59,12 +59,12 @@ class ChangeSeedTask extends AsyncTask<String, Void, String> {
             bufferedReader.close();
 
             result = response.toString();
-            Log.i("response", result);
+           // Log.i("response", result);
 
         } catch (Exception ex) {
 
             Log.e("Exception", ex.toString());
-            ex.printStackTrace();
+            //ex.printStackTrace();
 
         } finally {
 

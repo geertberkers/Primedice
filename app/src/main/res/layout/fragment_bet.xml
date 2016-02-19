@@ -28,7 +28,6 @@
                 android:layout_height="wrap_content"
                 android:clickable="true"
                 android:contentDescription="@string/faucet"
-                android:onClick="claimFaucet"
                 android:src="@drawable/btnfaucet" />
 
             <View

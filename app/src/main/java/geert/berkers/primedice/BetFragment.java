@@ -71,6 +71,9 @@ public class BetFragment extends Fragment {
             setListeners();
             setInformation();
         }
+
+        txtBalance.setText(activity.getUser().getBalance());
+
         return view;
     }
 

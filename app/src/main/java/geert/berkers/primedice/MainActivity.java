@@ -459,7 +459,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         switch (currentFragment) {
             case "Bet": betFragment.updateBalance(balance); break;
             case "Automated betting": automatedBetFragment.updateBalance(balance); break;
-            case "Faucet": faucetFragment.updateBalance(balance); break;
+            //case "Faucet": faucetFragment.updateBalance(balance); break;
             default: break;
         }
     }
@@ -628,6 +628,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     // Register account (Add in login activity)
     // Claim faucet
+    // Timer faucet
 
     // Update UI
     // - Check differences with site and fix it

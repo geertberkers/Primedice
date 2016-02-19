@@ -53,8 +53,13 @@ public class User implements Parcelable {
             this.previous_server_hashed = jsonUser.getString("previous_server_hashed");
             this.next_seed = jsonUser.getString("next_seed");
             this.server = jsonUser.getString("server");
-            this.otp_token = jsonUser.getString("otp_token");
-            this.otp_qr = jsonUser.getString("otp_qr");
+            try {
+                this.otp_token = jsonUser.getString("otp_token");
+                this.otp_qr = jsonUser.getString("otp_qr");
+            } catch (Exception ex) {
+                Log.i("2FA otp","Two Factor Authentication already set.");
+            }
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -290,8 +295,8 @@ public class User implements Parcelable {
         return luck;
     }
 
-    public String getUsername(){
-        return  username;
+    public String getUsername() {
+        return username;
     }
 
     public void updateSeeds(String client, String previous_server, String previous_client, String previous_server_hashed, String next_seed, String server) {
