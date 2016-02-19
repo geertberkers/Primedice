@@ -348,7 +348,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     // Show the fragment
-    public void showFragment(Fragment fragment, int backStackIndex, String fragmentName) {
+    private void showFragment(Fragment fragment, int backStackIndex, String fragmentName) {
         if (!manager.getBackStackEntryAt(backStackIndex).getName().equals(fragmentName)) {
             FragmentTransaction transaction = manager.beginTransaction();
             transaction.replace(R.id.content_frame, fragment, fragmentName);
@@ -621,6 +621,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         super.onStop();
     }
 
+    // TODO: Remove all toasts for alerts
     // TODO: General things to complete this application:
     // Encrypt access_token
     // Improve chat

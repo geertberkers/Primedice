@@ -55,16 +55,16 @@ public class BetFragment extends Fragment {
     private DecimalFormat format;
     private ListView betListView;
     private boolean maxPressed, betHigh;
-    private String withdrawalURL, betURL, userURL;
     private ArrayList<Bet> myBets, allBets, hrBets;
     private Double betMultiplier, betPercentage, target;
+    private String depositURL, withdrawalURL, betURL, userURL;
     private EditText edBetAmount, edProfitonWin, edWithdrawalAdress;
     private TextView txtBalance, txtMyBets, txtAllBets, txtHighRollers;
     private Button btnDeposit, btnWithdraw, btnHalfBet, btnDoubleBet, btnMaxBet, btnHighLow, btnMultiplier, btnPercentage, btnRollDice;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        if(view == null) {
+        if (view == null) {
             this.view = inflater.inflate(R.layout.fragment_bet, container, false);
 
             initControls();
@@ -101,7 +101,7 @@ public class BetFragment extends Fragment {
         betListView = (ListView) view.findViewById(R.id.betsListView);
     }
 
-    public void setInformation() {
+    private void setInformation() {
         maxPressed = false;
         betHigh = false;
         betAmount = 0;
@@ -120,6 +120,7 @@ public class BetFragment extends Fragment {
 
         betURL = "https://api.primedice.com/api/bet?access_token=";
         userURL = "https://api.primedice.com/api/users/1?access_token=";
+        depositURL = "https://api.primedice.com/api/deposit?access_token=";
         withdrawalURL = "https://api.primedice.com/api/withdraw?access_token=";
 
         txtBalance.setText(activity.getUser().getBalance());
@@ -129,16 +130,37 @@ public class BetFragment extends Fragment {
         allBets = getBets("bets");
         hrBets = getBets("highrollers");
 
+        downloadImage();
+    }
+
+    // Download image for deposits
+    private void downloadImage() {
         try {
+            String address = activity.getUser().address;
+
+            if (address.equals("null") || address == null) {
+                String result;
+                try {
+                    GetJSONResultFromURLTask getAddressTask = new GetJSONResultFromURLTask();
+                    result = getAddressTask.execute(depositURL + activity.getAccess_token()).get();
+
+                    JSONObject jsonResult = new JSONObject(result);
+                    activity.getUser().address = jsonResult.getString("address");
+
+                } catch (InterruptedException | ExecutionException | JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
             DownloadImageTask downloadImageTask = new DownloadImageTask();
-            resultImage = downloadImageTask.execute("https://chart.googleapis.com/chart?chs=500x500&cht=qr&chl=" + activity.getUser().address).get();
+            resultImage = downloadImageTask.execute("https://chart.googleapis.com/chart?chs=500x500&cht=qr&chl=" + address).get();
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         }
     }
 
     // Handle all button clicks
-    public void setListeners() {
+    private void setListeners() {
         edBetAmount.addTextChangedListener(new TextWatcher() {
 
             @Override
@@ -273,7 +295,7 @@ public class BetFragment extends Fragment {
     }
 
     // Deposit some BTC!
-    public void deposit() {
+    private void deposit() {
         ImageView depositAdressImage = new ImageView(activity);
         depositAdressImage.setImageBitmap(resultImage);
 
@@ -311,7 +333,7 @@ public class BetFragment extends Fragment {
     }
 
     // Withdraw some btc!
-    public void withdraw() {
+    private void withdraw() {
         LayoutInflater factory = LayoutInflater.from(activity);
 
         if (withdrawalView != null) {
@@ -427,7 +449,7 @@ public class BetFragment extends Fragment {
     }
 
     // Update bet amount
-    public void updateBetAmount() {
+    private void updateBetAmount() {
         String rollDice = "ROLL DICE";
         btnRollDice.setText(rollDice);
         String betAmountString = format.format((double) betAmount / 100000000);
@@ -436,7 +458,7 @@ public class BetFragment extends Fragment {
     }
 
     // Switch High/Low bet
-    public void changeHighLow() {
+    private void changeHighLow() {
         DecimalFormat overUnderFormat = new DecimalFormat("0.00");
 
         String betOverUnder;
@@ -453,7 +475,7 @@ public class BetFragment extends Fragment {
     }
 
     // Change multiplier
-    public void changeMultiplier() {
+    private void changeMultiplier() {
         final boolean[] firstEdit = {true};
         final EditText inputText = new EditText(activity);
         inputText.setText(String.valueOf(betMultiplier));
@@ -516,7 +538,7 @@ public class BetFragment extends Fragment {
     }
 
     // Change percentage
-    public void changePercentage() {
+    private void changePercentage() {
         final boolean[] firstEdit = {true};
         final EditText inputText = new EditText(activity);
         inputText.setText(String.valueOf(betPercentage));
@@ -577,7 +599,7 @@ public class BetFragment extends Fragment {
     }
 
     // Roll dice
-    public void rollDice() {
+    private void rollDice() {
         String rollDice;
 
         if (maxPressed) {
@@ -624,6 +646,8 @@ public class BetFragment extends Fragment {
                             myBets.remove(i);
                         }
                     }
+
+                    openedBet = MY_BETS;
                 } else {
                     GetJSONResultFromURLTask userTask = new GetJSONResultFromURLTask();
                     String userResult = userTask.execute(userURL + activity.getAccess_token()).get();
@@ -651,13 +675,13 @@ public class BetFragment extends Fragment {
     }
 
     // Show bets
-    public void showBets(ArrayList<Bet> bets) {
+    private void showBets(ArrayList<Bet> bets) {
         BetAdapter betAdapter = new BetAdapter(activity.getApplicationContext(), bets);
         betListView.setAdapter(betAdapter);
     }
 
     // Get and show bets
-    public ArrayList<Bet> getBets(String getThese) {
+    private ArrayList<Bet> getBets(String getThese) {
         String URL = "https://api.primedice.com/api/" + getThese;
 
         try {
@@ -677,7 +701,7 @@ public class BetFragment extends Fragment {
     }
 
     // Get bets from json
-    public ArrayList<Bet> getBetsListFromJSON(String betsJSON, String getThese) {
+    private ArrayList<Bet> getBetsListFromJSON(String betsJSON, String getThese) {
         ArrayList<Bet> betArrayList = new ArrayList<>();
 
         try {

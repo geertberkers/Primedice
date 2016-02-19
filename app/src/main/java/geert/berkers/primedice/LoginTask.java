@@ -14,16 +14,16 @@ import java.net.URLEncoder;
 /**
  * Primedice Application Created by Geert on 22-1-2016.
  */
-public class LoginTask extends AsyncTask<String, String, String> {
+class LoginTask extends AsyncTask<String, String, String> {
 
-    HttpURLConnection connection;
+    private HttpURLConnection connection;
 
     @Override
     protected String doInBackground(String... params) {
-        return getLoginResult(params[0], params[1], params[2]);
+        return getLoginResult(params[0], params[1], params[2], params[3]);
     }
 
-    public String getLoginResult(String loginUrl, String username, String password) {
+    private String getLoginResult(String loginUrl, String username, String password, String TFA) {
 
         String loginResult = "NoResult";
 
@@ -33,6 +33,12 @@ public class LoginTask extends AsyncTask<String, String, String> {
             String urlParameters =
                     "username=" + URLEncoder.encode(username, "UTF-8") +
                             "&password=" + URLEncoder.encode(password, "UTF-8");
+
+            if (TFA != null && TFA.length() != 0) {
+                urlParameters = urlParameters + "&otp=" + URLEncoder.encode(TFA, "UTF-8");
+            }
+
+            Log.w("URLParameters", urlParameters);
 
             connection = (HttpURLConnection) url.openConnection();
             connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");

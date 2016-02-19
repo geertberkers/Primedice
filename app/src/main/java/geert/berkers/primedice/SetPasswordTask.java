@@ -12,26 +12,32 @@ import java.net.URL;
 import java.net.URLEncoder;
 
 /**
- * Primedice Application Created by Geert on 28-1-2016.
+ * Primedice Application Created by Geert on 26-1-2016.
  */
-class TipDeveloperTask extends AsyncTask<String, Void, String>{
+class SetPasswordTask extends AsyncTask<String, Void, String> {
 
     private HttpURLConnection connection;
 
     @Override
     protected String doInBackground(String... params) {
-        return tipDeveloper(params[0], params[1], params[2]);
+        return setPassword(params[0], params[1], params[2], params[3]);
     }
 
-    private String tipDeveloper(String tipURL, String username, String amount) {
-        String tipResult = null;
+    private String setPassword(String URL, String currentPassword, String newPassword, String optionalEmail) {
+        String result = null;
 
         try {
-            URL url = new URL(tipURL);
+            URL url = new URL(URL);
 
-            String urlParameters =
-                        "username=" + URLEncoder.encode(username, "UTF-8") +
-                            "&amount=" + URLEncoder.encode(amount, "UTF-8");
+            String urlParameters = "password=" + URLEncoder.encode(newPassword, "UTF-8");
+
+            if (currentPassword != null && currentPassword.length() != 0) {
+                urlParameters = urlParameters + "&oldPassword=" + URLEncoder.encode(currentPassword, "UTF-8");
+            }
+
+            if (optionalEmail != null && optionalEmail.length() != 0) {
+                urlParameters = urlParameters + "&email=" + URLEncoder.encode(optionalEmail, "UTF-8");
+            }
 
             connection = (HttpURLConnection) url.openConnection();
             connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
@@ -59,8 +65,8 @@ class TipDeveloperTask extends AsyncTask<String, Void, String>{
 
             bufferedReader.close();
 
-            tipResult = response.toString();
-            Log.i("response", tipResult);
+            result = response.toString();
+            Log.i("response", result);
 
         } catch (Exception ex) {
 
@@ -73,6 +79,6 @@ class TipDeveloperTask extends AsyncTask<String, Void, String>{
                 connection.disconnect();
             }
         }
-        return tipResult;
+        return result;
     }
 }

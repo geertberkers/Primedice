@@ -12,26 +12,29 @@ import java.net.URL;
 import java.net.URLEncoder;
 
 /**
- * Primedice Application Created by Geert on 28-1-2016.
+ * Primedice Application Created by Geert on 26-1-2016.
  */
-class TipDeveloperTask extends AsyncTask<String, Void, String>{
+class SetTwoFactorTask extends AsyncTask<String, Void, String> {
 
     private HttpURLConnection connection;
 
     @Override
     protected String doInBackground(String... params) {
-        return tipDeveloper(params[0], params[1], params[2]);
+        return setTwoFactor(params[0], params[1], params[2], params[3]);
     }
 
-    private String tipDeveloper(String tipURL, String username, String amount) {
-        String tipResult = null;
+    private String setTwoFactor(String URL, String otp, String otpToken, String password) {
+        String result = null;
 
         try {
-            URL url = new URL(tipURL);
+            URL url = new URL(URL);
 
-            String urlParameters =
-                        "username=" + URLEncoder.encode(username, "UTF-8") +
-                            "&amount=" + URLEncoder.encode(amount, "UTF-8");
+            String urlParameters = "otp=" + URLEncoder.encode(otp, "UTF-8")
+                    + "&otp_token=" + URLEncoder.encode(otpToken, "UTF-8")
+                    + "&password=" + URLEncoder.encode(password, "UTF-8");
+
+            Log.w("URL", URL);
+            Log.w("Parameters", urlParameters);
 
             connection = (HttpURLConnection) url.openConnection();
             connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
@@ -59,8 +62,8 @@ class TipDeveloperTask extends AsyncTask<String, Void, String>{
 
             bufferedReader.close();
 
-            tipResult = response.toString();
-            Log.i("response", tipResult);
+            result = response.toString();
+            Log.i("response", result);
 
         } catch (Exception ex) {
 
@@ -73,6 +76,6 @@ class TipDeveloperTask extends AsyncTask<String, Void, String>{
                 connection.disconnect();
             }
         }
-        return tipResult;
+        return result;
     }
 }

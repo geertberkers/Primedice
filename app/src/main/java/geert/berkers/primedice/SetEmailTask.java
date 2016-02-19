@@ -12,26 +12,25 @@ import java.net.URL;
 import java.net.URLEncoder;
 
 /**
- * Primedice Application Created by Geert on 28-1-2016.
+ * Primedice Application Created by Geert on 26-1-2016.
  */
-class TipDeveloperTask extends AsyncTask<String, Void, String>{
+class SetEmailTask extends AsyncTask<String, Void, String> {
 
     private HttpURLConnection connection;
 
     @Override
     protected String doInBackground(String... params) {
-        return tipDeveloper(params[0], params[1], params[2]);
+        return setEmail(params[0], params[1]);
     }
 
-    private String tipDeveloper(String tipURL, String username, String amount) {
-        String tipResult = null;
+    private String setEmail(String URL, String email) {
+        String result = null;
 
         try {
-            URL url = new URL(tipURL);
+            URL url = new URL(URL);
 
             String urlParameters =
-                        "username=" + URLEncoder.encode(username, "UTF-8") +
-                            "&amount=" + URLEncoder.encode(amount, "UTF-8");
+                    "email=" + URLEncoder.encode(email, "UTF-8");
 
             connection = (HttpURLConnection) url.openConnection();
             connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
@@ -59,8 +58,8 @@ class TipDeveloperTask extends AsyncTask<String, Void, String>{
 
             bufferedReader.close();
 
-            tipResult = response.toString();
-            Log.i("response", tipResult);
+            result = response.toString();
+            Log.i("response", result);
 
         } catch (Exception ex) {
 
@@ -73,6 +72,6 @@ class TipDeveloperTask extends AsyncTask<String, Void, String>{
                 connection.disconnect();
             }
         }
-        return tipResult;
+        return result;
     }
 }

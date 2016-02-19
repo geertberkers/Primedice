@@ -3,7 +3,7 @@ package geert.berkers.primedice;
 import java.util.Date;
 
 /**
- * Created by Geert on 5-2-2016.
+ * Primedice Application Created by Geert on 5-2-2016.
  */
 public class Message {
 
@@ -25,15 +25,15 @@ public class Message {
 
     public int getRoom() {
         return mRoom;
-    };
+    }
 
     public int getType() {
         return mType;
-    };
+    }
 
     public String getMessage() {
         return mMessage;
-    };
+    }
 
     public String getSender() {
         return mSender;

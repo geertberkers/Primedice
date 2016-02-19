@@ -1,33 +1,44 @@
 package geert.berkers.primedice;
 
+import android.app.AlertDialog;
 import android.app.Fragment;
-import android.graphics.Paint;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.InflateException;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import java.util.concurrent.ExecutionException;
 
 /**
  * Primedice Application Created by Geert on 2-2-2016.
  */
-//TODO: Implement profile
 public class ProfileFragment extends Fragment {
 
-    private View view;
     private MainActivity activity;
+    private View view, setPasswordView, twoFacterView;
 
     private User user;
+    private Bitmap otpQRImage;
     private LinearLayout showedLogLayout, showedAffiliateLayout;
     private RelativeLayout securityLayout, showedSecurityLayout, logLayout, affiliateLayout;
 
+    private String emailURL, passwordURL, twoFactorURL, emergencyAddressURL, depositsURL, withdrawalsURL;
+    private Button btnSetPassword, btnSetEmail, btnSetTwoFactor, btnSetEmergencyAddress, btnTransactionLog, btnTipLog;//, btnContactSupport;
     private TextView txtUsername, txtDateJoined, lblEmail, txtTwoFactorSet, txtEmergencyAddressSet, securityPlus, logPlus, affiliatePlus, txtAffiliateLink, txtAffiliateInformation;
-
-    private Button btnSetPassword, btnSetEmail, btnSetTwoFactor, btnSetEmergencyAddress, btnTransactionLog, btnTipLog, btnContactSupport;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -36,7 +47,6 @@ public class ProfileFragment extends Fragment {
 
             initControls();
             setListeners();
-            checkToHide();
         }
 
         setInformation();
@@ -69,13 +79,21 @@ public class ProfileFragment extends Fragment {
         btnSetEmail = (Button) view.findViewById(R.id.btnEmail);
         btnSetTwoFactor = (Button) view.findViewById(R.id.btnTwoFactor);
         btnSetPassword = (Button) view.findViewById(R.id.btnSetPassword);
-        btnContactSupport = (Button) view.findViewById(R.id.btnContactSupport);
+        //btnContactSupport = (Button) view.findViewById(R.id.btnContactSupport);
         btnTransactionLog = (Button) view.findViewById(R.id.btnTransactionLog);
         btnSetEmergencyAddress = (Button) view.findViewById(R.id.btnSetEmergencyAddress);
 
         showedLogLayout.setVisibility(View.GONE);
         showedSecurityLayout.setVisibility(View.GONE);
         showedAffiliateLayout.setVisibility(View.GONE);
+
+        emailURL = "https://api.primedice.com/api/email?access_token=";
+        passwordURL = "https://api.primedice.com/api/password?access_token=";
+        depositsURL = "https://api.primedice.com/api/deposits?access_token=";
+        twoFactorURL = "https://api.primedice.com/api/2fa/enable?access_token=";//https://api.primedice.com/api/2fa/enable?access_token=";
+        withdrawalsURL = "https://api.primedice.com/api/withdrawals?access_token=";
+        emergencyAddressURL = "https://api.primedice.com/api/emergency?access_token=";
+
     }
 
     private void setListeners() {
@@ -174,17 +192,17 @@ public class ProfileFragment extends Fragment {
             }
         });
 
+/* No API available
         btnContactSupport.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 contactSupport();
             }
         });
+*/
     }
 
     private void checkToHide() {
-        user = activity.getUser();
-
         if (user.address_enabled) {
             Log.w("Address", "Enabled");
             btnSetEmergencyAddress.setVisibility(View.INVISIBLE);
@@ -205,13 +223,14 @@ public class ProfileFragment extends Fragment {
             Log.w("Email", "User need to set a email!");
         }
 
+        String setPasswordText;
         if (user.password) {
-            Log.w("Password", "Enabled");
-            btnSetPassword.setText("CHANGE");
+            setPasswordText = "CHANGE";
         } else {
-            Log.w("Password", "User need to set a password!");
-            btnSetPassword.setText("SET");
+            setPasswordText = "SET";
         }
+
+        btnSetPassword.setText(setPasswordText);
 
         if (user.otp_enabled) {
             Log.w("OTP", "Enabled");
@@ -225,33 +244,257 @@ public class ProfileFragment extends Fragment {
     }
 
     private void setInformation() {
+        user = activity.getUser();
+
         txtDateJoined.setText(user.getRegistered());
-        txtUsername.setText(user.getUsername() + "'s Account");
-        txtAffiliateLink.setText("https://primedice.com/?ref=" + user.getUsername());
+
+        String account = user.getUsername() + "'s Account";
+        txtUsername.setText(account);
+
+        String link = "https://primedice.com/?ref=" + user.getUsername();
+        txtAffiliateLink.setText(link);
+
+        checkToHide();
+
+        String imageURL = user.otp_qr;
+        if (imageURL != null) {
+            try {
+                imageURL = imageURL.replace("166x166", "500x500");
+                DownloadImageTask downloadImageTask = new DownloadImageTask();
+                otpQRImage = downloadImageTask.execute(imageURL).get();
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
+    // Set Password
     private void setPassword() {
-        //TODO: Set password
+        LayoutInflater factory = LayoutInflater.from(activity);
+
+        if (setPasswordView != null) {
+            ViewGroup parent = (ViewGroup) setPasswordView.getParent();
+            if (parent != null) {
+                parent.removeView(setPasswordView);
+            }
+        }
+        try {
+            setPasswordView = factory.inflate(R.layout.setpassword_layout, null);
+        } catch (InflateException e) {
+            e.printStackTrace();
+        }
+
+        final TextView txtEmailInfo = (TextView) setPasswordView.findViewById(R.id.emailInfo);
+
+        final EditText edNewPassword = (EditText) setPasswordView.findViewById(R.id.edNewPassword);
+        final EditText edEmailOptional = (EditText) setPasswordView.findViewById(R.id.edEmailOptional);
+        final EditText edCurrentPassword = (EditText) setPasswordView.findViewById(R.id.edCurrentPassword);
+        final EditText edConfirmNewPassword = (EditText) setPasswordView.findViewById(R.id.edConfirmNewPassword);
+
+        if (user.email_enabled) {
+            txtEmailInfo.setVisibility(View.GONE);
+            edEmailOptional.setVisibility(View.GONE);
+        }
+
+        if (!user.password) {
+            edCurrentPassword.setVisibility(View.GONE);
+        }
+
+        final AlertDialog.Builder alertDialog = new AlertDialog.Builder(activity);
+        alertDialog.setTitle("SET PASSWORD");
+        alertDialog.setView(setPasswordView);
+        alertDialog.setPositiveButton("SET", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+
+                String newPassword = edNewPassword.getText().toString();
+                String optionalEmail = edEmailOptional.getText().toString();
+                String currentPassword = edCurrentPassword.getText().toString();
+                String confirmedPassword = edConfirmNewPassword.getText().toString();
+
+                if (newPassword.length() < 6) {
+                    Toast.makeText(activity.getApplicationContext(), "Password to short!", Toast.LENGTH_LONG).show();
+
+                } else if (newPassword.equals(confirmedPassword)) {
+
+                    String result;
+                    try {
+                        SetPasswordTask setPasswordTask = new SetPasswordTask();
+                        result = setPasswordTask.execute((passwordURL + activity.getAccess_token()), currentPassword, newPassword, optionalEmail).get();
+
+                        if (result == null) {
+                            Toast.makeText(activity.getApplicationContext(), "Password is NOT changed!", Toast.LENGTH_LONG).show();
+                        } else {
+                            user.password = true;
+
+                            String message;
+                            //Check if password is set or changed
+
+                            if (!user.password) {
+                                message = "Password set!";
+
+                                if (optionalEmail != null & optionalEmail.length() >= 6) {
+                                    user.email_enabled = true;
+                                    message = "Email and Password set!";
+                                }
+                            } else {
+                                message = "Password changed!";
+
+                                if (optionalEmail != null & optionalEmail.length() >= 6) {
+                                    user.email_enabled = true;
+                                    message = "Email set and password changed!";
+                                }
+                            }
+
+                            checkToHide();
+                            Toast.makeText(activity.getApplicationContext(), message, Toast.LENGTH_LONG).show();
+                        }
+                    } catch (InterruptedException | ExecutionException | NullPointerException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    Toast.makeText(activity.getApplicationContext(), "Passwords are not the same!", Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+        alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+            }
+        });
+        alertDialog.show();
     }
 
+    // Set Email
     private void setEmail() {
-        //TODO: Set email
+        String message = "We recommend setting up an email address for recovery of your account in the event you lose your password. We will never, ever, send you any email for anything other than account recovery.";
+
+        final EditText edEmail = new EditText(activity);
+
+        final AlertDialog.Builder alertDialog = new AlertDialog.Builder(activity);
+        alertDialog.setTitle("RECOVERY EMAIL");
+        alertDialog.setMessage(message);
+        alertDialog.setView(edEmail);
+        alertDialog.setPositiveButton("SET", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                String email = edEmail.getText().toString();
+
+                if (email.length() >= 6 && android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+
+                    String result;
+                    Log.i("Email to set", email);
+
+                    try {
+                        SetEmailTask setEmailTask = new SetEmailTask();
+                        result = setEmailTask.execute((emailURL + activity.getAccess_token()), email).get();
+
+                        if (result == null) {
+                            Toast.makeText(activity.getApplicationContext(), "Email is NOT set!", Toast.LENGTH_LONG).show();
+                        } else {
+                            user.email_enabled = true;
+                            checkToHide();
+                            Toast.makeText(activity.getApplicationContext(), "Email set!", Toast.LENGTH_LONG).show();
+                        }
+
+                    } catch (InterruptedException | ExecutionException | NullPointerException e) {
+                        e.printStackTrace();
+                    }
+
+                } else {
+                    Toast.makeText(activity.getApplicationContext(), "Email not valid.", Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+        alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+            }
+        });
+        alertDialog.show();
     }
 
+    // Set TwoFactor Authentication
     private void setTwoFactor() {
-        //TODO: Set TwoFactor
+        LayoutInflater factory = LayoutInflater.from(activity);
+
+        if (twoFacterView != null) {
+            ViewGroup parent = (ViewGroup) twoFacterView.getParent();
+            if (parent != null) {
+                parent.removeView(twoFacterView);
+            }
+        }
+        try {
+            twoFacterView = factory.inflate(R.layout.twofactor_layout, null);
+        } catch (InflateException e) {
+            e.printStackTrace();
+        }
+
+        final EditText edOtp = (EditText) twoFacterView.findViewById(R.id.edOtp);
+        final EditText edPassword = (EditText) twoFacterView.findViewById(R.id.edPassword);
+
+        final TextView edOtpToken = (TextView) twoFacterView.findViewById(R.id.edOtpToken);
+        edOtpToken.setText(user.otp_token);
+
+        final ImageView otpQR = (ImageView) twoFacterView.findViewById(R.id.optQR);
+        otpQR.setImageBitmap(otpQRImage);
+
+        final AlertDialog.Builder alertDialog = new AlertDialog.Builder(activity);
+        alertDialog.setTitle("MULTIFACTOR LOGIN");
+        alertDialog.setView(twoFacterView);
+        alertDialog.setPositiveButton("SET", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+
+                String result;
+                String otp = edOtp.getText().toString();
+                String otpToken = user.otp_token;
+                String password = edPassword.getText().toString();
+
+                try {
+                    SetTwoFactorTask setTwoFactorTask = new SetTwoFactorTask();
+                    result = setTwoFactorTask.execute((twoFactorURL + activity.getAccess_token()), otp, otpToken, password).get();
+
+                    if (result == null) {
+                        Toast.makeText(activity.getApplicationContext(), "Two Factor is NOT set!", Toast.LENGTH_LONG).show();
+                    } else {
+                        user.otp_enabled = true;
+                        Toast.makeText(activity.getApplicationContext(), "Two Factor set!", Toast.LENGTH_LONG).show();
+                        checkToHide();
+                    }
+
+                } catch (InterruptedException | ExecutionException | NullPointerException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+            }
+        });
+        alertDialog.show();
+
+        //POST /2fa/enable
+        //Expects a body parameter of otpToken (the base 32 Authenticator code to use), otp (the one-time password), and the user password.
     }
 
     private void setEmergencyAddress() {
         //TODO: Set EmergencyAddress
+
+        //POST /emergency
+        //Expects a body parameter of address.
     }
 
     private void showTransactionLog() {
         //TODO: Shop TransactionLog
+
+        //GET /deposits
+        //Get a list of your deposits. A page can be specified in the URL, defaults to "1" if not specified. Requires authentication.
+
+        //GET /withdrawals
+        //Get a list of your withdrawals. A page can be specified in the URL, defaults to "1" if not specified. Requires authentication
     }
 
     private void showTipLog() {
         //TODO: Show tiplog
+
+        //GET /tips
+        //Get a list of your withdrawals. A page can be specified in the URL, defaults to "1" if not specified. Requires authentication
     }
 
     private void openAffiliateInfo() {
@@ -259,10 +502,15 @@ public class ProfileFragment extends Fragment {
     }
 
     private void copyAffiliateLink() {
-        //TODO: Set affiliateLink to clipboard
-    }
+        ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
+        ClipData clip = ClipData.newPlainText("Affiliate link Primedice", txtAffiliateLink.getText().toString());
+        clipboard.setPrimaryClip(clip);
 
-    private void contactSupport() {
-        //TODO: Contact Support
+        Toast.makeText(activity.getApplicationContext(), "Copied affiliate link!", Toast.LENGTH_SHORT).show();
     }
+/*
+    private void contactSupport() {
+        //No API available
+    }
+*/
 }

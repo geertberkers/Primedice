@@ -14,7 +14,7 @@ import java.util.ArrayList;
 /**
  * Primedice Application Created by Geert on 26-1-2016.
  */
-public class BetAdapter extends BaseAdapter {
+class BetAdapter extends BaseAdapter {
     private Context context;
 
     private ArrayList<Bet> betArrayList;

@@ -13,7 +13,7 @@ import android.widget.TextView;
 /**
  * Primedice Application Created by Geert on 24-1-2016.
  */
-public class MenuAdapter extends BaseAdapter {
+class MenuAdapter extends BaseAdapter {
     private Context context;
     private String selectedMenuItem;
 

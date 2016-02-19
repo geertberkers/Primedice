@@ -12,9 +12,9 @@ import java.net.URL;
 /**
  * Primedice Application Created by Geert on 23-1-2016.
  */
-public class GetJSONResultFromURLTask extends AsyncTask<String, Void, String> {
+class GetJSONResultFromURLTask extends AsyncTask<String, Void, String> {
 
-    HttpURLConnection connection;
+    private HttpURLConnection connection;
 
     @Override
     protected String doInBackground(String... params) {

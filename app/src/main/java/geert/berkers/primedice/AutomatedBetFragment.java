@@ -260,7 +260,7 @@ public class AutomatedBetFragment extends Fragment {
     }
 
     // Switch High/Low bet
-    public void changeHighLow() {
+    private void changeHighLow() {
         DecimalFormat overUnderFormat = new DecimalFormat("0.00");
 
         String betOverUnder;
@@ -277,7 +277,7 @@ public class AutomatedBetFragment extends Fragment {
     }
 
     // Change multiplier
-    public void changeMultiplier() {
+    private void changeMultiplier() {
         final boolean[] firstEdit = {true};
         final EditText inputText = new EditText(activity);
         inputText.setText(String.valueOf(betMultiplier));
@@ -340,7 +340,7 @@ public class AutomatedBetFragment extends Fragment {
     }
 
     // Change percentage
-    public void changePercentage() {
+    private void changePercentage() {
         final boolean[] firstEdit = {true};
         final EditText inputText = new EditText(activity);
         inputText.setText(String.valueOf(betPercentage));
@@ -401,7 +401,7 @@ public class AutomatedBetFragment extends Fragment {
     }
 
     // Roll dice
-    public void rollDice() {
+    private void rollDice() {
         // TODO: Start thread (till user stops)
         // TODO: Check conditions for autobet
         // TODO: Add to database and listview
@@ -472,7 +472,7 @@ public class AutomatedBetFragment extends Fragment {
         });
     }
 
-    public static void setListViewHeightBasedOnChildren(ListView listView) {
+    private static void setListViewHeightBasedOnChildren(ListView listView) {
         ListAdapter listAdapter = listView.getAdapter();
         if (listAdapter != null) {
 

@@ -12,16 +12,16 @@ import java.net.URL;
 /**
  * Primedice Application Created by Geert on 22-1-2016.
  */
-public class LogOutTask extends AsyncTask<String, String, String> {
+class LogOutTask extends AsyncTask<String, String, String> {
 
-    HttpURLConnection connection;
+    private HttpURLConnection connection;
 
     @Override
     protected String doInBackground(String... params) {
         return getLogOutResult(params[0]);
     }
 
-    public String getLogOutResult(String logoutURL) {
+    private String getLogOutResult(String logoutURL) {
 
         String logOutResult = "NoResult";
 

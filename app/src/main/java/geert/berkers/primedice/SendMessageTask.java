@@ -14,16 +14,16 @@ import java.net.URLEncoder;
 /**
  * Primedice Application Created by Geert on 22-1-2016.
  */
-public class SendMessageTask extends AsyncTask<String, String, String> {
+class SendMessageTask extends AsyncTask<String, String, String> {
 
-    HttpURLConnection connection;
+    private HttpURLConnection connection;
 
     @Override
     protected String doInBackground(String... params) {
         return sendMessage(params[0], params[1], params[2], params[3]);
     }
 
-    public String sendMessage(String sendMessageURL, String room, String message, String toUsername) {
+    private String sendMessage(String sendMessageURL, String room, String message, String toUsername) {
 
         String result = "NoResult";
 

@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.ColorDrawable;
 import android.preference.PreferenceManager;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -22,7 +23,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private Button btnLogin;
     private TextView txtResult;
-    private EditText txtUsername, txtPassword;
+    private EditText txtUsername, txtPassword, txtTFA;
 
     private String access_token = null;
 
@@ -36,12 +37,15 @@ public class LoginActivity extends AppCompatActivity {
 
         btnLogin = (Button) findViewById(R.id.btnLogin);
         txtResult = (TextView) findViewById(R.id.txtResult);
+
+        txtTFA = (EditText) findViewById(R.id.etTFA);
         txtUsername = (EditText) findViewById(R.id.etUsername);
         txtPassword = (EditText) findViewById(R.id.etPassword);
 
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setIcon(R.mipmap.primedice);
-        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.primedicecolor)));
+        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(ContextCompat.getColor(getApplicationContext(), R.color.primedicecolor)));
+        //new ColorDrawable(getResources().getColor(R.color.primedicecolor)));
     }
 
     @Override
@@ -64,9 +68,13 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
+    //TODO: Register new account
+
+    // Log in
     public void login(View v) {
 
         if (v.getId() == btnLogin.getId()) {
+            String tfa = txtTFA.getText().toString();
             String username = txtUsername.getText().toString();
             String password = txtPassword.getText().toString();
 
@@ -79,7 +87,7 @@ public class LoginActivity extends AppCompatActivity {
                 LoginTask login = new LoginTask();
 
                 try {
-                    loginResult = login.execute(loginUrl, username, password).get();
+                    loginResult = login.execute(loginUrl, username, password, tfa).get();
                 } catch (InterruptedException | ExecutionException e) {
                     e.printStackTrace();
                 }
@@ -97,6 +105,7 @@ public class LoginActivity extends AppCompatActivity {
             }
         }
     }
+
     // Login with your accestoken
     private void loginFromAccestoken(String access_token) {
         String loginRegister = "Login or register!";
@@ -119,7 +128,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     // Get the acces_token from the server response
-    private String getAccestokenFromLoginResult(String loginResult) {
+    private void getAccestokenFromLoginResult(String loginResult) {
         try {
             JSONObject oneObject = new JSONObject(loginResult);
 
@@ -136,12 +145,10 @@ public class LoginActivity extends AppCompatActivity {
         } catch (JSONException e) {
             Log.e("error", e.toString());
         }
-
-        return access_token;
     }
 
     // Create user object from server response
-    public User getUser() {
+    private User getUser() {
 
         User user;
         String userResult = "NoResult";

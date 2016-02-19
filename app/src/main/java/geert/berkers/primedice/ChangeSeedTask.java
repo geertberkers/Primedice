@@ -14,16 +14,16 @@ import java.net.URLEncoder;
 /**
  * Primedice Application Created by Geert on 26-1-2016.
  */
-public class ChangeSeedTask extends AsyncTask<String, Void, String> {
+class ChangeSeedTask extends AsyncTask<String, Void, String> {
 
-    HttpURLConnection connection;
+    private HttpURLConnection connection;
 
     @Override
     protected String doInBackground(String... params) {
-        return placeBetUpdateUser(params[0], params[1]);
+        return changeSeed(params[0], params[1]);
     }
 
-    public String placeBetUpdateUser(String URL, String seed) {
+    private String changeSeed(String URL, String seed) {
         String betResult = null;
 
         try {

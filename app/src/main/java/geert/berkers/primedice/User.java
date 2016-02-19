@@ -62,7 +62,7 @@ public class User implements Parcelable {
 
     // Create User to show
     public User(boolean yourself, String jsonUserString) {
-        Log.i("Info", "Own account: " + String.valueOf(yourself));
+        Log.i("Info", "Own account: " + yourself);
 
         try {
             JSONObject json = new JSONObject(jsonUserString);
@@ -85,7 +85,7 @@ public class User implements Parcelable {
     }
 
     // Create user from parcel
-    public User(Parcel read) {
+    private User(Parcel read) {
         this.userID = read.readInt();
         this.username = read.readString();
         this.balance = read.readDouble();
@@ -183,7 +183,7 @@ public class User implements Parcelable {
         arg0.writeString(otp_qr);
     }
 
-    public boolean updateUser(JSONObject jsonUser) {
+    public void updateUser(JSONObject jsonUser) {
         try {
             this.userID = jsonUser.getInt("userid");
             this.username = jsonUser.getString("username");
@@ -211,10 +211,8 @@ public class User implements Parcelable {
             this.previous_server_hashed = jsonUser.getString("previous_server_hashed");
             this.next_seed = jsonUser.getString("next_seed");
             this.server = jsonUser.getString("server");
-            return true;
         } catch (Exception ex) {
             Log.e("Error", ex.toString());
-            return false;
         }
     }
 
@@ -271,7 +269,7 @@ public class User implements Parcelable {
         return str.toString();
     }
 
-    public String satToBTC(double satoshi) {
+    private String satToBTC(double satoshi) {
         DecimalFormat format = new DecimalFormat("0.00000000");
 
         String resultBTC = format.format(satoshi / 100000000);

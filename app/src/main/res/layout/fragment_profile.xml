@@ -81,8 +81,7 @@
                 android:layout_alignLeft="@+id/txtDateJoined"
                 android:layout_alignStart="@+id/txtDateJoined"
                 android:layout_below="@id/dateDivider"
-                android:text="SET"
-                android:textStyle="bold" />
+                android:text="SET" />
 
             <View
                 android:id="@+id/passwordDivider"
@@ -171,7 +170,7 @@
                 android:layout_marginEnd="20dp"
                 android:layout_marginRight="20dp"
                 android:gravity="center_vertical"
-                android:text="PASSWORD"
+                android:text="TWO-FACTOR"
                 android:textStyle="bold" />
 
             <Button
@@ -186,14 +185,15 @@
                 android:id="@+id/txtTwoFactorSet"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_toEndOf="@id/lblTwoFactor"
-                android:layout_toRightOf="@id/lblTwoFactor"
-                android:text="Enabled"
                 android:layout_alignBottom="@+id/btnTwoFactor"
                 android:layout_alignParentBottom="false"
                 android:layout_alignTop="@+id/btnTwoFactor"
+                android:layout_toEndOf="@id/lblTwoFactor"
+                android:layout_toRightOf="@id/lblTwoFactor"
                 android:gravity="center_vertical"
+                android:text="Enabled"
                 android:textStyle="bold" />
+
             <View
                 android:id="@+id/securityOpenedDivider"
                 android:layout_width="match_parent"
@@ -227,15 +227,15 @@
                 android:id="@+id/txtEmergencyAddressSet"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignLeft="@+id/btnTwoFactor"
-                android:layout_alignStart="@+id/btnTwoFactor"
-                android:layout_below="@id/securityOpenedDivider"
                 android:layout_alignBottom="@+id/btnSetEmergencyAddress"
+                android:layout_alignLeft="@+id/btnTwoFactor"
                 android:layout_alignParentBottom="false"
+                android:layout_alignStart="@+id/btnTwoFactor"
                 android:layout_alignTop="@+id/btnSetEmergencyAddress"
+                android:layout_below="@id/securityOpenedDivider"
                 android:gravity="center_vertical"
                 android:text="Enabled"
-                android:textStyle="bold"  />
+                android:textStyle="bold" />
 
         </RelativeLayout>
         <!-- Logs -->
@@ -373,12 +373,13 @@
 
         </LinearLayout>
 
-        <Button
-            android:id="@+id/btnContactSupport"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingTop="10dp"
-            android:text="CONTACT SUPPORT" />
-
+        <!-- Contact support, no API yet
+                <Button
+                    android:id="@+id/btnContactSupport"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="10dp"
+                    android:text="CONTACT SUPPORT" />
+        -->
     </LinearLayout>
 </ScrollView>

@@ -11,7 +11,7 @@ import java.io.InputStream;
  * Primedice Application Created by Geert on 29-1-2016.
  */
 
-public class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
+class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
 
     protected Bitmap doInBackground(String... urls) {
         String url = urls[0];

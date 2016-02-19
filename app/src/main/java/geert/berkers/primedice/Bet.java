@@ -52,7 +52,7 @@ public class Bet implements Parcelable {
     }
 
     // Create bet from parcel
-    public Bet(Parcel read){
+    private Bet(Parcel read){
         this.id = read.readLong();
         this.player = read.readString();
         this.playerID = read.readString();
@@ -187,7 +187,7 @@ public class Bet implements Parcelable {
         return condition + String.valueOf(target);
     }
 
-    public String satToBTC(double satoshi) {
+    private String satToBTC(double satoshi) {
         DecimalFormat format = new DecimalFormat("0.00000000");
 
         String resultBTC = format.format(satoshi / 100000000);
