@@ -91,4 +91,6 @@ public class PlayerInformationActivity extends AppCompatActivity {
 
         return user;
     }
+
+    //TODO: Tip/PM user
 }

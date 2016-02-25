@@ -113,7 +113,7 @@ public class ChatFragment extends Fragment {
         public void call(final Object... args) {
 
             final JSONObject obj = (JSONObject) args[0];
-            Log.d("ChatFragment: ", "message back: " + obj.toString());
+            Log.d("ChatFragment ", "Message: " + obj.toString());
 
             getActivity().runOnUiThread(new Runnable() {
                 @Override

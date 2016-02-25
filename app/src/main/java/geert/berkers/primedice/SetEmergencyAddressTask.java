@@ -12,32 +12,24 @@ import java.net.URL;
 import java.net.URLEncoder;
 
 /**
- * Primedice Application Created by Geert on 22-1-2016.
+ * Primedice Application Created by Geert on 26-1-2016.
  */
-class LoginTask extends AsyncTask<String, String, String> {
+class SetEmergencyAddressTask extends AsyncTask<String, Void, String> {
 
     private HttpURLConnection connection;
 
     @Override
     protected String doInBackground(String... params) {
-        return getLoginResult(params[0], params[1], params[2], params[3]);
+        return setEmergencyAddress(params[0], params[1]);
     }
 
-    private String getLoginResult(String loginUrl, String username, String password, String TFA) {
-
-        String loginResult = "NoResult";
+    private String setEmergencyAddress(String URL, String address) {
+        String result = null;
 
         try {
-            URL url = new URL(loginUrl);
+            URL url = new URL(URL);
 
-            String urlParameters =
-                    "username=" + URLEncoder.encode(username, "UTF-8") +
-                            "&password=" + URLEncoder.encode(password, "UTF-8");
-
-            if (TFA != null && TFA.length() != 0) {
-                urlParameters = urlParameters + "&otp=" + URLEncoder.encode(TFA, "UTF-8");
-            }
-
+            String urlParameters = "address=" + URLEncoder.encode(address, "UTF-8");
 
             connection = (HttpURLConnection) url.openConnection();
             connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
@@ -65,8 +57,8 @@ class LoginTask extends AsyncTask<String, String, String> {
 
             bufferedReader.close();
 
-            loginResult = response.toString();
-            Log.i("response", loginResult);
+            result = response.toString();
+            Log.i("response", result);
 
         } catch (Exception ex) {
 
@@ -79,7 +71,6 @@ class LoginTask extends AsyncTask<String, String, String> {
                 connection.disconnect();
             }
         }
-
-        return loginResult;
+        return result;
     }
 }

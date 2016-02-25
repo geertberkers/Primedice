@@ -23,6 +23,7 @@ import java.util.concurrent.ExecutionException;
 /**
  * Primedice Application Created by Geert on 2-2-2016.
  */
+//TODO: Implement local timer after claiming faucet.
 public class FaucetFragment extends Fragment {
 
     private View view;
@@ -30,8 +31,7 @@ public class FaucetFragment extends Fragment {
 
     private TextView txtBalance;
     private WebView faucetWebView;
-    private Button btnClaimFaucet, btnCancelFaucet;
-    private String mime, encoding, html, note, claimFaucetURL;
+    private String mime, encoding, html, claimFaucetURL;
 
     String response;
 
@@ -59,15 +59,15 @@ public class FaucetFragment extends Fragment {
 
         faucetWebView = (WebView) view.findViewById(R.id.faucetWebView);
 
-        btnClaimFaucet = (Button) view.findViewById(R.id.btnClaimFaucet);
-        btnCancelFaucet = (Button) view.findViewById(R.id.btnCancelFaucet);
+        Button btnClaimFaucet = (Button) view.findViewById(R.id.btnClaimFaucet);
+        Button btnCancelFaucet = (Button) view.findViewById(R.id.btnCancelFaucet);
 
         faucetWebView.getSettings().setJavaScriptEnabled(true);
 
         mime = "text/html";
         encoding = "utf-8";
         claimFaucetURL = "https://api.primedice.com/api/faucet?access_token=";
-        note = "<p><b>Note:</b> You must have over 10 BTC wagered before your faucet starts increasing <br><br> The amount you can claim from the faucet is dependant on your level. Your level and more information about it can be viewed under the profile tab.</p>";
+        String note = "<p><b>Note:</b> You must have over 10 BTC wagered before your faucet starts increasing <br><br> The amount you can claim from the faucet is dependant on your level. Your level and more information about it can be viewed under the profile tab.</p>";
         html = "<html><head><title>Collect Faucet</title></head>"
                 + "<body><h2 align=\"center\">Receive a free amount to play with!</h2>"
                 + "<div class=\"g-recaptcha\" data-sitekey=\"6LeX6AcTAAAAAMwAON0oEyRDoTbusREfJa2vxDMh\" align=\"center\"></div>"
@@ -119,8 +119,7 @@ public class FaucetFragment extends Fragment {
 
                             txtBalance.setText(activity.getUser().getBalance());
                             Toast.makeText(activity.getApplicationContext(), "Faucet claimed!", Toast.LENGTH_LONG).show();
-                        }
-                        else{
+                        } else {
                             Toast.makeText(activity.getApplicationContext(), "CAPTCHA incorrect or claimed to early!", Toast.LENGTH_LONG).show();
                         }
 
@@ -134,5 +133,14 @@ public class FaucetFragment extends Fragment {
         } else {
             Toast.makeText(activity.getApplicationContext(), "Balance is not null!", Toast.LENGTH_LONG).show();
         }
+    }
+
+    public void updateBalance(final String balance) {
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                txtBalance.setText(balance);
+            }
+        });
     }
 }

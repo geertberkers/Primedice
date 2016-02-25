@@ -392,8 +392,17 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     // Get result from QR Code scanner
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
         IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
+
         if (scanResult != null) {
-            betFragment.setWithdrawalAdress(scanResult.getContents());
+
+            String currentFragment = manager.getBackStackEntryAt(manager.getBackStackEntryCount()-1).getName();
+
+            // These fragments have no current balance: Profile, Stats, Chat, Provably fair
+            switch (currentFragment) {
+                case "Bet": betFragment.setWithdrawalAdress(scanResult.getContents()); break;
+                case "Profile": profileFragment.setEmergencyAddress(scanResult.getContents()); break;
+                default: break;
+            }
         }
     }
 
@@ -450,7 +459,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     // Update balance in opened fragment
     private void updateBalanceInOpenedFragment() {
-
         String currentFragment = manager.getBackStackEntryAt(manager.getBackStackEntryCount()-1).getName();
 
         String balance = user.getBalance();
@@ -459,7 +467,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         switch (currentFragment) {
             case "Bet": betFragment.updateBalance(balance); break;
             case "Automated betting": automatedBetFragment.updateBalance(balance); break;
-            //case "Faucet": faucetFragment.updateBalance(balance); break;
+            case "Faucet": faucetFragment.updateBalance(balance); break;
             default: break;
         }
     }
@@ -621,29 +629,18 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         super.onStop();
     }
 
-    // TODO: Remove all toasts for alerts
     // TODO: General things to complete this application:
     // Encrypt access_token
+    // Improve autobet
     // Improve chat
+    // Remove all toasts for alerts
 
     // Register account (Add in login activity)
-    // Claim faucet
     // Timer faucet
 
     // Update UI
     // - Check differences with site and fix it
     // - Update chat UI
     // - Scroll to new bet when adding it
-
-    /*
-    private final Emitter.Listener socketioStats = new Emitter.Listener() {
-    @Override
-    public void call(Object... args) {
-       JSONObject obj = (JSONObject) args[0];
-       // This gets stats (BTC WON LAST 24 HOURS)
-       //Stats Result: {"bets24":19462106,"wagered24":1.1444498764200024E11}
-    }};
-
-    */
 }
 

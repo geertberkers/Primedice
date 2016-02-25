@@ -33,9 +33,6 @@ class SetTwoFactorTask extends AsyncTask<String, Void, String> {
                     + "&otp_token=" + URLEncoder.encode(otpToken, "UTF-8")
                     + "&password=" + URLEncoder.encode(password, "UTF-8");
 
-            Log.w("URL", URL);
-            Log.w("Parameters", urlParameters);
-
             connection = (HttpURLConnection) url.openConnection();
             connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
             connection.setRequestMethod("POST");

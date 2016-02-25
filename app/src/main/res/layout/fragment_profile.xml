@@ -221,7 +221,7 @@
                 android:layout_alignLeft="@+id/btnTwoFactor"
                 android:layout_alignStart="@+id/btnTwoFactor"
                 android:layout_below="@id/securityOpenedDivider"
-                android:text="Change" />
+                android:text="SET" />
 
             <TextView
                 android:id="@+id/txtEmergencyAddressSet"
@@ -238,6 +238,7 @@
                 android:textStyle="bold" />
 
         </RelativeLayout>
+
         <!-- Logs -->
         <RelativeLayout
             android:id="@+id/logsLayout"
@@ -281,16 +282,22 @@
             android:orientation="vertical">
 
             <Button
-                android:id="@+id/btnTransactionLog"
+                android:id="@+id/btnShowDeposits"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="TRANSACTION LOG" />
+                android:text="DEPOSITS" />
+
+            <Button
+                android:id="@+id/btnShowWithdrawals"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="WITHDRAWALS" />
 
             <Button
                 android:id="@+id/btnTipLog"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="TIPS LOG" />
+                android:text="TIPS" />
         </LinearLayout>
 
         <!-- Affiliate -->

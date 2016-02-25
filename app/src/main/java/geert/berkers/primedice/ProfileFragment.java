@@ -6,6 +6,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,6 +22,13 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.zxing.integration.android.IntentIntegrator;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -29,15 +37,16 @@ import java.util.concurrent.ExecutionException;
 public class ProfileFragment extends Fragment {
 
     private MainActivity activity;
-    private View view, setPasswordView, twoFacterView;
+    private View view, setPasswordView, twoFacterView, emergencyAddressView;
 
     private User user;
     private Bitmap otpQRImage;
     private LinearLayout showedLogLayout, showedAffiliateLayout;
     private RelativeLayout securityLayout, showedSecurityLayout, logLayout, affiliateLayout;
 
-    private String emailURL, passwordURL, twoFactorURL, emergencyAddressURL, depositsURL, withdrawalsURL;
-    private Button btnSetPassword, btnSetEmail, btnSetTwoFactor, btnSetEmergencyAddress, btnTransactionLog, btnTipLog;//, btnContactSupport;
+    private EditText edEmergencyAddress;
+    private String tipsURL, emailURL, passwordURL, twoFactorURL, emergencyAddressURL, depositsURL, withdrawalsURL;
+    private Button btnSetPassword, btnSetEmail, btnSetTwoFactor, btnSetEmergencyAddress, btnShowDeposits, btnShowWithdrawals, btnTipLog;//, btnContactSupport;
     private TextView txtUsername, txtDateJoined, lblEmail, txtTwoFactorSet, txtEmergencyAddressSet, securityPlus, logPlus, affiliatePlus, txtAffiliateLink, txtAffiliateInformation;
 
     @Override
@@ -80,20 +89,21 @@ public class ProfileFragment extends Fragment {
         btnSetTwoFactor = (Button) view.findViewById(R.id.btnTwoFactor);
         btnSetPassword = (Button) view.findViewById(R.id.btnSetPassword);
         //btnContactSupport = (Button) view.findViewById(R.id.btnContactSupport);
-        btnTransactionLog = (Button) view.findViewById(R.id.btnTransactionLog);
+        btnShowDeposits = (Button) view.findViewById(R.id.btnShowDeposits);
+        btnShowWithdrawals = (Button) view.findViewById(R.id.btnShowWithdrawals);
         btnSetEmergencyAddress = (Button) view.findViewById(R.id.btnSetEmergencyAddress);
 
         showedLogLayout.setVisibility(View.GONE);
         showedSecurityLayout.setVisibility(View.GONE);
         showedAffiliateLayout.setVisibility(View.GONE);
 
+        tipsURL = "https://api.primedice.com/api/tips?access_token=";
         emailURL = "https://api.primedice.com/api/email?access_token=";
         passwordURL = "https://api.primedice.com/api/password?access_token=";
         depositsURL = "https://api.primedice.com/api/deposits?access_token=";
-        twoFactorURL = "https://api.primedice.com/api/2fa/enable?access_token=";//https://api.primedice.com/api/2fa/enable?access_token=";
+        twoFactorURL = "https://api.primedice.com/api/2fa/enable?access_token=";
         withdrawalsURL = "https://api.primedice.com/api/withdrawals?access_token=";
         emergencyAddressURL = "https://api.primedice.com/api/emergency?access_token=";
-
     }
 
     private void setListeners() {
@@ -159,22 +169,28 @@ public class ProfileFragment extends Fragment {
 
         btnSetEmergencyAddress.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                setEmergencyAddress();
+            public void onClick(View v) {setEmergencyAddress();
             }
         });
 
-        btnTransactionLog.setOnClickListener(new View.OnClickListener() {
+        btnShowDeposits.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showTransactionLog();
+                showDeposits(v);
+            }
+        });
+
+        btnShowWithdrawals.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showWithdrawals(v);
             }
         });
 
         btnTipLog.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showTipLog();
+                showTipLog(v);
             }
         });
 
@@ -457,7 +473,6 @@ public class ProfileFragment extends Fragment {
                         Toast.makeText(activity.getApplicationContext(), "Two Factor set!", Toast.LENGTH_LONG).show();
                         checkToHide();
                     }
-
                 } catch (InterruptedException | ExecutionException | NullPointerException e) {
                     e.printStackTrace();
                 }
@@ -468,37 +483,177 @@ public class ProfileFragment extends Fragment {
             }
         });
         alertDialog.show();
-
-        //POST /2fa/enable
-        //Expects a body parameter of otpToken (the base 32 Authenticator code to use), otp (the one-time password), and the user password.
     }
 
+    // Set Emergency Address
     private void setEmergencyAddress() {
-        //TODO: Set EmergencyAddress
 
-        //POST /emergency
-        //Expects a body parameter of address.
+        LayoutInflater factory = LayoutInflater.from(activity);
+
+        if (emergencyAddressView != null) {
+            ViewGroup parent = (ViewGroup) emergencyAddressView.getParent();
+            if (parent != null) {
+                parent.removeView(emergencyAddressView);
+            }
+        }
+        try {
+            emergencyAddressView = factory.inflate(R.layout.emergency_address_layout, null);
+        } catch (InflateException e) {
+            e.printStackTrace();
+        }
+
+        edEmergencyAddress = (EditText) emergencyAddressView.findViewById(R.id.edEmergencyAddress);
+
+        final Button btnScan = (Button) emergencyAddressView.findViewById(R.id.btnScan);
+
+        btnScan.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                IntentIntegrator integrator = new IntentIntegrator(activity);
+                integrator.initiateScan();
+            }
+        });
+
+        final AlertDialog.Builder alertDialog = new AlertDialog.Builder(activity);
+        alertDialog.setTitle("EMERGENCY INFORMATION");
+        alertDialog.setMessage("We recommend setting up an address in the event we have to send you your balance.");
+        alertDialog.setView(emergencyAddressView);
+        alertDialog.setPositiveButton("SET", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                String address = edEmergencyAddress.getText().toString();
+
+                if (address.length() < 20) {
+                    Toast.makeText(activity.getApplicationContext(), "Bitcoin Address to short!", Toast.LENGTH_LONG).show();
+                } else {
+                    try {
+                        SetEmergencyAddressTask setEmergencyAddressTask = new SetEmergencyAddressTask();
+                        String result = setEmergencyAddressTask.execute((emergencyAddressURL + activity.getAccess_token()), address).get();
+
+                        if (result == null) {
+                            Toast.makeText(activity.getApplicationContext(), "Emergency Address is NOT set!", Toast.LENGTH_LONG).show();
+                        } else {
+                            user.address_enabled = true;
+                            Toast.makeText(activity.getApplicationContext(), "Emergency Address set!", Toast.LENGTH_LONG).show();
+                            checkToHide();
+                        }
+                    } catch (InterruptedException | ExecutionException | NullPointerException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+        alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+            }
+        });
+        alertDialog.show();
     }
 
-    private void showTransactionLog() {
-        //TODO: Shop TransactionLog
+    // Show deposits log
+    private void showDeposits(View v) {
+        ArrayList<Payment> deposits = new ArrayList<>();
 
-        //GET /deposits
-        //Get a list of your deposits. A page can be specified in the URL, defaults to "1" if not specified. Requires authentication.
+        try {
+            GetJSONResultFromURLTask getDeposits = new GetJSONResultFromURLTask();
+            String result = getDeposits.execute((depositsURL + activity.getAccess_token())).get();
 
-        //GET /withdrawals
-        //Get a list of your withdrawals. A page can be specified in the URL, defaults to "1" if not specified. Requires authentication
+            Log.w("DEPOSITS", result);
+
+            if (result == null) {
+                // No deposits
+            } else {
+                JSONObject json = new JSONObject(result);
+                JSONArray jsonDeposits = json.getJSONArray("deposits");
+
+                int counter = jsonDeposits.length();
+                if (counter > 0) {
+                    for (int i = 0; i < counter; i++) {
+                        JSONObject jsonDeposit = jsonDeposits.getJSONObject(i);
+                        deposits.add(new Payment(jsonDeposit));
+                    }
+                }
+            }
+        } catch (InterruptedException | ExecutionException | NullPointerException | JSONException e) {
+            e.printStackTrace();
+        }
+
+        Intent paymentIntent = new Intent(v.getContext(), PaymentActivity.class);
+        paymentIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        paymentIntent.putExtra("title", "Deposits");
+        paymentIntent.putExtra("payments", deposits);
+        v.getContext().startActivity(paymentIntent);
     }
 
-    private void showTipLog() {
-        //TODO: Show tiplog
+    // Show withdrawals log
+    private void showWithdrawals(View v) {
+        ArrayList<Payment> withdrawals = new ArrayList<>();
 
-        //GET /tips
-        //Get a list of your withdrawals. A page can be specified in the URL, defaults to "1" if not specified. Requires authentication
+        try {
+            GetJSONResultFromURLTask getWithdrawals = new GetJSONResultFromURLTask();
+            String result = getWithdrawals.execute((withdrawalsURL + activity.getAccess_token())).get();
+
+            Log.w("WITHDRAWALS", result);
+
+            if (result != null) {
+                JSONObject json = new JSONObject(result);
+                JSONArray jsonWithdrawals = json.getJSONArray("withdrawals");
+
+                int counter = jsonWithdrawals.length();
+                if (counter > 0) {
+                    for (int i = 0; i < counter; i++) {
+                        JSONObject jsonWithdrawal = jsonWithdrawals.getJSONObject(i);
+                        withdrawals.add(new Payment(jsonWithdrawal));
+                    }
+                }
+            }
+        } catch (InterruptedException | ExecutionException | NullPointerException | JSONException e) {
+            e.printStackTrace();
+        }
+
+        Intent paymentIntent = new Intent(v.getContext(), PaymentActivity.class);
+        paymentIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        paymentIntent.putExtra("title", "Withdrawals");
+        paymentIntent.putExtra("payments", withdrawals);
+        v.getContext().startActivity(paymentIntent);
+    }
+
+    private void showTipLog(View v) {
+        ArrayList<Tip> tips = new ArrayList<>();
+
+        try {
+            GetJSONResultFromURLTask getTips = new GetJSONResultFromURLTask();
+            String result = getTips.execute((tipsURL + activity.getAccess_token())).get();
+
+            Log.w("TIPS", result);
+
+            if (result != null) {
+                JSONObject json = new JSONObject(result);
+                JSONArray jsonTips = json.getJSONArray("tips");
+
+                int counter = jsonTips.length();
+                if (counter > 0) {
+                    for (int i = 0; i < counter; i++) {
+                        JSONObject jsonTip = jsonTips.getJSONObject(i);
+                        tips.add(new Tip(jsonTip));
+                    }
+                }
+            }
+        } catch (InterruptedException | ExecutionException | NullPointerException | JSONException e) {
+            e.printStackTrace();
+        }
+
+        Intent paymentIntent = new Intent(v.getContext(), TipActivity.class);
+        paymentIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        paymentIntent.putExtra("tips", tips);
+        v.getContext().startActivity(paymentIntent);
     }
 
     private void openAffiliateInfo() {
-        //TODO: Open screen with affiliate information
+        Intent affiliateIntent = new Intent(activity.getApplicationContext(), AffiliateActivity.class);
+        affiliateIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        affiliateIntent.putExtra("user", activity.getUser());
+        affiliateIntent.putExtra("access_token", activity.getAccess_token());
+        activity.getApplicationContext().startActivity(affiliateIntent);
     }
 
     private void copyAffiliateLink() {
@@ -507,6 +662,10 @@ public class ProfileFragment extends Fragment {
         clipboard.setPrimaryClip(clip);
 
         Toast.makeText(activity.getApplicationContext(), "Copied affiliate link!", Toast.LENGTH_SHORT).show();
+    }
+
+    public void setEmergencyAddress(String emergencyAddress) {
+        edEmergencyAddress.setText(emergencyAddress);
     }
 /*
     private void contactSupport() {
