@@ -229,7 +229,6 @@
                 android:id="@+id/btnRollDice"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:onClick="rollDice"
                 android:text="@string/roll_dice" />
         </LinearLayout>
     </LinearLayout>

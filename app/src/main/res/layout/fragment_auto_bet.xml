@@ -59,7 +59,6 @@
                     android:layout_height="wrap_content"
                     android:clickable="true"
                     android:contentDescription="@string/faucet"
-                    android:onClick="claimFaucet"
                     android:src="@drawable/btnfaucet" />
 
                 <View
@@ -311,7 +310,6 @@
                         android:id="@+id/btnRollDice"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:onClick="rollDice"
                         android:text="@string/roll_dice" />
 
                     <TextView
