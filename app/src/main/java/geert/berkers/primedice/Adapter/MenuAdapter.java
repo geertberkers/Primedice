@@ -16,11 +16,11 @@ import geert.berkers.primedice.R;
  * Primedice Application Created by Geert on 24-1-2016.
  */
 public class MenuAdapter extends BaseAdapter {
-    private Context context;
+    private final Context context;
     private String selectedMenuItem;
 
-    private String[] sort = {"Bet", "Profile", "Stats", "Chat", "Automated betting", "Provably fair", "Faucet", "Log out","Tip Developer"};
-    private Integer[] images = {R.drawable.home, R.drawable.profile, R.drawable.stats, R.drawable.chat, R.drawable.automatedbetting, R.drawable.provablyfair, R.drawable.faucet,R.drawable.logout, R.drawable.tipdeveloper};
+    private final String[] sort = {"Bet", "Profile", "Stats", "Chat", "Automated betting", "Provably fair", "Faucet", "Log out","Tip Developer"};
+    private final Integer[] images = {R.drawable.home, R.drawable.profile, R.drawable.stats, R.drawable.chat, R.drawable.automatedbetting, R.drawable.provablyfair, R.drawable.faucet,R.drawable.logout, R.drawable.tipdeveloper};
 
     public MenuAdapter(Context context) {
         this.context = context;

@@ -55,10 +55,10 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        private TextView mSender;
-        private TextView mMessageView;
-        private TextView mTime;
-        private ImageView mUserInfo;
+        private final TextView mSender;
+        private final TextView mMessageView;
+        private final TextView mTime;
+        private final ImageView mUserInfo;
 
         public ViewHolder(View itemView) {
             super(itemView);

@@ -14,11 +14,11 @@ import java.text.DecimalFormat;
  */
 public class User implements Parcelable {
 
-    double balance, profit, affiliate_total;
-    boolean password, otp_enabled, email_enabled, address_enabled;
-    Long wagered;
-    int userID, bets, wins, losses, win_risk, lose_risk, messages, referred, nonce;
-    String username, address, registered, client, previous_server, previous_client, previous_server_hashed, next_seed, server, otp_token, otp_qr;
+    private double balance, profit, affiliate_total;
+    private boolean password, otp_enabled, email_enabled, address_enabled;
+    private Long wagered;
+    private int userID, bets, wins, losses, win_risk, lose_risk, messages, referred, nonce;
+    private String username, address, registered, client, previous_server, previous_client, previous_server_hashed, next_seed, server, otp_token, otp_qr;
 
     // Create User from JSON
     public User(String jsonUserString) {

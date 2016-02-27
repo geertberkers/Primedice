@@ -74,7 +74,7 @@ public class AffiliateActivity extends AppCompatActivity {
                 JSONObject json = new JSONObject(result);
                 JSONObject affiliate = json.getJSONObject("affiliate");
 
-                String availableCommision = affiliate.getString("affiliate_balance");
+                final String availableCommision = affiliate.getString("affiliate_balance");
                 String totalCommision = affiliate.getString("affiliate_total");
                 String commission = String.valueOf(affiliate.getInt("comission"));
                 String commissionLevel = affiliate.getString("level");
@@ -128,7 +128,9 @@ public class AffiliateActivity extends AppCompatActivity {
                         btnMax.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                withdrawAmount.setText(user.getBalanceAsString());
+                                String btcWithdrawAmount = satoshiStringToBTCString(availableCommision);
+                                btcWithdrawAmount = btcWithdrawAmount.replace(" BTC","");
+                                withdrawAmount.setText(btcWithdrawAmount);
 
                             }
                         });
@@ -164,9 +166,6 @@ public class AffiliateActivity extends AppCompatActivity {
                                     JSONObject json = new JSONObject(result);
                                     txtAvailableCommision.setText(satoshiStringToBTCString(json.getString("affiliate_balance")));
 
-                                    //TODO: update user
-
-
                                 } catch (InterruptedException | ExecutionException | JSONException | UnsupportedEncodingException e) {
                                     e.printStackTrace();
                                 }
@@ -198,7 +197,7 @@ public class AffiliateActivity extends AppCompatActivity {
         Toast.makeText(this.getApplicationContext(), "Copied affiliate link!", Toast.LENGTH_SHORT).show();
     }
 
-    public String satoshiStringToBTCString(String satoshiString) {
+    private String satoshiStringToBTCString(String satoshiString) {
 
         int satoshi = Double.valueOf(satoshiString).intValue();
 

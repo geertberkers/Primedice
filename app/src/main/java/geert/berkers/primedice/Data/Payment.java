@@ -12,29 +12,6 @@ import java.text.DecimalFormat;
  * Primedice Application Created by Geert on 20-2-2016.
  */
 public class Payment implements Parcelable{
-    //{"withdrawals":[{
-// "id":707534,
-// "amount":"160000",
-// "type":"withdrawal",
-// "user_id":"1022127",
-// "confirmed":true,
-// "txid":"146a24e0da7335b17fc8b40e601089118973b9e9e8a4a557d3117c802d1d64c7",
-// "timestamp":"2016-02-12T15:40:53.766Z",
-// "acredited":null,
-// "address":"1EMg7sDJGGdTpeimtWrmDmANbgqfi3FEnB",
-// "ip":"213.93.49.78"}
-
-    //{"deposits":[{
-// "id":707561,
-// "amount":"30000",
-// "type":"deposit",
-// "user_id":"1022127",
-// "confirmed":false,
-// "txid":"86cfbe4dc507d7eec4ade1aa1bf6347d984a3b4c0fae232ce87e3d9fba51b6c0-0",
-// "timestamp":"2016-02-12T16:04:48.297Z",
-// "acredited":true,
-// "address":null,
-// "ip":null},
 
     private int id;
     private String amount;
@@ -84,36 +61,12 @@ public class Payment implements Parcelable{
         return resultBTC;
     }
 
-    public String getType() {
-        return type;
-    }
-
-    public String getUserID() {
-        return userID;
-    }
-
-    public boolean isConfirmed() {
-        return confirmed;
-    }
-
     public String getTxid() {
         return txid;
     }
 
     public String getTimestamp() {
         return timestamp.substring(0,10);
-    }
-
-    public boolean isAcredited() {
-        return acredited;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public String getIp() {
-        return ip;
     }
 
     @Override

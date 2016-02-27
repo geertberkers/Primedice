@@ -13,9 +13,9 @@ import java.net.URL;
 /**
  * Primedice Application Created by Geert on 26-2-2016.
  */
-public class Connection {
+class Connection {
 
-    HttpURLConnection connection;
+    private HttpURLConnection connection;
 
     public Connection(URL url, String requestMethod) {
         try {

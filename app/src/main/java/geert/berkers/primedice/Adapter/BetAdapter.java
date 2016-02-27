@@ -20,14 +20,14 @@ import geert.berkers.primedice.R;
  * Primedice Application Created by Geert on 26-1-2016.
  */
 public class BetAdapter extends BaseAdapter {
-    private Context context;
+    private final Context context;
 
     private ArrayList<Bet> betArrayList;
 
     // Create BetAdapter
-    public BetAdapter(Context context, ArrayList<Bet> recentBets) {
+    public BetAdapter(Context context, ArrayList<Bet> bets) {
         this.context = context;
-        this.betArrayList = recentBets;
+        this.betArrayList = bets;
     }
 
     @Override
@@ -105,5 +105,11 @@ public class BetAdapter extends BaseAdapter {
         });
 
         return row;
+    }
+
+    // Update bets
+    public void setNewBetsList(ArrayList<Bet> bets){
+        this.betArrayList = bets;
+        notifyDataSetChanged();
     }
 }

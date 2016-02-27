@@ -34,8 +34,8 @@ public class LoginActivity extends AppCompatActivity {
 
     private String access_token = null;
 
-    private String loginUrl = "https://api.primedice.com/api/login";
-    private String userURL = "https://api.primedice.com/api/users/1?access_token=";
+    private final String loginUrl = "https://api.primedice.com/api/login";
+    private final String userURL = "https://api.primedice.com/api/users/1?access_token=";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

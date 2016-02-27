@@ -36,6 +36,7 @@ import com.google.zxing.integration.android.IntentIntegrator;
 import org.json.JSONObject;
 import org.json.JSONException;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.net.URISyntaxException;
@@ -53,6 +54,7 @@ import geert.berkers.primedice.Fragment.FaucetFragment;
 import geert.berkers.primedice.Fragment.ProfileFragment;
 import geert.berkers.primedice.Fragment.AutomatedBetFragment;
 import geert.berkers.primedice.Fragment.ProvablyFairFragment;
+import geert.berkers.primedice.Thread.AutomatedBetThread;
 
 /**
  * Primedice Application Created by Geert on 2-2-2016.
@@ -83,6 +85,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private ProfileFragment profileFragment;
     private ProvablyFairFragment provablyFairFragment;
     private AutomatedBetFragment automatedBetFragment;
+
+    private AutomatedBetThread automatedBetThread;
 
     public User getUser() {
         return user;
@@ -310,6 +314,85 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         alertDialog.show();
     }
 
+    // Start automated betting
+    public void startAutomatedBetThread(int amount, String target, String condition, int numberOfRolls, boolean increaseOnWin, boolean increaseOnLoss, double increaseOnWinValue, double increaseOnLossValue) {
+        automatedBetThread = new AutomatedBetThread(this, amount, target, condition, numberOfRolls, increaseOnWin, increaseOnLoss, increaseOnWinValue, increaseOnLossValue);
+
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+                automatedBetThread.startBetting();
+            }
+        };
+
+        thread.start();
+    }
+
+    public boolean isBettingAutomatic() {
+        if (automatedBetThread != null) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public void stopAutomatedBetThread() {
+        if (automatedBetThread != null) {
+            automatedBetThread.betMade(true);
+            automatedBetThread.requestStop();
+            automatedBetThread = null;
+
+            notifyAutomatedBetStopped();
+        }
+    }
+
+    public Bet makeBet(int amount, String target, String condition) {
+        automatedBetThread.betMade(false);
+
+        if (amount > (int) user.getBalance()) {
+            //TODO: Red alert with insufficient balance
+
+            stopAutomatedBetThread();
+            return null;
+        } else {
+            try {
+                String urlParameters = "amount=" + URLEncoder.encode(String.valueOf(amount), "UTF-8") +
+                        "&target=" + URLEncoder.encode(target, "UTF-8") +
+                        "&condition=" + URLEncoder.encode(condition, "UTF-8");
+
+                PostToServerTask postToServerTask = new PostToServerTask();
+                String result = postToServerTask.execute(("https://api.primedice.com/api/bet?access_token=" + access_token), urlParameters).get();
+
+                if (result != null) {
+                    JSONObject jsonObject = new JSONObject(result);
+                    JSONObject jsonBet = jsonObject.getJSONObject("bet");
+                    JSONObject jsonUser = jsonObject.getJSONObject("user");
+
+                    user.updateUser(jsonUser);
+
+                    Bet bet =  new Bet(jsonBet);
+                    addBetAndBalanceInOpenedFragment(bet);
+
+                    if(automatedBetThread != null) {
+                        automatedBetThread.betMade(true);
+                    }
+
+                    return bet;
+                }
+                else{
+                    //TODO: Inform user
+                    //Result of bet was null. So it failed
+
+                    stopAutomatedBetThread();
+                    return null;
+                }
+            } catch (UnsupportedEncodingException | ExecutionException | InterruptedException | JSONException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+    }
+
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         menuListView.setItemChecked(position, true);
@@ -320,6 +403,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         if (menuAdapter.getItem(position).equals("Bet")) {
             manager.popBackStack("Bet", 0);
+
         } else if (menuAdapter.getItem(position).equals("Profile")) {
             showFragment(profileFragment, backStackIndex, "Profile");
         } else if (menuAdapter.getItem(position).equals("Stats")) {
@@ -391,17 +475,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         if (drawerLayout.isDrawerOpen(drawer)) {
             drawerLayout.closeDrawer(drawer);
         } else if (manager.getBackStackEntryCount() > 1) {
-            Log.i("Backbutton", "Vorig fragment");
-
             manager.popBackStack();
             int index = manager.getBackStackEntryCount() - 2;
             String menuItem = manager.getBackStackEntryAt(index).getName();
             getSupportActionBar().setTitle(menuItem);
 
             menuAdapter.setSelectedMenuItem(menuItem);
-
         } else {
             Log.i("MainActivity", "Close");
+            stopAutomatedBetThread();
             mSocket.disconnect();
             super.onBackPressed();
         }
@@ -502,6 +584,45 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     }
 
+    // Add bet and update balance in opened fragment
+    public void addBetAndBalanceInOpenedFragment(Bet bet){
+        String currentFragment = manager.getBackStackEntryAt(manager.getBackStackEntryCount() - 1).getName();
+
+        String balance = user.getBalanceAsString();
+
+        switch (currentFragment) {
+            case "Bet":
+                betFragment.updateBalance(balance);
+                betFragment.addBet(bet, false, true);
+                break;
+            case "Automated betting":
+                automatedBetFragment.updateBalance(balance);
+                automatedBetFragment.addBet(bet);
+                break;
+            case "Faucet":
+                faucetFragment.updateBalance(balance);
+                break;
+            default:
+                break;
+        }
+    }
+
+    // Notify fragments that automatic betting stopped
+    public void notifyAutomatedBetStopped(){
+        String currentFragment = manager.getBackStackEntryAt(manager.getBackStackEntryCount() - 1).getName();
+
+        switch (currentFragment) {
+            case "Bet":
+                betFragment.notifyAutomatedBetStopped();
+                break;
+            case "Automated betting":
+                automatedBetFragment.notifyAutomatedBetStopped();
+                break;
+            default:
+                break;
+        }
+    }
+
     private final Emitter.Listener socketioConnect = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
@@ -551,12 +672,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
                 // Check if bet is HR bet or Normal bet
                 if (b.getAmount() >= 10000000) {
-                    betFragment.addBet(b, true);
+                    betCounter++;
+                    betFragment.addBet(b, true, false);
                 } else {
                     //Only add 1/3 else to fast for application
                     betCounter++;
                     if (betCounter == 3) {
-                        betFragment.addBet(b, false);
+                        betFragment.addBet(b, false, false);
                         betCounter = 0;
                     }
                 }
@@ -657,14 +779,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     }
 
-    @Override
-    protected void onStop() {
-        super.onStop();
-    }
-
     // TODO: General things to complete this application:
     // Encrypt access_token
-    // Improve automated bets
     // Improve chat
     // Remove all toasts for alerts
     // Bet failed multiple times in a row? -> Change seed!

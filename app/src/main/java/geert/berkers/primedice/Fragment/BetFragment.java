@@ -56,9 +56,9 @@ public class BetFragment extends Fragment {
     private MainActivity activity;
 
     private int openedBet;
-    private static int MY_BETS = 1;
-    private static int ALL_BETS = 2;
-    private static int HR_BETS = 3;
+    private static final int MY_BETS = 1;
+    private static final int ALL_BETS = 2;
+    private static final int HR_BETS = 3;
 
     private int betAmount;
     private MySQLiteHelper db;
@@ -82,6 +82,14 @@ public class BetFragment extends Fragment {
             initControls();
             setListeners();
             setInformation();
+        } else {
+            myBets = db.getAllBetsFromUser(activity.getUser().getUsername());
+            showBets(myBets);
+
+            if (activity.isBettingAutomatic()) {
+                String stopBetting = "STOP AUTOMATED BETTING";
+                btnRollDice.setText(stopBetting);
+            }
         }
 
         txtBalance.setText(activity.getUser().getBalanceAsString());
@@ -626,8 +634,14 @@ public class BetFragment extends Fragment {
     private void rollDice() {
         String rollDice;
 
-        if (maxPressed) {
+        if (activity.isBettingAutomatic()) {
+            activity.stopAutomatedBetThread();
+
+            rollDice = "ROLL DICE";
+            btnRollDice.setText(rollDice);
+        } else if (maxPressed) {
             maxPressed = false;
+
             rollDice = "Confirm MAX bet";
             btnRollDice.setText(rollDice);
         } else if (betAmount > (int) activity.getUser().getBalance()) {
@@ -635,7 +649,6 @@ public class BetFragment extends Fragment {
         } else {
             rollDice = "ROLL DICE";
             btnRollDice.setText(rollDice);
-            PostToServerTask postToServerTask = new PostToServerTask();
 
             String condition;
             String amount = String.valueOf(betAmount);
@@ -649,11 +662,11 @@ public class BetFragment extends Fragment {
 
             // Place bet
             try {
-                String urlParameters =
-                        "amount=" + URLEncoder.encode(amount, "UTF-8") +
-                                "&target=" + URLEncoder.encode(target, "UTF-8") +
-                                "&condition=" + URLEncoder.encode(condition, "UTF-8");
+                String urlParameters = "amount=" + URLEncoder.encode(amount, "UTF-8") +
+                        "&target=" + URLEncoder.encode(target, "UTF-8") +
+                        "&condition=" + URLEncoder.encode(condition, "UTF-8");
 
+                PostToServerTask postToServerTask = new PostToServerTask();
                 String result = postToServerTask.execute((betURL + activity.getAccess_token()), urlParameters).get();
 
                 // Check result
@@ -662,21 +675,13 @@ public class BetFragment extends Fragment {
                     JSONObject jsonBet = jsonObject.getJSONObject("bet");
                     JSONObject jsonUser = jsonObject.getJSONObject("user");
 
-                    // Create bet and put in betlist/database
-                    Bet bet = new Bet(jsonBet);
+                    // Update user
                     activity.getUser().updateUser(jsonUser);
-                    myBets.add(0, bet);
-                    db.addBet(bet);
 
-                    // Remove bet if saved more than 30 bets
-                    if (myBets.size() > 30) {
-                        for (int i = 30; i < myBets.size(); i++) {
-                            db.deleteBet(myBets.get(i));
-                            myBets.remove(i);
-                        }
-                    }
+                    // Create and handle bet
+                    Bet bet = new Bet(jsonBet);
 
-                    openedBet = MY_BETS;
+                    addBet(bet, false, true);
                 } else {
                     GetJSONResultFromURLTask userTask = new GetJSONResultFromURLTask();
                     String userResult = userTask.execute(userURL + activity.getAccess_token()).get();
@@ -755,10 +760,10 @@ public class BetFragment extends Fragment {
     }
 
     // Add bet to the list and show if opened
-    public void addBet(Bet b, boolean highRoller) {
+    public void addBet(Bet bet, boolean highRoller, boolean ownBet) {
         if (highRoller) {
             this.hrBets.remove(hrBets.size() - 1);
-            this.hrBets.add(0, b);
+            this.hrBets.add(0, bet);
 
             activity.runOnUiThread(new Runnable() {
                 @Override
@@ -768,9 +773,29 @@ public class BetFragment extends Fragment {
                     }
                 }
             });
+        } else if (ownBet) {
+            myBets.add(0, bet);
+            db.addBet(bet);
+
+            // Remove bet if saved more than 30 bets
+            if (myBets.size() > 30) {
+                for (int i = 30; i < myBets.size(); i++) {
+                    db.deleteBet(myBets.get(i));
+                    myBets.remove(i);
+                }
+            }
+
+            openedBet = MY_BETS;
+
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    showBets(myBets);
+                }
+            });
         } else {
             this.allBets.remove(allBets.size() - 1);
-            this.allBets.add(0, b);
+            this.allBets.add(0, bet);
 
             activity.runOnUiThread(new Runnable() {
                 @Override
@@ -783,11 +808,22 @@ public class BetFragment extends Fragment {
         }
     }
 
+    // Update balance
     public void updateBalance(final String balance) {
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 txtBalance.setText(balance);
+            }
+        });
+    }
+
+    // Notify automated betting stopped.
+    public void notifyAutomatedBetStopped() {
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                btnRollDice.setText("ROLL DICE");
             }
         });
     }

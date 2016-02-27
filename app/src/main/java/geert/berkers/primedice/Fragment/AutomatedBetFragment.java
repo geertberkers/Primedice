@@ -38,13 +38,13 @@ public class AutomatedBetFragment extends Fragment {
     private MySQLiteHelper db;
 
     private boolean betHigh;
-    private String userURL, betURL;
     private int numberOfRolls, betAmount;
     private Double betMultiplier, betPercentage, target;
 
     private ArrayList<Bet> bets;
     private ListView betsListView;
     private BetAdapter betAdapter;
+    private String btnRollBtnText;
     private TextView txtBalance, autobethelp;
     private LinearLayout setNumberOfRollsLayout;
     private Button btnHighLow, btnMultiplier, btnPercentage, btnRollDice;
@@ -61,12 +61,25 @@ public class AutomatedBetFragment extends Fragment {
             setListeners();
             setInformation();
         } else {
+            String btnText;
+
+            if (activity.isBettingAutomatic()) {
+                btnText = "STOP AUTOMATED BETTING";
+            } else {
+                btnText = "ROLL DICE";
+            }
+
             bets = db.getAllBetsFromUser(activity.getUser().getUsername());
+            betAdapter.setNewBetsList(bets);
+            btnRollDice.setText(btnText);
         }
+
+        txtBalance.setText(activity.getUser().getBalanceAsString());
 
         return view;
     }
 
+    // init Controls
     private void initControls() {
         activity = (MainActivity) getActivity();
 
@@ -99,6 +112,7 @@ public class AutomatedBetFragment extends Fragment {
         setNumberOfRollsLayout = (LinearLayout) view.findViewById(R.id.numberOfRollsSetLayout);
     }
 
+    // Set onClick Listeners
     private void setListeners() {
         autobethelp.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -244,6 +258,7 @@ public class AutomatedBetFragment extends Fragment {
         });
     }
 
+    // Set information
     private void setInformation() {
         numberOfRolls = 10;
         betHigh = false;
@@ -251,9 +266,6 @@ public class AutomatedBetFragment extends Fragment {
         betMultiplier = 2.0;
         betPercentage = 49.50;
         target = betPercentage;
-
-        betURL = "https://api.primedice.com/api/bet?access_token=";
-        userURL = "https://api.primedice.com/api/users/1?access_token=";
 
         cbLimitRolls.setChecked(false);
         setNumberOfRollsLayout.setVisibility(View.GONE);
@@ -316,8 +328,10 @@ public class AutomatedBetFragment extends Fragment {
 
                     df = new DecimalFormat("0.000");
                     double percentageDouble = Double.valueOf(percentage.replace("%", ""));
+
                     newBetMultiplier = 99 / percentageDouble;
                     String multiplier = df.format(newBetMultiplier).replace(",", ".");
+
                     if (multiplier.indexOf(".") == 4) {
                         multiplier = multiplier.substring(0, 4);
                     } else {
@@ -404,11 +418,45 @@ public class AutomatedBetFragment extends Fragment {
 
     // Roll dice
     private void rollDice() {
-        // TODO: Start thread (till user stops)
-        // TODO: Check conditions for autobet
-        // TODO: Add to database and listview
+        String condition;
+
+        if (activity.isBettingAutomatic()) {
+            activity.stopAutomatedBetThread();
+            btnRollBtnText = "ROLL DICE";
+            btnRollDice.setText(btnRollBtnText);
+        } else {
+            btnRollBtnText = "STOP AUTOMATED BETTING";
+            btnRollDice.setText(btnRollBtnText);
+
+            if (betHigh) {
+                condition = ">";
+            } else {
+                condition = "<";
+            }
+
+            try {
+                if (cbLimitRolls.isChecked()) {
+                    numberOfRolls = Integer.valueOf(edLimitRolls.getText().toString());
+                } else {
+                    numberOfRolls = -1;
+                }
+
+                boolean increaseOnWin = cbIncreaseWin.isChecked();
+                boolean increaseOnLoss = cbIncreaseLoss.isChecked();
+
+                double increaseOnWinValue = Double.valueOf(edIncreaseWin.getText().toString());
+                double increaseOnLossValue = Double.valueOf(edIncreaseLoss.getText().toString());
+
+                activity.startAutomatedBetThread(betAmount, String.valueOf(target), condition, numberOfRolls, increaseOnWin, increaseOnLoss, increaseOnWinValue, increaseOnLossValue);
+
+            } catch (Exception e) {
+                Toast.makeText(activity.getApplicationContext(), "Bet settings incorrect!", Toast.LENGTH_LONG).show();
+                e.printStackTrace();
+            }
+        }
     }
 
+    // Update balance
     public void updateBalance(final String balance) {
         activity.runOnUiThread(new Runnable() {
             @Override
@@ -418,6 +466,7 @@ public class AutomatedBetFragment extends Fragment {
         });
     }
 
+    // Set ListView Height
     private static void setListViewHeightBasedOnChildren(ListView listView) {
         ListAdapter listAdapter = listView.getAdapter();
         if (listAdapter != null) {
@@ -433,5 +482,38 @@ public class AutomatedBetFragment extends Fragment {
             params.height = (totalHeight / 100 * 160) + (listView.getDividerHeight() * (listAdapter.getCount() - 1));
             listView.setLayoutParams(params);
         }
+    }
+
+    // Add bet to the list and show if opened
+    public void addBet(Bet bet) {
+
+        bets.add(0, bet);
+        db.addBet(bet);
+
+        // Remove bet if saved more than 30 bets
+        if (bets.size() > 30) {
+            for (int i = 30; i < bets.size(); i++) {
+                db.deleteBet(bets.get(i));
+                bets.remove(i);
+            }
+        }
+
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                betAdapter.setNewBetsList(bets);
+            }
+        });
+    }
+
+    // Notify automated betting stopped.
+    public void notifyAutomatedBetStopped() {
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                btnRollBtnText = "ROLL DICE";
+                btnRollDice.setText(btnRollBtnText);
+            }
+        });
     }
 }

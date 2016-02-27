@@ -168,8 +168,10 @@ public class ChatFragment extends Fragment {
                     "room=" + URLEncoder.encode(currentRoom, "UTF-8") +
                             "&message=" + URLEncoder.encode(message, "UTF-8");
 
-            if(toUsername != null && toUsername.length() >=3 && toUsername.length() <= 12){
-                urlParameters += "&toUsername=" + URLEncoder.encode(toUsername, "UTF-8");
+            if(toUsername != null) {
+                if (toUsername.length() >= 3 && toUsername.length() <= 12) {
+                    urlParameters += "&toUsername=" + URLEncoder.encode(toUsername, "UTF-8");
+                }
             }
             PostToServerTask sendMessage = new PostToServerTask();
             result = sendMessage.execute((sendMessageURL + access_token), urlParameters).get();

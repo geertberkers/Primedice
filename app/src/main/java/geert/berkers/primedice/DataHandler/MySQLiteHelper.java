@@ -78,8 +78,6 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
 
     // Add a bet
     public void addBet(Bet bet) {
-        Log.d("addBet", bet.toString());
-
         // 1. Get reference to writable DB
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -143,8 +141,6 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
             } while (cursor.moveToNext());
         }
 
-        Log.d("getAllBets()", betList.toString());
-
         // 4. Close database
         cursor.close();
         db.close();
@@ -163,7 +159,5 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
 
         // 3. Close
         db.close();
-
-        Log.d("deleteBet", bet.toString());
     }
 }

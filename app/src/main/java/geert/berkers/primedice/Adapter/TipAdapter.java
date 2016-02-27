@@ -18,9 +18,9 @@ import geert.berkers.primedice.R;
  * Primedice Application Created by Geert on 20-2-2016.
  */
 public class TipAdapter extends BaseAdapter {
-    private Context context;
+    private final Context context;
 
-    private ArrayList<Tip> tipsList;
+    private final ArrayList<Tip> tipsList;
 
     // Create PaymentAdapter
     public TipAdapter(Context context, ArrayList<Tip> tipsList) {

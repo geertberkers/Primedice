@@ -75,7 +75,7 @@ public class PlayerInformationActivity extends AppCompatActivity {
         }
     }
 
-    public User getUser() {
+    private User getUser() {
 
         User user;
         String userResult = "NoResult";

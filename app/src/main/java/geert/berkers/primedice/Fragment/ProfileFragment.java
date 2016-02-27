@@ -696,7 +696,25 @@ public class ProfileFragment extends Fragment {
     public void setEmergencyAddress(String emergencyAddress) {
         edEmergencyAddress.setText(emergencyAddress);
     }
-/*
+
+    @Override
+    public void onResume() {
+        try {
+            GetJSONResultFromURLTask userTask = new GetJSONResultFromURLTask();
+            String userResult = userTask.execute("https://api.primedice.com/api/users/1?access_token=" + activity.getAccess_token()).get();
+
+            if (userResult != null) {
+                if (!userResult.equals("NoResult")) {
+                    activity.updateUser(new User(userResult));
+                }
+            }
+        } catch (Exception ex){
+            // Error getting user.
+        }
+        super.onResume();
+    }
+
+    /*
     private void contactSupport() {
         //No API available
     }

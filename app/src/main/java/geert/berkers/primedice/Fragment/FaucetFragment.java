@@ -20,6 +20,8 @@ import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.concurrent.ExecutionException;
 
 import geert.berkers.primedice.Activity.MainActivity;
@@ -29,17 +31,16 @@ import geert.berkers.primedice.R;
 /**
  * Primedice Application Created by Geert on 2-2-2016.
  */
-//TODO: Implement local timer after claiming faucet.
 public class FaucetFragment extends Fragment {
 
     private View view;
     private MainActivity activity;
 
+    private Date nextClaim;
+    private Calendar calendar;
     private TextView txtBalance;
     private WebView faucetWebView;
     private String mime, encoding, html, claimFaucetURL;
-
-    String response;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -54,7 +55,6 @@ public class FaucetFragment extends Fragment {
 
         return view;
     }
-
 
     @SuppressLint("SetJavaScriptEnabled")
     @TargetApi(Build.VERSION_CODES.KITKAT)
@@ -97,12 +97,14 @@ public class FaucetFragment extends Fragment {
         });
     }
 
-    public void refreshFaucet() {
+    private void refreshFaucet() {
         faucetWebView.loadDataWithBaseURL("https://primedice.com/play", html, mime, encoding, null);
     }
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
-    public void onClaimFaucet() {
+    private void onClaimFaucet() {
+        calendar = Calendar.getInstance();
+
         if (txtBalance.getText().toString().equals("0.00000000")) {
             faucetWebView.evaluateJavascript("grecaptcha.getResponse()", new ValueCallback<String>() {
                 @Override
@@ -113,28 +115,18 @@ public class FaucetFragment extends Fragment {
                     responseForAPI = responseForAPI.replace("\"", "");
                     Log.w("ResponseForAPI", responseForAPI);
 
-                    try {
-                        PostToServerTask claimFaucetTask = new PostToServerTask();
-                        String urlParameters = "response=" + URLEncoder.encode(responseForAPI, "UTF-8");
+                    if (nextClaim != null) {
+                        Date now = new Date();
+                        if (nextClaim.before(now)) {
 
-                        String result = claimFaucetTask.execute((claimFaucetURL + activity.getAccess_token()), urlParameters).get();
+                            claimFaucet(responseForAPI);
 
-                        if (result != null) {
-                            Log.w("ClaimResult", result);
-
-                            JSONObject jsonResult = new JSONObject(result);
-                            activity.getUser().updateUserBalance(jsonResult.getString("balance"));
-
-                            txtBalance.setText(activity.getUser().getBalanceAsString());
-                            Toast.makeText(activity.getApplicationContext(), "Faucet claimed!", Toast.LENGTH_LONG).show();
                         } else {
-                            Toast.makeText(activity.getApplicationContext(), "CAPTCHA incorrect or claimed to early!", Toast.LENGTH_LONG).show();
+                            long difference = nextClaim.getTime() - now.getTime();
+                            Toast.makeText(activity.getApplicationContext(), "Wait " + (difference / 1000) + " seconds!", Toast.LENGTH_LONG).show();
                         }
-
-                        refreshFaucet();
-
-                    } catch (InterruptedException | ExecutionException | JSONException | UnsupportedEncodingException e) {
-                        e.printStackTrace();
+                    } else {
+                        claimFaucet(responseForAPI);
                     }
                 }
             });
@@ -142,6 +134,37 @@ public class FaucetFragment extends Fragment {
             Toast.makeText(activity.getApplicationContext(), "Balance is not null!", Toast.LENGTH_LONG).show();
         }
     }
+
+    private void claimFaucet(String responseForAPI) {
+        try {
+            PostToServerTask claimFaucetTask = new PostToServerTask();
+            String urlParameters = "response=" + URLEncoder.encode(responseForAPI, "UTF-8");
+
+            String result = claimFaucetTask.execute((claimFaucetURL + activity.getAccess_token()), urlParameters).get();
+
+            if (result != null) {
+                Log.w("ClaimResult", result);
+
+                JSONObject jsonResult = new JSONObject(result);
+                activity.getUser().updateUserBalance(jsonResult.getString("balance"));
+
+                txtBalance.setText(activity.getUser().getBalanceAsString());
+                Toast.makeText(activity.getApplicationContext(), "Faucet claimed!", Toast.LENGTH_LONG).show();
+
+                nextClaim = new Date();
+                nextClaim.setMinutes(nextClaim.getMinutes() + 3);
+
+            } else {
+                Toast.makeText(activity.getApplicationContext(), "Try again. Please be patient.", Toast.LENGTH_LONG).show();
+            }
+
+            refreshFaucet();
+
+        } catch (InterruptedException | ExecutionException | JSONException | UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     public void updateBalance(final String balance) {
         activity.runOnUiThread(new Runnable() {

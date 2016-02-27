@@ -1,6 +1,8 @@
 package geert.berkers.primedice.Adapter;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,9 +18,9 @@ import geert.berkers.primedice.R;
  * Primedice Application Created by Geert on 20-2-2016.
  */
 public class PaymentAdapter extends BaseAdapter {
-    private Context context;
+    private final Context context;
 
-    private ArrayList<Payment> paymentsList;
+    private final ArrayList<Payment> paymentsList;
 
     // Create PaymentAdapter
     public PaymentAdapter(Context context, ArrayList<Payment> paymentsList) {
@@ -57,7 +59,7 @@ public class PaymentAdapter extends BaseAdapter {
         final TextView date = (TextView) row.findViewById(R.id.txtDate);
 
 
-        String txidString = paymentsList.get(position).getTxid().substring(0, 8) + "...";
+        final String txidString = paymentsList.get(position).getTxid().replace("-0","");
 
         txid.setText(txidString);
         amount.setText(paymentsList.get(position).getAmount());
@@ -69,8 +71,8 @@ public class PaymentAdapter extends BaseAdapter {
         txid.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //TODO: Open TXID
-
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://blockchain.info/tx/" + txidString));
+                v.getContext().startActivity(browserIntent);
             }
         });
 
