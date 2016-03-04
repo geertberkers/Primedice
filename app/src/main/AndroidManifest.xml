@@ -63,6 +63,9 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".Activity.MainActivity" />
         </activity>
+
+        <service android:name=".Thread.SocketService"/>
     </application>
+
 
 </manifest>

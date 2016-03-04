@@ -1,74 +1,78 @@
 package geert.berkers.primedice.Data;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
+
 /**
  * Primedice Application Created by Geert on 5-2-2016.
  */
 public class Message {
 
-    public static final int TYPE_MESSAGE = 0;
-    public static final int TYPE_LOG = 1;
-    public static final int TYPE_ACTION = 2;
-
+    // Rooms:
     public static final int ENGLISH = 0;
     public static final int RUSSIAN = 1;
 
-    private int mRoom;
-    private int mType;
-    private String mMessage;
-    private String mSender;
-    private String mTime;
+    // Types:
+    public static final int PM = 0;
+    public static final int BOT = 1;
+    public static final int MESSAGE = 2;
 
+    // Tags:
+    public static final int VIP = 0;
+    public static final int MOD = 1;
+    public static final int USER = 2;
+    public static final int ADMIN = 3;
+    public static final int SUPPORT = 4;
 
-    private Message() {}
+    private int room;
+    private int type;
+    private int tag;
 
-    public int getRoom() {
-        return mRoom;
+    private String message;
+    private String sender;
+    private String time;
+
+    public Message(int room, int type, int tag, String message, String sender, String time) {
+        this.room = room;
+        this.type = type;
+        this.tag = tag;
+        this.message = message;
+        this.sender = sender;
+        this.time = time;
     }
 
-    public int getType() {
-        return mType;
-    }
+    public String getLocalTime() {
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+        //2016-03-03T18:30:14.726Z
+        formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
 
-    public String getMessage() {
-        return mMessage;
+        Date value = null;
+        try {
+            value = formatter.parse(time);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        SimpleDateFormat localFormat = new SimpleDateFormat("HH:mm");
+        localFormat.setTimeZone(TimeZone.getDefault());
+        return localFormat.format(value);
     }
 
     public String getSender() {
-        return mSender;
+        return sender;
     }
 
-    public String getTime() {
-        return mTime;
+    public String getMessage() {
+        return message.replace("\n"," ");
     }
 
-    public static class Builder {
-        private final int mRoom;
-        private final int mType;
-        private String mMessage;
-        private String mSender;
-        private String mTime;
+    public int getTag() {
+        return tag;
+    }
 
-        public Builder(int room, int type) {
-            mRoom = room;
-            mType = type;
-        }
-
-        //TODO: Parse time to local time
-        public Builder message(String message, String sender, String time) {
-            mMessage = message;
-            mSender = sender;
-            mTime = time;
-            return this;
-        }
-
-        public Message build() {
-            Message message = new Message();
-            message.mRoom = mRoom;
-            message.mType = mType;
-            message.mMessage = mMessage;
-            message.mSender = mSender;
-            message.mTime = mTime;
-            return message;
-        }
+    public int getType() {
+        return type;
     }
 }

@@ -137,7 +137,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         drawerListener = new ActionBarDrawerToggle(this, drawerLayout, R.string.drawer_open, R.string.drawer_close) {
             @Override
             public void onDrawerOpened(View drawerView) {
-                imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
+                if (getCurrentFocus() != null) {
+                    imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
+                }
                 super.onDrawerOpened(drawerView);
             }
         };
@@ -154,15 +156,17 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         provablyFairFragment = new ProvablyFairFragment();
         automatedBetFragment = new AutomatedBetFragment();
 
-        getSupportActionBar().setHomeButtonEnabled(true);
-        getSupportActionBar().setIcon(R.mipmap.primedice);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setHomeButtonEnabled(true);
+            getSupportActionBar().setIcon(R.mipmap.primedice);
+            getSupportActionBar().setDisplayShowHomeEnabled(true);
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
     }
 
     // Set the information from user
     private void setInformation() {
-        setTitle("Bet");
+        setTitleAndOpenedMenuItem("Bet");
 
         betCounter = 0;
         tipURL = "https://api.primedice.com/api/tip?access_token=";
@@ -236,7 +240,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                             int satoshiTip = (int) satoshi;
 
                             if (user.getBalance() < satoshi) {
-                                Toast.makeText(getApplicationContext(), "Not enough balance to tip!", Toast.LENGTH_LONG).show();
+                                showNotification(true, "Insufficient funds", 5);
                             } else if (satoshiTip < 50001) {
                                 Toast.makeText(getApplicationContext(), "Tip must be at least 0.00050001 BTC!", Toast.LENGTH_LONG).show();
                             } else {
@@ -267,51 +271,79 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 }
         );
         tipDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                    }
-                }
-        );
+            public void onClick(DialogInterface dialogInterface, int i) {
+                setTitleAndOpenedMenuItem(manager.getBackStackEntryAt(manager.getBackStackEntryCount() - 1).getName());
+            }
+        });
         tipDialog.show();
     }
 
-    // Log out
-    private void logOut(final Activity a) {
+    // Log out without password set
+    public void logOutNoPasswordSet(final Activity a) {
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+        alertDialog.setTitle("Are you sure?");
+        alertDialog.setMessage("It looks like your account doesn't have a password set. Logging out of an unpassworded acccount means it will be forever gone and inaccessible.");
+        alertDialog.setPositiveButton("LOGOUT", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialogInterface, int i) {
+                logOut(a);
+            }
+        });
+        alertDialog.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialogInterface, int i) {
+                setTitleAndOpenedMenuItem(manager.getBackStackEntryAt(manager.getBackStackEntryCount() - 1).getName());
+            }
+        });
+        alertDialog.setNeutralButton("SET PASSWORD", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialogInterface, int i) {
+                setTitleAndOpenedMenuItem("Profile");
+                showFragment(profileFragment, manager.getBackStackEntryCount() - 1, "Profile");
+            }
+        });
+        alertDialog.show();
+    }
+
+    // Log out with password set
+    public void logOutPasswordSet(final Activity a) {
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
         alertDialog.setTitle("Log out");
         alertDialog.setMessage("Are you sure?");
         alertDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialogInterface, int i) {
-
-                String result = "NoResult";
-                try {
-                    PostToServerTask logOutTask = new PostToServerTask();
-
-                    result = logOutTask.execute(logOutURL + access_token, null).get();
-                } catch (InterruptedException | ExecutionException e) {
-                    e.printStackTrace();
-                }
-
-                if (result != null || result.equals("NoResult")) {
-                    if (result != null || result.equals("NoResult")) {
-                        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-                        SharedPreferences.Editor editor = sharedPref.edit();
-                        editor.clear();
-                        editor.apply();
-
-                        Intent loginActivityIntent = new Intent(a, LoginActivity.class);
-                        loginActivityIntent.putExtra("info", "Succesfully logged out.");
-                        startActivity(loginActivityIntent);
-                        a.finish();
-                    }
-                }
+                logOut(a);
             }
         });
         alertDialog.setNegativeButton("No", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                    }
-                }
-        );
+            public void onClick(DialogInterface dialogInterface, int i) {
+                setTitleAndOpenedMenuItem(manager.getBackStackEntryAt(manager.getBackStackEntryCount() - 1).getName());
+            }
+        });
         alertDialog.show();
+    }
+
+    // Log out
+    public void logOut(Activity a) {
+        String result = "NoResult";
+        try {
+            PostToServerTask logOutTask = new PostToServerTask();
+
+            result = logOutTask.execute(logOutURL + access_token, null).get();
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
+
+        if (result != null) {
+            if (!result.equals("NoResult")) {
+                SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.clear();
+                editor.apply();
+
+                Intent loginActivityIntent = new Intent(a, LoginActivity.class);
+                loginActivityIntent.putExtra("info", "Successfully logged out.");
+                startActivity(loginActivityIntent);
+                a.finish();
+            }
+        }
     }
 
     // Start automated betting
@@ -328,14 +360,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         thread.start();
     }
 
+    // Check if application is betting automatic
     public boolean isBettingAutomatic() {
-        if (automatedBetThread != null) {
-            return true;
-        } else {
-            return false;
-        }
+        return automatedBetThread != null;
     }
 
+    // Stop automatic betting
     public void stopAutomatedBetThread() {
         if (automatedBetThread != null) {
             automatedBetThread.betMade(true);
@@ -350,8 +380,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         automatedBetThread.betMade(false);
 
         if (amount > (int) user.getBalance()) {
-            //TODO: Red alert with insufficient balance
-
+            showNotification(true, "Insufficient funds", 5);
             stopAutomatedBetThread();
             return null;
         } else {
@@ -370,18 +399,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
                     user.updateUser(jsonUser);
 
-                    Bet bet =  new Bet(jsonBet);
+                    Bet bet = new Bet(jsonBet);
                     addBetAndBalanceInOpenedFragment(bet);
 
-                    if(automatedBetThread != null) {
+                    if (automatedBetThread != null) {
                         automatedBetThread.betMade(true);
                     }
 
                     return bet;
-                }
-                else{
-                    //TODO: Inform user
-                    //Result of bet was null. So it failed
+                } else {
+                    showNotification(true, "Bet error", 5);
 
                     stopAutomatedBetThread();
                     return null;
@@ -396,14 +423,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         menuListView.setItemChecked(position, true);
-        getSupportActionBar().setTitle(menuAdapter.getItem(position));
+        setTitleAndOpenedMenuItem(menuAdapter.getItem(position));
 
         int backStack = manager.getBackStackEntryCount();
         int backStackIndex = backStack - 1;
 
         if (menuAdapter.getItem(position).equals("Bet")) {
             manager.popBackStack("Bet", 0);
-
         } else if (menuAdapter.getItem(position).equals("Profile")) {
             showFragment(profileFragment, backStackIndex, "Profile");
         } else if (menuAdapter.getItem(position).equals("Stats")) {
@@ -420,16 +446,18 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         } else if (menuAdapter.getItem(position).equals("Tip Developer")) {
             tipDeveloper();
         } else if (menuAdapter.getItem(position).equals("Log out")) {
-            logOut(this);
-        }
-
-        if (!menuAdapter.getItem(position).equals("Tip Developer")) {
-            menuAdapter.setSelectedMenuItem(menuAdapter.getItem(position));
+            // Check if password set
+            if (!user.getPasswordSet()) {
+                logOutNoPasswordSet(this);
+            } else {
+                logOutPasswordSet(this);
+            }
         }
 
         drawerLayout.closeDrawer(drawer);
     }
 
+    // Show statistics and set information
     private void showStats(int backStackIndex) {
         DecimalFormat format = new DecimalFormat("0.00000000");
 
@@ -478,14 +506,23 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             manager.popBackStack();
             int index = manager.getBackStackEntryCount() - 2;
             String menuItem = manager.getBackStackEntryAt(index).getName();
-            getSupportActionBar().setTitle(menuItem);
-
-            menuAdapter.setSelectedMenuItem(menuItem);
+            setTitleAndOpenedMenuItem(menuItem);
         } else {
+
             Log.i("MainActivity", "Close");
             stopAutomatedBetThread();
             mSocket.disconnect();
+
+            // If account isn't remembered, logout
+            SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+            boolean rememberMe = sharedPref.getBoolean("remember_me", false);
+
+            if(!rememberMe){
+                logOut(this);
+            }
+
             super.onBackPressed();
+
         }
     }
 
@@ -524,11 +561,18 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     // Show notification with text x for y seconds.
     // Use 0 if user must click it away him/herself
-    private void showNotification(final String text, final int seconds) {
+    public void showNotification(final boolean error, final String text, final int seconds) {
 
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
+
+                if (error) {
+                    notification.setBackgroundResource(R.drawable.error);
+                } else {
+                    notification.setBackgroundResource(R.drawable.notification);
+                }
+
                 notification.setVisibility(View.VISIBLE);
                 closeNotification.setVisibility(View.VISIBLE);
                 notification.setText(text);
@@ -570,22 +614,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         // These fragments have no current balance: Profile, Stats, Chat, Provably fair
         switch (currentFragment) {
-            case "Bet":
-                betFragment.updateBalance(balance);
-                break;
-            case "Automated betting":
-                automatedBetFragment.updateBalance(balance);
-                break;
-            case "Faucet":
-                faucetFragment.updateBalance(balance);
-                break;
-            default:
-                break;
+            case "Bet":                 betFragment.updateBalance(balance);             break;
+            case "Automated betting":   automatedBetFragment.updateBalance(balance);    break;
+            case "Faucet":              faucetFragment.updateBalance(balance);          break;
+            default:                                                                    break;
         }
     }
 
     // Add bet and update balance in opened fragment
-    public void addBetAndBalanceInOpenedFragment(Bet bet){
+    public void addBetAndBalanceInOpenedFragment(Bet bet) {
         String currentFragment = manager.getBackStackEntryAt(manager.getBackStackEntryCount() - 1).getName();
 
         String balance = user.getBalanceAsString();
@@ -608,18 +645,21 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     // Notify fragments that automatic betting stopped
-    public void notifyAutomatedBetStopped(){
+    public void notifyAutomatedBetStopped() {
         String currentFragment = manager.getBackStackEntryAt(manager.getBackStackEntryCount() - 1).getName();
 
         switch (currentFragment) {
-            case "Bet":
-                betFragment.notifyAutomatedBetStopped();
-                break;
-            case "Automated betting":
-                automatedBetFragment.notifyAutomatedBetStopped();
-                break;
-            default:
-                break;
+            case "Bet":                 betFragment.notifyAutomatedBetStopped();            break;
+            case "Automated betting":   automatedBetFragment.notifyAutomatedBetStopped();   break;
+            default:                                                                        break;
+        }
+    }
+
+    // Set title and opened menu
+    public void setTitleAndOpenedMenuItem(String title) {
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle(title);
+            menuAdapter.setSelectedMenuItem(title);
         }
     }
 
@@ -629,7 +669,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             Log.i("MainActivity", "Socket connected");
             mSocket.emit("user", access_token);
             mSocket.emit("chat");
-            mSocket.emit("stats");
             mSocket.emit("alert");
         }
     };
@@ -653,7 +692,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 user.setBalance(newBalance);
 
                 updateBalanceInOpenedFragment();
-                showNotification(notificationInformation, 15);
+                showNotification(false, notificationInformation, 15);
 
             } catch (JSONException ex) {
                 ex.printStackTrace();
@@ -705,7 +744,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 if (!acredited) {
                     // Show notification for receiving
                     String text = "Received deposit of " + amountString + " BTC - Awaiting one confirmation";
-                    showNotification(text, 0);
+                    showNotification(false, text, 0);
                 } else {
                     // Show notification for confirmed deposit
                     double balanceBeforeTip = user.getBalance();
@@ -716,7 +755,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     updateBalanceInOpenedFragment();
 
                     // Maybe even a notification in android!
-                    showNotification(text, 15);
+                    showNotification(false, text, 15);
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -757,7 +796,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     };
 
     private Socket mSocket;
-
     {
         try {
             mSocket = IO.socket("https://sockets.primedice.com");
@@ -766,13 +804,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     .on("tip", socketioTip)                           // Get tip
                     .on("bet", socketioBet)                           // Add bets to all bets or highrollers
                     .on("deposit", socketioDeposit)                   // Get information about deposit
-                            //        .on("msg", socketioMSG)                           // Get new messages
-                            //        .on("pm", socketioPM)                             // Handle PM's
-
                     .on("alert", socketioAlert)                       // ...??
                     .on("success", socketioSuccess)                   // ...??
                     .on("err", socketioError)                         // ...??
-                    .on("onError", socketioError)                         // ...??
                     .on(Socket.EVENT_DISCONNECT, socketioDisconnect); // Disconnect sockets
         } catch (URISyntaxException e) {
             e.printStackTrace();
@@ -780,14 +814,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     // TODO: General things to complete this application:
-    // Encrypt access_token
-    // Improve chat
-    // Remove all toasts for alerts
+    // Tip/PM user when opened
+    // Log out task when not remembering
     // Bet failed multiple times in a row? -> Change seed!
+
     // Notification tip/deposit
     // Settings screen (alert time/notification/faucet timer/time settings)
-    // Register account (Add in login activity)
-    // Timer faucet
 
     // Update UI
     // - Check differences with site and fix it

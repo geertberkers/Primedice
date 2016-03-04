@@ -93,14 +93,14 @@ public class AffiliateActivity extends AppCompatActivity {
                 txtAffiliateLink.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        copyLink();
+                        copyAffiliateLink();
                     }
                 });
 
                 txtAffiliateLinkInfo.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        copyLink();
+                        copyAffiliateLink();
                     }
                 });
 
@@ -189,7 +189,7 @@ public class AffiliateActivity extends AppCompatActivity {
         }
     }
 
-    private void copyLink() {
+    private void copyAffiliateLink() {
         ClipboardManager clipboard = (ClipboardManager) this.getSystemService(Context.CLIPBOARD_SERVICE);
         ClipData clip = ClipData.newPlainText("Affiliate link Primedice", link);
         clipboard.setPrimaryClip(clip);

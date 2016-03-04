@@ -441,8 +441,10 @@ public class BetFragment extends Fragment {
 
                                 try {
                                     JSONObject jsonResult = new JSONObject(result);
+
                                     String txid = jsonResult.getString("txid");
-                                    Toast.makeText(activity.getApplicationContext(), "Withdrawed " + withdrawalAmount + " BTC to " + withdrawalAdress + ".\nTXID: " + txid, Toast.LENGTH_LONG).show();
+                                    String notification = "Withdrawed " + withdrawalAmount + " BTC to " + withdrawalAdress + ".\nTXID: " + txid;
+                                    activity.showNotification(true, notification, 0);
                                 } catch (JSONException e) {
                                     e.printStackTrace();
                                 }
@@ -504,6 +506,10 @@ public class BetFragment extends Fragment {
             betOverUnder = "Over\n" + overUnderFormat.format(target).replace(",", ".");
         }
         btnHighLow.setText(betOverUnder);
+
+        // For updating profit on win
+        String tempBetAmount = edBetAmount.getText().toString();
+        edBetAmount.setText(tempBetAmount);
     }
 
     // Change multiplier
@@ -645,7 +651,7 @@ public class BetFragment extends Fragment {
             rollDice = "Confirm MAX bet";
             btnRollDice.setText(rollDice);
         } else if (betAmount > (int) activity.getUser().getBalance()) {
-            Toast.makeText(activity.getApplicationContext(), "Insufficient balance", Toast.LENGTH_LONG).show();
+            activity.showNotification(true, "Insufficient balance", 5);
         } else {
             rollDice = "ROLL DICE";
             btnRollDice.setText(rollDice);
@@ -697,7 +703,7 @@ public class BetFragment extends Fragment {
                                 error = "Betting to fast!";
                             }
 
-                            Toast.makeText(activity.getApplicationContext(), error, Toast.LENGTH_LONG).show();
+                            activity.showNotification(true, error, 5);
                         }
                     }
                 }

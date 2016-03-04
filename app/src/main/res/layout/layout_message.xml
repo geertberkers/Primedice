@@ -12,10 +12,36 @@
         android:layout_height="wrap_content"
         android:layout_alignTop="@+id/sender"
         android:layout_alignBottom="@+id/sender"
-        android:paddingRight="5dp"
+        android:paddingEnd="@dimen/spacing"
+        android:paddingRight="@dimen/spacing"
         android:scaleType="centerInside"
         android:src="@drawable/info"
         android:contentDescription="User info"/>
+
+    <TextView
+        android:text="S"
+        android:id="@+id/tag"
+        android:textStyle="bold"
+        style="?android:textAppearanceMedium"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingRight="@dimen/spacing"
+        android:textColor="@color/red"
+        android:layout_toRightOf="@+id/btnUserInfo"
+        android:layout_toEndOf="@+id/btnUserInfo" />
+
+    <TextView
+        android:text="PM"
+        android:id="@+id/type"
+        android:textStyle="bold"
+        style="?android:textAppearanceMedium"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingEnd="@dimen/spacing"
+        android:paddingRight="@dimen/spacing"
+        android:textColor="@color/red"
+        android:layout_toRightOf="@+id/tag"
+        android:layout_toEndOf="@+id/tag" />
 
     <TextView
         android:text="Sender"
@@ -26,8 +52,10 @@
         android:layout_height="wrap_content"
         android:paddingRight="@dimen/spacing"
         android:textColor="@color/black"
-        android:layout_toRightOf="@+id/btnUserInfo"
-        android:layout_toEndOf="@+id/btnUserInfo" />
+        android:layout_toRightOf="@+id/type"
+        android:layout_toEndOf="@+id/type" />
+
+
 
     <TextView
         android:text="Time"

@@ -1,15 +1,25 @@
 package geert.berkers.primedice.Fragment;
 
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Fragment;
+import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.preference.PreferenceManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.Spinner;
 
 import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.socketio.client.Socket;
@@ -36,42 +46,64 @@ import geert.berkers.primedice.DataHandler.GetJSONResultFromURLTask;
  */
 public class ChatFragment extends Fragment {
 
+    private static Activity activity;
     private View view;
     private Socket socket;
-    private MainActivity activity;
-    private String access_token, sendMessageURL, receiveMessageURL, currentRoom;
+    private MainActivity mainActivity;
+    private static String access_token;
+    private static String sendMessageURL;
+    private String receiveMessageURL;
 
+    private static int currentRoom;
+    private Spinner languageSpinner;
     private EditText mInputMessageView;
     private RecyclerView mMessagesView;
-    private List<Message> mMessages = new ArrayList<>();
+
     private MessageAdapter mAdapter;
+    private List<Message> englishMessages = new ArrayList<>();
+    private List<Message> russianMessages = new ArrayList<>();
+
+    public static Handler UIHandler = new Handler(Looper.getMainLooper());
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        this.view = inflater.inflate(R.layout.fragment_chat, container, false);
 
+        this.view = inflater.inflate(R.layout.fragment_chat, container, false);
         initControls();
 
-        //TODO: Change rooms
         return view;
     }
 
     private void initControls() {
-        activity = (MainActivity) getActivity();
-        mAdapter = new MessageAdapter(mMessages);
+        activity = getActivity();
+        mainActivity = (MainActivity) getActivity();
 
         mMessagesView = (RecyclerView) view.findViewById(R.id.messages);
-        final LinearLayoutManager layoutManager = new LinearLayoutManager(activity);
+        final LinearLayoutManager layoutManager = new LinearLayoutManager(mainActivity);
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         mMessagesView.setLayoutManager(layoutManager);
-        mMessagesView.setAdapter(mAdapter);
 
         ImageButton sendButton = (ImageButton) view.findViewById(R.id.send_button);
         mInputMessageView = (EditText) view.findViewById(R.id.message_input);
 
-        currentRoom = "English";
         sendMessageURL = "https://api.primedice.com/api/send?access_token=";
         receiveMessageURL = "https://api.primedice.com/api/messages?access_token=";
+
+        mAdapter = new MessageAdapter(new ArrayList<Message>());
+
+        getMessages("English");
+        getMessages("Russian");
+
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(mainActivity);
+        if (sharedPref.getString("message_room", "English").equals("English")) {
+            currentRoom = Message.ENGLISH;
+            mAdapter = new MessageAdapter(englishMessages);
+        } else {
+            currentRoom = Message.RUSSIAN;
+            mAdapter = new MessageAdapter(russianMessages);
+        }
+
+        mMessagesView.setAdapter(mAdapter);
 
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -80,30 +112,33 @@ public class ChatFragment extends Fragment {
             }
         });
 
+        addSpinnerListener();
+
+        Log.w("ChatFragment", "Socket subscribed on message");
+        socket.on("msg", socketioMSG);
+        socket.on("pm", socketioPM);
+    }
+
+    // Get latest messages
+    private void getMessages(String room) {
         String result = "NoResult";
         try {
             GetJSONResultFromURLTask sendMessage = new GetJSONResultFromURLTask();
-            result = sendMessage.execute((receiveMessageURL + access_token + "&room=" + currentRoom)).get();
+            result = sendMessage.execute((receiveMessageURL + access_token + "&room=" + room)).get();
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         }
 
-        if(result != null) {
+        if (result != null) {
             if (!result.equals("NoResult")) {
                 try {
                     JSONObject json = new JSONObject(result);
                     JSONArray msgArray = json.getJSONArray("messages");
 
                     for (int i = 0; i < msgArray.length(); i++) {
-                        JSONObject msg = msgArray.getJSONObject(i);
+                        JSONObject jsonMessage = msgArray.getJSONObject(i);
 
-                        String room = msg.getString("room");
-                        String message = msg.getString("message");
-                        String sender = msg.getString("username");
-                        String time = msg.getString("timestamp");
-
-                        // {"room":"English","userid":"1180493","username":"kamleshwaran","message":"For me it's slow maybe becoz I m on phone","toUsername":null,"timestamp":"2016-02-05T15:15:01.568Z","admin":false,"prefix":false,"id":3632800,"you":false,"linked":false},
-                        addMessage(room, message, sender, time);
+                        addMessageFromJSON(jsonMessage);
                     }
 
                     scrollToBottom();
@@ -112,50 +147,114 @@ public class ChatFragment extends Fragment {
                 }
             }
         }
-
-        Log.w("ChatFragment", "Socket subscribed on message");
-        socket.on("msg",socketioMSG);
-        socket.on("pm", socketioPM);
     }
 
-    private final Emitter.Listener socketioMSG = new Emitter.Listener() {
+    // Handle spinner clicks
+    public void addSpinnerListener() {
+        languageSpinner = (Spinner) view.findViewById(R.id.languageSpinner);
 
-        @Override
-        public void call(final Object... args) {
+        List<String> list = new ArrayList<>();
+        list.add("English");
+        list.add("Russian");
 
-            final JSONObject obj = (JSONObject) args[0];
-            Log.d("ChatFragment ", "Message: " + obj.toString());
+        ArrayAdapter<String> dataAdapter = new ArrayAdapter<>(mainActivity, android.R.layout.simple_spinner_item, list);
 
-            getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        //TODO: Get all other information (vip/mod)
-                        String room = obj.getString("room");
-                        String message = obj.getString("message");
-                        String sender = obj.getString("username");
-                        String time = obj.getString("timestamp");
+        dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        languageSpinner.setAdapter(dataAdapter);
 
-                        addMessage(room, message, sender, time);
+        languageSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String room = String.valueOf(languageSpinner.getSelectedItem());
 
-                    } catch (JSONException e) {
-                        // return;
-                    }
+                if (room.equals("English")) {
+                    currentRoom = Message.ENGLISH;
+                    mAdapter.setUpdatedList(englishMessages);
+
+                } else {
+                    currentRoom = Message.RUSSIAN;
+                    mAdapter.setUpdatedList(russianMessages);
                 }
-            });
-        }
-    };
+                scrollToBottom();
+            }
 
-    //TODO: Handle PM
-    private final Emitter.Listener socketioPM = new Emitter.Listener() {
-        @Override
-        public void call(Object... args) {
-            JSONObject obj = (JSONObject) args[0];
-            Log.w("ChatFragment", "PM Result: " + obj.toString());
-            // PM response {"room":"English","userid":"1004533","username":"testqwerty3","message":"Testing PM :)","toUsername":"GeertBerkers","timestamp":"2016-02-05T12:52:19.706Z","admin":false,"prefix":"PM"}
-        }
-    };
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
 
+            }
+        });
+    }
+
+    // Create and add message from JSON
+    private void addMessageFromJSON(JSONObject jsonMessage) {
+        try {
+            String room = jsonMessage.getString("room");
+            String message = jsonMessage.getString("message");
+            String sender = jsonMessage.getString("username");
+            String time = jsonMessage.getString("timestamp");
+
+            String tag = String.valueOf(jsonMessage.get("admin"));
+            String type = String.valueOf(jsonMessage.get("prefix"));
+
+            int messageRoom;
+            int messageType;
+            int messageTag;
+
+            switch (room) {
+                case "Russian":
+                    messageRoom = Message.RUSSIAN;
+                    break;
+                case "English":
+                    messageRoom = Message.ENGLISH;
+                    break;
+                default:
+                    messageRoom = Message.ENGLISH;
+                    break;
+            }
+
+            switch (type) {
+                case "false":
+                    messageType = Message.MESSAGE;
+                    break;
+                case "PM":
+                    messageType = Message.PM;
+                    break;
+                case "BOT":
+                    messageType = Message.BOT;
+                    break;
+                default:
+                    messageType = Message.USER;
+                    break;
+            }
+
+            switch (tag) {
+                case "false":
+                    messageTag = Message.USER;
+                    break;
+                case "M":
+                    messageTag = Message.MOD;
+                    break;
+                case "S":
+                    messageTag = Message.SUPPORT;
+                    break;
+                case "A":
+                    messageTag = Message.ADMIN;
+                    break;
+                case "VIP":
+                    messageTag = Message.VIP;
+                    break;
+                default:
+                    messageTag = Message.USER;
+                    break;
+            }
+
+            addMessage(messageRoom, messageType, messageTag, message, sender, time);
+        } catch (JSONException e) {
+            // return;
+        }
+    }
+
+    // Send Message to server
     private void sendMessage() {
         //TODO: Handle tips/pm's while sending messages
         String message = mInputMessageView.getText().toString().trim();
@@ -163,12 +262,13 @@ public class ChatFragment extends Fragment {
 
         String result = "NoResult";
         String toUsername = null; //TODO: Get this when sending PM
+
         try {
             String urlParameters =
-                    "room=" + URLEncoder.encode(currentRoom, "UTF-8") +
+                    "room=" + URLEncoder.encode(getRoom(), "UTF-8") +
                             "&message=" + URLEncoder.encode(message, "UTF-8");
 
-            if(toUsername != null) {
+            if (toUsername != null) {
                 if (toUsername.length() >= 3 && toUsername.length() <= 12) {
                     urlParameters += "&toUsername=" + URLEncoder.encode(toUsername, "UTF-8");
                 }
@@ -182,26 +282,41 @@ public class ChatFragment extends Fragment {
         Log.i("Result", result);
     }
 
+    private static String getRoom() {
+        if (currentRoom == Message.ENGLISH) {
+            return "English";
+        } else {
+            return "Russian";
+        }
+    }
 
     // Add message to the list
-    private void addMessage(String roomString, String message, String sender, String time) {
+    private void addMessage(int room, int messageType, int messageTag, String message, String sender, String time) {
+        final List<Message> messages;
 
-        int room = Message.ENGLISH;
-        if (roomString.equals("Russian")) {
-            room = Message.RUSSIAN;
+        if (room == Message.ENGLISH) {
+            messages = englishMessages;
+        } else {
+            messages = russianMessages;
         }
 
-        // Add message
-        mMessages.add(new Message.Builder(room, Message.TYPE_MESSAGE).message(message, sender, time).build());
+        messages.add(new Message(room, messageType, messageTag, message, sender, time));
 
         // Remove oldest messages when reaches over 50
-        while(mMessages.size() > 50){
-            Log.w("Remove",mMessages.get(0).getMessage());
-            mMessages.remove(0);
+        while (messages.size() > 50) {
+            messages.remove(0);
         }
 
-        mAdapter.setUpdatedList(mMessages);
-        scrollToBottom();
+        if (currentRoom == room) {
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mAdapter.setUpdatedList(messages);
+                    scrollToBottom();
+                }
+            });
+
+        }
     }
 
     // Scroll list to bottom
@@ -210,17 +325,84 @@ public class ChatFragment extends Fragment {
     }
 
     // Set needed information for this fragment
-    public void setInformation(String access_token, Socket socket) {
-        this.access_token = access_token;
+    public void setInformation(String access_token_value, Socket socket) {
+        access_token = access_token_value;
         this.socket = socket;
     }
 
-    // TODO: Use onDestroy else socket will stop after other tab/screen turned off
+    private final Emitter.Listener socketioMSG = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            final JSONObject jsonMessage = (JSONObject) args[0];
+
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    addMessageFromJSON(jsonMessage);
+                }
+            });
+        }
+    };
+
+    private final Emitter.Listener socketioPM = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            JSONObject jsonPM = (JSONObject) args[0];
+            // Log.w("ChatFragment", "PM Result: " + obj.toString());
+            //TODO: Handle PM
+
+            addMessageFromJSON(jsonPM);
+            // PM Result: {"room":"English","userid":"1022127","username":"GeertBank","message":"test","toUsername":"geertberkers","timestamp":"2016-03-04T14:24:10.677Z","admin":false,"prefix":"PM"}
+            // PM Result: {"room":"English","userid":"990311","username":"GeertBerkers","message":"Test","toUsername":"GeertBank","timestamp":"2016-03-04T14:24:26.642Z","admin":false,"prefix":"PM"}
+
+        }
+    };
+
     @Override
-    public void onStop() {
-        Log.w("ChatFragment", "Socket de-subscribed on message");
-        socket.off("msg",socketioMSG);
+    public void onDestroy() {
+        super.onDestroy();
+
+        socket.off("msg", socketioMSG);
         socket.off("pm", socketioPM);
-        super.onStop();
+
+        Log.w("ChatFragment", "Socket de-subscribed on message");
+    }
+
+    public static void sendPM(final View v, final String toUsername) {
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                final EditText edMessage = new EditText(v.getContext());
+
+                AlertDialog.Builder pmDialog = new AlertDialog.Builder(v.getContext());
+                pmDialog.setTitle("MESSAGE " + toUsername);
+                pmDialog.setMessage("This message will only be seen by " + toUsername);
+                pmDialog.setView(edMessage);
+                pmDialog.setPositiveButton("Send", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        String message = edMessage.getText().toString();
+                        try {
+                            String urlParameters = "room=" + URLEncoder.encode(getRoom(), "UTF-8")
+                                    + "&message=" + URLEncoder.encode(message, "UTF-8")
+                                    + "&toUsername=" + URLEncoder.encode(toUsername, "UTF-8");
+
+                            PostToServerTask sendMessage = new PostToServerTask();
+                            String result = sendMessage.execute((sendMessageURL + access_token), urlParameters).get();
+                            System.out.println(result);
+
+                        } catch (InterruptedException | ExecutionException | UnsupportedEncodingException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+                pmDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialogInterface, int i) {
+
+                    }
+                });
+                pmDialog.show();
+
+            }
+        });
     }
 }
