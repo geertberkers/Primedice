@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import java.util.List;
 
+import geert.berkers.primedice.Activity.MainActivity;
 import geert.berkers.primedice.Activity.PlayerInformationActivity;
 import geert.berkers.primedice.Data.Message;
 import geert.berkers.primedice.DataHandler.MyClickableSpan;
@@ -68,6 +69,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
         private final TextView type;
         private final TextView sender;
         private final TextView message;
+        private final TextView toUsername;
         private final TextView time;
 
         public ViewHolder(View itemView) {
@@ -79,6 +81,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
             type = (TextView) itemView.findViewById(R.id.type);
             sender = (TextView) itemView.findViewById(R.id.sender);
             message = (TextView) itemView.findViewById(R.id.message);
+            toUsername = (TextView) itemView.findViewById(R.id.toUsername);
             time = (TextView) itemView.findViewById(R.id.time);
         }
 
@@ -99,6 +102,17 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
             this.sender.setText(message.getSender());
             this.time.setText(message.getLocalTime());
 
+            this.toUsername.setVisibility(View.GONE);
+
+            String toUser = message.getToUsername();
+            if(toUser != null){
+                if(!toUser.equals("null")) {
+                    toUser = "to " + message.getToUsername();
+                    this.toUsername.setText(toUser);
+                    this.toUsername.setVisibility(View.VISIBLE);
+                    this.message.setBackgroundResource(R.drawable.chat_background_pm);
+                }
+            }
             tag.setVisibility(View.VISIBLE);
             type.setVisibility(View.VISIBLE);
 
@@ -163,16 +177,17 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
 
                     menu.getMenu().add("MESSAGE");
                     menu.getMenu().add("TIP USER");
-                    menu.getMenu().add("IGNORE");
+                    menu.getMenu().add(ChatFragment.getUserIgnoreString(sender));
                     menu.show();
 
                     menu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                         @Override
                         public boolean onMenuItemClick(MenuItem item) {
                             switch (item.toString()) {
-                                case "MESSAGE":     ChatFragment.sendPM(v, sender);    break;
-                                case "TIP USER":    tipUser(sender);                   break;
-                                case "IGNORE":      ignoreUser(sender);                break;
+                                case "MESSAGE":     ChatFragment.sendPM(v, sender);             break;
+                                case "TIP USER":    MainActivity.tipUser(null, sender);         break;
+                                case "IGNORE":      ChatFragment.ignoreOrUnignoreUser(sender);  break;
+                                case "UNIGNORE":    ChatFragment.ignoreOrUnignoreUser(sender);  break;
                                 default:            return false;
                             }
                             return true;
@@ -180,14 +195,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
                     });
                 }
             });
-        }
-
-        private void tipUser(String sender) {
-
-        }
-
-        private void ignoreUser(String sender) {
-
         }
 
         // Make users and bets clickable

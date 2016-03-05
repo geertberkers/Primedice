@@ -25,6 +25,7 @@ import java.net.URLEncoder;
 import java.util.concurrent.ExecutionException;
 
 import geert.berkers.primedice.Data.Encryption;
+import geert.berkers.primedice.Data.URL;
 import geert.berkers.primedice.DataHandler.PostToServerTask;
 import geert.berkers.primedice.R;
 import geert.berkers.primedice.DataHandler.GetJSONResultFromURLTask;
@@ -41,10 +42,6 @@ public class LoginActivity extends AppCompatActivity {
 
     private boolean rememberMe = false;
     private String access_token = null;
-
-    private final static String loginUrl = "https://api.primedice.com/api/login";
-    private final static String registerURL = "https://api.primedice.com/api/register";
-    private final static String userURL = "https://api.primedice.com/api/users/1?access_token=";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -135,7 +132,7 @@ public class LoginActivity extends AppCompatActivity {
             // + "&affiliate=GeertBerkers";
 
             PostToServerTask postToServerTask = new PostToServerTask();
-            String result = postToServerTask.execute(registerURL, urlParameters).get();
+            String result = postToServerTask.execute(URL.REGISTER, urlParameters).get();
 
             if (result != null) {
                 getAccestokenFromLoginResult(result);
@@ -181,7 +178,7 @@ public class LoginActivity extends AppCompatActivity {
                         if (tfa.length() != 0) {
                             urlParameters = urlParameters + "&otp=" + URLEncoder.encode(tfa, "UTF-8");
                         }
-                        loginResult = login.execute(loginUrl, urlParameters, tfa).get();
+                        loginResult = login.execute(URL.LOG_IN, urlParameters, tfa).get();
                     } catch (InterruptedException | ExecutionException | UnsupportedEncodingException e) {
                         e.printStackTrace();
                     }
@@ -208,11 +205,10 @@ public class LoginActivity extends AppCompatActivity {
             User user = getUser();
 
             if (user != null) {
-                Intent betActivityIntent = new Intent(this, MainActivity.class);
-                betActivityIntent.putExtra("userParcelable", user);
-                betActivityIntent.putExtra("userURL", userURL);
-                betActivityIntent.putExtra("access_token", access_token);
-                startActivity(betActivityIntent);
+                Intent mainActivity = new Intent(this, MainActivity.class);
+                mainActivity.putExtra("userParcelable", user);
+                mainActivity.putExtra("access_token", access_token);
+                startActivity(mainActivity);
                 this.finish();
             } else {
                 txtResult.setText(loginRegister);
@@ -263,7 +259,7 @@ public class LoginActivity extends AppCompatActivity {
         GetJSONResultFromURLTask userTask = new GetJSONResultFromURLTask();
 
         try {
-            userResult = userTask.execute(userURL + access_token).get();
+            userResult = userTask.execute(URL.USER + access_token).get();
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         }

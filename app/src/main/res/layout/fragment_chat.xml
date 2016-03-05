@@ -5,6 +5,7 @@
     android:orientation="vertical"
     android:paddingLeft="2dp"
     android:paddingRight="2dp"
+    android:background="@color/white"
     tools:context=".Fragment.ChatFragment">
 
     <android.support.v7.widget.RecyclerView

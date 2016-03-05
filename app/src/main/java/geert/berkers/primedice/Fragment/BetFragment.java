@@ -39,6 +39,7 @@ import java.util.concurrent.ExecutionException;
 
 import geert.berkers.primedice.Adapter.BetAdapter;
 import geert.berkers.primedice.Data.Bet;
+import geert.berkers.primedice.Data.URL;
 import geert.berkers.primedice.DataHandler.DownloadImageTask;
 import geert.berkers.primedice.DataHandler.GetJSONResultFromURLTask;
 import geert.berkers.primedice.DataHandler.MySQLiteHelper;
@@ -69,7 +70,6 @@ public class BetFragment extends Fragment {
     private boolean maxPressed, betHigh;
     private ArrayList<Bet> myBets, allBets, hrBets;
     private Double betMultiplier, betPercentage, target;
-    private String depositURL, withdrawalURL, betURL, userURL;
     private EditText edBetAmount, edProfitonWin, edWithdrawalAdress;
     private TextView txtBalance, txtMyBets, txtAllBets, txtHighRollers;
     private Button btnDeposit, btnWithdraw, btnHalfBet, btnDoubleBet, btnMaxBet, btnHighLow, btnMultiplier, btnPercentage, btnRollDice;
@@ -141,11 +141,6 @@ public class BetFragment extends Fragment {
         db = new MySQLiteHelper(activity);
         format = new DecimalFormat("0.00000000");
 
-        betURL = "https://api.primedice.com/api/bet?access_token=";
-        userURL = "https://api.primedice.com/api/users/1?access_token=";
-        depositURL = "https://api.primedice.com/api/deposit?access_token=";
-        withdrawalURL = "https://api.primedice.com/api/withdraw?access_token=";
-
         txtBalance.setText(activity.getUser().getBalanceAsString());
         myBets = db.getAllBetsFromUser(activity.getUser().getUsername());
         showBets(myBets);
@@ -165,7 +160,7 @@ public class BetFragment extends Fragment {
                 String result;
                 try {
                     GetJSONResultFromURLTask getAddressTask = new GetJSONResultFromURLTask();
-                    result = getAddressTask.execute(depositURL + activity.getAccess_token()).get();
+                    result = getAddressTask.execute(URL.DEPOSIT + activity.getAccess_token()).get();
 
                     JSONObject jsonResult = new JSONObject(result);
 
@@ -178,7 +173,7 @@ public class BetFragment extends Fragment {
             }
 
             DownloadImageTask downloadImageTask = new DownloadImageTask();
-            resultImage = downloadImageTask.execute("https://chart.googleapis.com/chart?chs=500x500&cht=qr&chl=" + address).get();
+            resultImage = downloadImageTask.execute(URL.DOWNLOAD_QR + address).get();
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         }
@@ -436,7 +431,7 @@ public class BetFragment extends Fragment {
 
 
                                 PostToServerTask placeWithdrawalTask = new PostToServerTask();
-                                String result = placeWithdrawalTask.execute((withdrawalURL + activity.getAccess_token()), urlParameters).get();
+                                String result = placeWithdrawalTask.execute((URL.WITHDRAW + activity.getAccess_token()), urlParameters).get();
                                 //String resultExample = "{\"amount\":100000,\"sent\":100000,\"txid\":\"8f0159c9af5ba2b325bf93085632e91a65595f0fb8e4bca2f9507bd1be619ddf\",\"address\":\"19ZgWmESFWmhcQKDP9ZxhUeLvTACXNyUjS\",\"confirmed\":true,\"timestamp\":\"2016-01-30T01:20:33.580Z\"}";
 
                                 try {
@@ -444,7 +439,7 @@ public class BetFragment extends Fragment {
 
                                     String txid = jsonResult.getString("txid");
                                     String notification = "Withdrawed " + withdrawalAmount + " BTC to " + withdrawalAdress + ".\nTXID: " + txid;
-                                    activity.showNotification(true, notification, 0);
+                                    MainActivity.showNotification(true, notification, 0);
                                 } catch (JSONException e) {
                                     e.printStackTrace();
                                 }
@@ -452,7 +447,7 @@ public class BetFragment extends Fragment {
                                 String userResult = "NoResult";
                                 try {
                                     GetJSONResultFromURLTask userTask = new GetJSONResultFromURLTask();
-                                    userResult = userTask.execute("https://api.primedice.com/api/users/1?access_token=" + activity.getAccess_token()).get();
+                                    userResult = userTask.execute(URL.USER + activity.getAccess_token()).get();
                                 } catch (InterruptedException | ExecutionException e) {
                                     e.printStackTrace();
                                 }
@@ -651,7 +646,7 @@ public class BetFragment extends Fragment {
             rollDice = "Confirm MAX bet";
             btnRollDice.setText(rollDice);
         } else if (betAmount > (int) activity.getUser().getBalance()) {
-            activity.showNotification(true, "Insufficient balance", 5);
+            MainActivity.showNotification(true, "Insufficient balance", 5);
         } else {
             rollDice = "ROLL DICE";
             btnRollDice.setText(rollDice);
@@ -673,7 +668,7 @@ public class BetFragment extends Fragment {
                         "&condition=" + URLEncoder.encode(condition, "UTF-8");
 
                 PostToServerTask postToServerTask = new PostToServerTask();
-                String result = postToServerTask.execute((betURL + activity.getAccess_token()), urlParameters).get();
+                String result = postToServerTask.execute((URL.BET + activity.getAccess_token()), urlParameters).get();
 
                 // Check result
                 if (result != null) {
@@ -690,7 +685,7 @@ public class BetFragment extends Fragment {
                     addBet(bet, false, true);
                 } else {
                     GetJSONResultFromURLTask userTask = new GetJSONResultFromURLTask();
-                    String userResult = userTask.execute(userURL + activity.getAccess_token()).get();
+                    String userResult = userTask.execute(URL.USER + activity.getAccess_token()).get();
 
                     if (userResult != null) {
                         if (!userResult.equals("NoResult")) {
@@ -703,7 +698,7 @@ public class BetFragment extends Fragment {
                                 error = "Betting to fast!";
                             }
 
-                            activity.showNotification(true, error, 5);
+                            MainActivity.showNotification(true, error, 5);
                         }
                     }
                 }
@@ -724,11 +719,11 @@ public class BetFragment extends Fragment {
 
     // Get and show bets
     private ArrayList<Bet> getBets(String getThese) {
-        String URL = "https://api.primedice.com/api/" + getThese;
+        String url = URL.API + getThese;
 
         try {
             GetJSONResultFromURLTask getBetsTask = new GetJSONResultFromURLTask();
-            String result = getBetsTask.execute(URL).get();
+            String result = getBetsTask.execute(url).get();
             if (getThese.equals("bets")) {
                 allBets = getBetsListFromJSON(result, getThese);
                 return allBets;

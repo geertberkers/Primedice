@@ -4,10 +4,9 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.preference.PreferenceManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -34,9 +33,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import geert.berkers.primedice.Activity.BetInformationActivity;
+import geert.berkers.primedice.Activity.PlayerInformationActivity;
 import geert.berkers.primedice.Adapter.MessageAdapter;
+import geert.berkers.primedice.Data.Bet;
 import geert.berkers.primedice.Data.Message;
 import geert.berkers.primedice.Activity.MainActivity;
+import geert.berkers.primedice.Data.URL;
 import geert.berkers.primedice.DataHandler.PostToServerTask;
 import geert.berkers.primedice.R;
 import geert.berkers.primedice.DataHandler.GetJSONResultFromURLTask;
@@ -46,13 +49,10 @@ import geert.berkers.primedice.DataHandler.GetJSONResultFromURLTask;
  */
 public class ChatFragment extends Fragment {
 
-    private static Activity activity;
     private View view;
     private Socket socket;
-    private MainActivity mainActivity;
+    private static MainActivity mainActivity;
     private static String access_token;
-    private static String sendMessageURL;
-    private String receiveMessageURL;
 
     private static int currentRoom;
     private Spinner languageSpinner;
@@ -62,20 +62,20 @@ public class ChatFragment extends Fragment {
     private MessageAdapter mAdapter;
     private List<Message> englishMessages = new ArrayList<>();
     private List<Message> russianMessages = new ArrayList<>();
-
-    public static Handler UIHandler = new Handler(Looper.getMainLooper());
+    private static List<String> ignoredUsers = new ArrayList<>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
-        this.view = inflater.inflate(R.layout.fragment_chat, container, false);
-        initControls();
+        if (view == null) {
+            this.view = inflater.inflate(R.layout.fragment_chat, container, false);
+            initControls();
+        }
 
         return view;
     }
 
     private void initControls() {
-        activity = getActivity();
+        //activity = getActivity();
         mainActivity = (MainActivity) getActivity();
 
         mMessagesView = (RecyclerView) view.findViewById(R.id.messages);
@@ -85,9 +85,6 @@ public class ChatFragment extends Fragment {
 
         ImageButton sendButton = (ImageButton) view.findViewById(R.id.send_button);
         mInputMessageView = (EditText) view.findViewById(R.id.message_input);
-
-        sendMessageURL = "https://api.primedice.com/api/send?access_token=";
-        receiveMessageURL = "https://api.primedice.com/api/messages?access_token=";
 
         mAdapter = new MessageAdapter(new ArrayList<Message>());
 
@@ -124,7 +121,7 @@ public class ChatFragment extends Fragment {
         String result = "NoResult";
         try {
             GetJSONResultFromURLTask sendMessage = new GetJSONResultFromURLTask();
-            result = sendMessage.execute((receiveMessageURL + access_token + "&room=" + room)).get();
+            result = sendMessage.execute((URL.RECEIVE_MESSAGE + access_token + "&room=" + room)).get();
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         }
@@ -195,6 +192,7 @@ public class ChatFragment extends Fragment {
 
             String tag = String.valueOf(jsonMessage.get("admin"));
             String type = String.valueOf(jsonMessage.get("prefix"));
+            String toUsername = jsonMessage.getString("toUsername");
 
             int messageRoom;
             int messageType;
@@ -248,7 +246,9 @@ public class ChatFragment extends Fragment {
                     break;
             }
 
-            addMessage(messageRoom, messageType, messageTag, message, sender, time);
+            if (!ignoredUsers.contains(sender.toLowerCase())) {
+                addMessage(messageRoom, messageType, messageTag, message, sender, toUsername, time);
+            }
         } catch (JSONException e) {
             // return;
         }
@@ -256,13 +256,81 @@ public class ChatFragment extends Fragment {
 
     // Send Message to server
     private void sendMessage() {
-        //TODO: Handle tips/pm's while sending messages
         String message = mInputMessageView.getText().toString().trim();
         mInputMessageView.setText("");
 
-        String result = "NoResult";
-        String toUsername = null; //TODO: Get this when sending PM
+        String toUsername = null;
+        if (message.startsWith("/pm ")) {
+            String temp = message.substring(4);
 
+            int length = temp.indexOf(" ");
+
+            message = temp.substring(length);
+            toUsername = temp.substring(0, length);
+        } else if (message.startsWith("/tip ")) {
+            toUsername = message.substring(5);
+            MainActivity.tipUser(null,toUsername);
+            return;
+        } else if (message.startsWith("/ignore ")) {
+            toUsername = message.substring(8);
+            ignoredUsers.add(toUsername.toLowerCase());
+            MainActivity.showNotification(false, toUsername + " ignored", 5);
+            return;
+        } else if (message.startsWith("/unignore ")) {
+            toUsername = message.substring(10);
+            ignoredUsers.remove(toUsername.toLowerCase());
+            MainActivity.showNotification(false, toUsername + " unignored", 5);
+            return;
+        } else if (message.startsWith("/reset")) {
+            ignoredUsers = new ArrayList<>();
+            MainActivity.showNotification(false, "Ignore list reset", 5);
+            return;
+        } else if (message.startsWith("/user ")) {
+            toUsername = message.substring(6);
+
+            int length = toUsername.indexOf(" ");
+            if (length != -1) {
+                toUsername = toUsername.substring(0, length);
+            }
+
+            Intent playerInfoIntent = new Intent(mainActivity, PlayerInformationActivity.class);
+            playerInfoIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            playerInfoIntent.putExtra("playerName", toUsername);
+            mainActivity.startActivity(playerInfoIntent);
+            return;
+        } else if (message.startsWith("/bet ")) {
+            String bet = message.substring(5);
+
+            int length = bet.indexOf(" ");
+            if (length != -1) {
+                bet = bet.substring(0, length);
+            }
+
+            try {
+                GetJSONResultFromURLTask getBetsTask = new GetJSONResultFromURLTask();
+
+                String result = getBetsTask.execute((URL.BET_LOOKUP + bet.replace(",", ""))).get();
+
+                //TODO: Fix bet date.
+                if (result != null) {
+                    JSONObject jsonBet = new JSONObject(result);
+                    Bet b = new Bet(jsonBet.getJSONObject("bet"));
+                    //b.setDate()
+                    Intent betInfoIntent = new Intent(mainActivity, BetInformationActivity.class);
+                    betInfoIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    betInfoIntent.putExtra("bet", b);
+                    mainActivity.startActivity(betInfoIntent);
+                }
+            } catch (InterruptedException | ExecutionException | JSONException e) {
+                e.printStackTrace();
+            }
+            return;
+        } else if (message.startsWith("/")) {
+            MainActivity.showNotification(true, "Chat error: Try again!", 5);
+            return;
+        }
+
+        String result = "NoResult";
         try {
             String urlParameters =
                     "room=" + URLEncoder.encode(getRoom(), "UTF-8") +
@@ -274,7 +342,7 @@ public class ChatFragment extends Fragment {
                 }
             }
             PostToServerTask sendMessage = new PostToServerTask();
-            result = sendMessage.execute((sendMessageURL + access_token), urlParameters).get();
+            result = sendMessage.execute((URL.SEND_MESSAGE + access_token), urlParameters).get();
         } catch (InterruptedException | ExecutionException | UnsupportedEncodingException e) {
             e.printStackTrace();
         }
@@ -291,7 +359,7 @@ public class ChatFragment extends Fragment {
     }
 
     // Add message to the list
-    private void addMessage(int room, int messageType, int messageTag, String message, String sender, String time) {
+    private void addMessage(int room, int messageType, int messageTag, String message, String sender, String toUsername, String time) {
         final List<Message> messages;
 
         if (room == Message.ENGLISH) {
@@ -300,7 +368,7 @@ public class ChatFragment extends Fragment {
             messages = russianMessages;
         }
 
-        messages.add(new Message(room, messageType, messageTag, message, sender, time));
+        messages.add(new Message(room, messageType, messageTag, message, sender, toUsername, time));
 
         // Remove oldest messages when reaches over 50
         while (messages.size() > 50) {
@@ -308,14 +376,13 @@ public class ChatFragment extends Fragment {
         }
 
         if (currentRoom == room) {
-            activity.runOnUiThread(new Runnable() {
+            mainActivity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     mAdapter.setUpdatedList(messages);
                     scrollToBottom();
                 }
             });
-
         }
     }
 
@@ -330,6 +397,7 @@ public class ChatFragment extends Fragment {
         this.socket = socket;
     }
 
+    // Receive message from socketio server
     private final Emitter.Listener socketioMSG = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
@@ -344,17 +412,13 @@ public class ChatFragment extends Fragment {
         }
     };
 
+    // Receive PM from socketio server
     private final Emitter.Listener socketioPM = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
             JSONObject jsonPM = (JSONObject) args[0];
-            // Log.w("ChatFragment", "PM Result: " + obj.toString());
-            //TODO: Handle PM
 
             addMessageFromJSON(jsonPM);
-            // PM Result: {"room":"English","userid":"1022127","username":"GeertBank","message":"test","toUsername":"geertberkers","timestamp":"2016-03-04T14:24:10.677Z","admin":false,"prefix":"PM"}
-            // PM Result: {"room":"English","userid":"990311","username":"GeertBerkers","message":"Test","toUsername":"GeertBank","timestamp":"2016-03-04T14:24:26.642Z","admin":false,"prefix":"PM"}
-
         }
     };
 
@@ -369,7 +433,7 @@ public class ChatFragment extends Fragment {
     }
 
     public static void sendPM(final View v, final String toUsername) {
-        activity.runOnUiThread(new Runnable() {
+        mainActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 final EditText edMessage = new EditText(v.getContext());
@@ -387,7 +451,7 @@ public class ChatFragment extends Fragment {
                                     + "&toUsername=" + URLEncoder.encode(toUsername, "UTF-8");
 
                             PostToServerTask sendMessage = new PostToServerTask();
-                            String result = sendMessage.execute((sendMessageURL + access_token), urlParameters).get();
+                            String result = sendMessage.execute((URL.SEND_MESSAGE + access_token), urlParameters).get();
                             System.out.println(result);
 
                         } catch (InterruptedException | ExecutionException | UnsupportedEncodingException e) {
@@ -401,8 +465,26 @@ public class ChatFragment extends Fragment {
                     }
                 });
                 pmDialog.show();
-
             }
         });
+    }
+
+    // Ignore user
+    public static void ignoreOrUnignoreUser(String user) {
+        if(ignoredUsers.contains(user.toLowerCase())) {
+            ignoredUsers.add(user.toLowerCase());
+        }
+        else{
+            ignoredUsers.remove(user.toLowerCase());
+        }
+    }
+
+    public static String getUserIgnoreString(String user) {
+        if(ignoredUsers.contains(user.toLowerCase())) {
+            return "UNIGNORE";
+        }
+        else{
+            return "IGNORE";
+        }
     }
 }

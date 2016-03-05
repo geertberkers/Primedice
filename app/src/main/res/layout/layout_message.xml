@@ -55,7 +55,17 @@
         android:layout_toRightOf="@+id/type"
         android:layout_toEndOf="@+id/type" />
 
-
+    <TextView
+        android:text="to Receiver"
+        android:id="@+id/toUsername"
+        android:textStyle="bold"
+        style="?android:textAppearanceMedium"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingRight="@dimen/spacing"
+        android:textColor="@color/black"
+        android:layout_toRightOf="@+id/sender"
+        android:layout_toEndOf="@+id/sender" />
 
     <TextView
         android:text="Time"

@@ -313,7 +313,6 @@
             android:text="99.87%" />
     </LinearLayout>
 
-    <!-- Power
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -321,32 +320,18 @@
         android:orientation="horizontal"
         android:weightSum="1">
 
-        <ImageView
-            android:id="@+id/ivPowerLevel"
+        <Button
+            android:id="@+id/btnTip"
+            android:text="TIP User"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_weight="0.1"
-            android:contentDescription="@string/power"
-            android:src="@drawable/powerlvl" />
+            android:layout_weight="0.5"/>
 
-        <TextView
-            android:id="@+id/lblPower"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="0.3"
-            android:gravity="center"
-            android:text="@string/power"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/txtPower"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="0.6"
-            android:gravity="center_vertical"
-            android:paddingLeft="20dp"
-            android:paddingStart="20dp"
-            android:text="15.03" />
-    </LinearLayout>-->
+        <Button
+            android:id="@+id/btnPM"
+            android:text="PM User"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.5"/>
+    </LinearLayout>
 </LinearLayout>

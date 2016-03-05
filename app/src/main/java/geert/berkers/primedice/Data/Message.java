@@ -32,20 +32,21 @@ public class Message {
 
     private String message;
     private String sender;
+    private String toUsername;
     private String time;
 
-    public Message(int room, int type, int tag, String message, String sender, String time) {
+    public Message(int room, int type, int tag, String message, String sender, String toUsername, String time) {
         this.room = room;
         this.type = type;
         this.tag = tag;
         this.message = message;
         this.sender = sender;
+        this.toUsername = toUsername;
         this.time = time;
     }
 
     public String getLocalTime() {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-        //2016-03-03T18:30:14.726Z
         formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
 
         Date value = null;
@@ -62,6 +63,10 @@ public class Message {
 
     public String getSender() {
         return sender;
+    }
+
+    public String getToUsername() {
+        return toUsername;
     }
 
     public String getMessage() {

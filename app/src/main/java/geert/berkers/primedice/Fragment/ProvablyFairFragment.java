@@ -26,6 +26,7 @@ import java.util.concurrent.ExecutionException;
 import geert.berkers.primedice.Activity.BetInformationActivity;
 import geert.berkers.primedice.Activity.MainActivity;
 import geert.berkers.primedice.Data.Bet;
+import geert.berkers.primedice.Data.URL;
 import geert.berkers.primedice.DataHandler.GetJSONResultFromURLTask;
 import geert.berkers.primedice.DataHandler.PostToServerTask;
 import geert.berkers.primedice.R;
@@ -41,7 +42,6 @@ public class ProvablyFairFragment extends Fragment {
     private EditText edBetID;
     private View changeSeedView;
     private Button btnBetLookup;
-    private String betLookupURL, changeSeedURL;
     private TextView txtRandomSeed, txtClientSeed, txtServeSeedHashed, txtBetsMade, txtPreviousClientSeed, txtPreviousServerSeedRevealed, txtPreviousServerSeedHashed;
 
     private static final String ALLOWED_CHARACTERS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -72,9 +72,6 @@ public class ProvablyFairFragment extends Fragment {
         txtPreviousClientSeed = (TextView) view.findViewById(R.id.txtPreviousClientseed);
         txtPreviousServerSeedHashed = (TextView) view.findViewById(R.id.txtPreviousServerseedHashed);
         txtPreviousServerSeedRevealed = (TextView) view.findViewById(R.id.txtPreviousServerseedRevealed);
-
-        betLookupURL = "https://api.primedice.com/api/bets/";
-        changeSeedURL = "https://api.primedice.com/api/seed?access_token=";
 
         txtRandomSeed.setPaintFlags(txtRandomSeed.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
     }
@@ -122,7 +119,7 @@ public class ProvablyFairFragment extends Fragment {
                             String urlParameters = "seed=" + URLEncoder.encode(newClientSeed, "UTF-8");
 
                             PostToServerTask changeSeedTask = new PostToServerTask();
-                            result = changeSeedTask.execute((changeSeedURL + activity.getAccess_token()), urlParameters).get();
+                            result = changeSeedTask.execute((URL.CHANGE_SEED + activity.getAccess_token()), urlParameters).get();
 
                             if (result == null) {
                                 Toast.makeText(activity.getApplicationContext(), "To many requests for chancing seed!", Toast.LENGTH_LONG).show();
@@ -167,7 +164,7 @@ public class ProvablyFairFragment extends Fragment {
                     Bet bet = null;
                     try {
                         GetJSONResultFromURLTask getBetsTask = new GetJSONResultFromURLTask();
-                        String result = getBetsTask.execute((betLookupURL + betid)).get();
+                        String result = getBetsTask.execute((URL.BET_LOOKUP + betid)).get();
 
                         JSONObject jsonBet = new JSONObject(result);
                         bet = new Bet(jsonBet.getJSONObject("bet"));

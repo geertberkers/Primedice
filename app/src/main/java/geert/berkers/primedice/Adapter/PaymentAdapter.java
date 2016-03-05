@@ -12,6 +12,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 import geert.berkers.primedice.Data.Payment;
+import geert.berkers.primedice.Data.URL;
 import geert.berkers.primedice.R;
 
 /**
@@ -71,7 +72,7 @@ public class PaymentAdapter extends BaseAdapter {
         txid.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://blockchain.info/tx/" + txidString));
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(URL.BLOCKCHAIN_TX + txidString));
                 v.getContext().startActivity(browserIntent);
             }
         });

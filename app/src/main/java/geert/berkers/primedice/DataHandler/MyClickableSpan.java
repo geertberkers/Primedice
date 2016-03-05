@@ -12,6 +12,7 @@ import java.util.concurrent.ExecutionException;
 import geert.berkers.primedice.Activity.BetInformationActivity;
 import geert.berkers.primedice.Activity.PlayerInformationActivity;
 import geert.berkers.primedice.Data.Bet;
+import geert.berkers.primedice.Data.URL;
 
 /**
  * Pimedice Application Created by Geert on 4-3-2016.
@@ -36,8 +37,7 @@ public class MyClickableSpan extends ClickableSpan {
             try {
                 GetJSONResultFromURLTask getBetsTask = new GetJSONResultFromURLTask();
 
-                String betLookupURL = "https://api.primedice.com/api/bets/";
-                String result = getBetsTask.execute((betLookupURL + value.replace(",", ""))).get();
+                String result = getBetsTask.execute((URL.BET_LOOKUP + value.replace(",", ""))).get();
 
                 if (result != null) {
                     JSONObject jsonBet = new JSONObject(result);

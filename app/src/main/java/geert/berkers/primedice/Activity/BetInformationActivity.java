@@ -32,19 +32,6 @@ public class BetInformationActivity extends AppCompatActivity {
         TextView txtBetGame = (TextView) findViewById(R.id.txtBetGame);
         TextView txtBetProtif = (TextView) findViewById(R.id.txtBetProfit);
 
-  /*
-        //TO-DO: Check if you want to keep it
-        TextView txtVerification = (TextView) findViewById(R.id.txtVerificate);
-
-        txtVerification.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://primedice.com/verify"));
-                startActivity(browserIntent);
-            }
-        });
-*/
-
         Bundle b = getIntent().getExtras();
         try {
             Bet bet = b.getParcelable("bet");

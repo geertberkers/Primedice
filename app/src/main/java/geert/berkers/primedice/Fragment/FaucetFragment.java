@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.concurrent.ExecutionException;
 
 import geert.berkers.primedice.Activity.MainActivity;
+import geert.berkers.primedice.Data.URL;
 import geert.berkers.primedice.DataHandler.PostToServerTask;
 import geert.berkers.primedice.R;
 
@@ -40,7 +41,7 @@ public class FaucetFragment extends Fragment {
     private Calendar calendar;
     private TextView txtBalance;
     private WebView faucetWebView;
-    private String mime, encoding, html, claimFaucetURL;
+    private String mime, encoding, html;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -72,7 +73,6 @@ public class FaucetFragment extends Fragment {
 
         mime = "text/html";
         encoding = "utf-8";
-        claimFaucetURL = "https://api.primedice.com/api/faucet?access_token=";
         String note = "<p><b>Note:</b> You must have over 10 BTC wagered before your faucet starts increasing <br><br> The amount you can claim from the faucet is dependant on your level. Your level and more information about it can be viewed under the profile tab.</p>";
         html = "<html><head><title>Collect Faucet</title></head>"
                 + "<body><h2 align=\"center\">Receive a free amount to play with!</h2>"
@@ -98,7 +98,7 @@ public class FaucetFragment extends Fragment {
     }
 
     private void refreshFaucet() {
-        faucetWebView.loadDataWithBaseURL("https://primedice.com/play", html, mime, encoding, null);
+        faucetWebView.loadDataWithBaseURL(URL.PRIMEDICE, html, mime, encoding, null);
     }
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
@@ -140,7 +140,7 @@ public class FaucetFragment extends Fragment {
             PostToServerTask claimFaucetTask = new PostToServerTask();
             String urlParameters = "response=" + URLEncoder.encode(responseForAPI, "UTF-8");
 
-            String result = claimFaucetTask.execute((claimFaucetURL + activity.getAccess_token()), urlParameters).get();
+            String result = claimFaucetTask.execute((URL.CLAIM_FAUCET + activity.getAccess_token()), urlParameters).get();
 
             if (result != null) {
                 Log.w("ClaimResult", result);

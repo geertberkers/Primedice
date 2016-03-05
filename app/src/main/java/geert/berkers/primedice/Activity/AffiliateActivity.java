@@ -27,6 +27,7 @@ import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.util.concurrent.ExecutionException;
 
+import geert.berkers.primedice.Data.URL;
 import geert.berkers.primedice.DataHandler.PostToServerTask;
 import geert.berkers.primedice.R;
 import geert.berkers.primedice.DataHandler.GetJSONResultFromURLTask;
@@ -37,7 +38,7 @@ import geert.berkers.primedice.Data.User;
  */
 public class AffiliateActivity extends AppCompatActivity {
 
-    private String link, refCommissionURL;
+    private String link;
     private LayoutInflater factory;
     private View withdrawAmountView;
 
@@ -48,7 +49,6 @@ public class AffiliateActivity extends AppCompatActivity {
 
         setTitle("Affiliate Overview");
 
-        refCommissionURL = "https://api.primedice.com/api/affiliate/withdraw?access_token=";
         Bundle b = getIntent().getExtras();
 
         try {
@@ -64,12 +64,10 @@ public class AffiliateActivity extends AppCompatActivity {
                 TextView txtCommission = (TextView) findViewById(R.id.txtCommission);
                 TextView txtRefferedUsers = (TextView) findViewById(R.id.txtRefferedUsers);
 
-                link = "https://primedice.com/?ref=" + user.getUsername();
-
-                String affiliateURL = "https://api.primedice.com/api/affiliates/1?access_token=";
+                link = URL.REFERRAL + user.getUsername();
 
                 GetJSONResultFromURLTask getAffiliateInfoTask = new GetJSONResultFromURLTask();
-                String result = getAffiliateInfoTask.execute(affiliateURL + access_token).get();
+                String result = getAffiliateInfoTask.execute(URL.AFFILIATE + access_token).get();
 
                 JSONObject json = new JSONObject(result);
                 JSONObject affiliate = json.getJSONObject("affiliate");
@@ -161,7 +159,7 @@ public class AffiliateActivity extends AppCompatActivity {
                                     String urlParameters = "amount=" + URLEncoder.encode(String.valueOf(satoshiWithdrawAmount), "UTF-8");
 
                                     PostToServerTask getRefCommissionTask = new PostToServerTask();
-                                    String result = getRefCommissionTask.execute(refCommissionURL + access_token, urlParameters).get();
+                                    String result = getRefCommissionTask.execute(URL.REF_COMMISSION + access_token, urlParameters).get();
 
                                     JSONObject json = new JSONObject(result);
                                     txtAvailableCommision.setText(satoshiStringToBTCString(json.getString("affiliate_balance")));

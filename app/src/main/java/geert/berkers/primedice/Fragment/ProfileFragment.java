@@ -39,6 +39,7 @@ import geert.berkers.primedice.Activity.PaymentActivity;
 import geert.berkers.primedice.Activity.TipActivity;
 import geert.berkers.primedice.Data.Payment;
 import geert.berkers.primedice.Data.Tip;
+import geert.berkers.primedice.Data.URL;
 import geert.berkers.primedice.DataHandler.DownloadImageTask;
 import geert.berkers.primedice.DataHandler.GetJSONResultFromURLTask;
 import geert.berkers.primedice.DataHandler.PostToServerTask;
@@ -59,7 +60,6 @@ public class ProfileFragment extends Fragment {
     private RelativeLayout securityLayout, showedSecurityLayout, logLayout, affiliateLayout;
 
     private EditText edEmergencyAddress;
-    private String tipsURL, emailURL, passwordURL, twoFactorURL, emergencyAddressURL, depositsURL, withdrawalsURL;
     private Button btnSetPassword, btnSetEmail, btnSetTwoFactor, btnSetEmergencyAddress, btnShowDeposits, btnShowWithdrawals, btnTipLog;//, btnContactSupport;
     private TextView txtUsername, txtDateJoined, lblEmail, txtTwoFactorSet, txtEmergencyAddressSet, securityPlus, logPlus, affiliatePlus, txtAffiliateLink, txtAffiliateInformation;
 
@@ -110,14 +110,6 @@ public class ProfileFragment extends Fragment {
         showedLogLayout.setVisibility(View.GONE);
         showedSecurityLayout.setVisibility(View.GONE);
         showedAffiliateLayout.setVisibility(View.GONE);
-
-        tipsURL = "https://api.primedice.com/api/tips?access_token=";
-        emailURL = "https://api.primedice.com/api/email?access_token=";
-        passwordURL = "https://api.primedice.com/api/password?access_token=";
-        depositsURL = "https://api.primedice.com/api/deposits?access_token=";
-        twoFactorURL = "https://api.primedice.com/api/2fa/enable?access_token=";
-        withdrawalsURL = "https://api.primedice.com/api/withdrawals?access_token=";
-        emergencyAddressURL = "https://api.primedice.com/api/emergency?access_token=";
     }
 
     private void setListeners() {
@@ -221,15 +213,6 @@ public class ProfileFragment extends Fragment {
                 copyAffiliateLink();
             }
         });
-
-/* No API available
-        btnContactSupport.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                contactSupport();
-            }
-        });
-*/
     }
 
     private void checkToHide() {
@@ -281,7 +264,7 @@ public class ProfileFragment extends Fragment {
         String account = user.getUsername() + "'s Account";
         txtUsername.setText(account);
 
-        String link = "https://primedice.com/?ref=" + user.getUsername();
+        String link = URL.REFERRAL + user.getUsername();
         txtAffiliateLink.setText(link);
 
         checkToHide();
@@ -359,7 +342,7 @@ public class ProfileFragment extends Fragment {
                         }
 
                         PostToServerTask setPasswordTask = new PostToServerTask();
-                        result = setPasswordTask.execute((passwordURL + activity.getAccess_token()), urlParameters).get();
+                        result = setPasswordTask.execute((URL.PASSWORD + activity.getAccess_token()), urlParameters).get();
 
                         if (result == null) {
                             Toast.makeText(activity.getApplicationContext(), "Password is NOT changed!", Toast.LENGTH_LONG).show();
@@ -426,7 +409,7 @@ public class ProfileFragment extends Fragment {
                         String urlParameters = "email=" + URLEncoder.encode(email, "UTF-8");
 
                         PostToServerTask setEmailTask = new PostToServerTask();
-                        result = setEmailTask.execute((emailURL + activity.getAccess_token()), urlParameters).get();
+                        result = setEmailTask.execute((URL.EMAIL + activity.getAccess_token()), urlParameters).get();
 
                         if (result == null) {
                             Toast.makeText(activity.getApplicationContext(), "Email is NOT set!", Toast.LENGTH_LONG).show();
@@ -493,7 +476,7 @@ public class ProfileFragment extends Fragment {
                             + "&otp_token=" + URLEncoder.encode(otpToken, "UTF-8")
                             + "&password=" + URLEncoder.encode(password, "UTF-8");
                     PostToServerTask setTwoFactorTask = new PostToServerTask();
-                    result = setTwoFactorTask.execute((twoFactorURL + activity.getAccess_token()), urlParameters).get();
+                    result = setTwoFactorTask.execute((URL.TWO_FACTOR + activity.getAccess_token()), urlParameters).get();
 
                     if (result == null) {
                         Toast.makeText(activity.getApplicationContext(), "Two Factor is NOT set!", Toast.LENGTH_LONG).show();
@@ -558,7 +541,7 @@ public class ProfileFragment extends Fragment {
                         String urlParameters = "address=" + URLEncoder.encode(address, "UTF-8");
 
                         PostToServerTask setEmergencyAddressTask = new PostToServerTask();
-                        String result = setEmergencyAddressTask.execute((emergencyAddressURL + activity.getAccess_token()), urlParameters).get();
+                        String result = setEmergencyAddressTask.execute((URL.EMERGENCY_ADDRESS + activity.getAccess_token()), urlParameters).get();
 
                         if (result == null) {
                             Toast.makeText(activity.getApplicationContext(), "Emergency Address is NOT set!", Toast.LENGTH_LONG).show();
@@ -586,7 +569,7 @@ public class ProfileFragment extends Fragment {
 
         try {
             GetJSONResultFromURLTask getDeposits = new GetJSONResultFromURLTask();
-            String result = getDeposits.execute((depositsURL + activity.getAccess_token())).get();
+            String result = getDeposits.execute((URL.DEPOSITS + activity.getAccess_token())).get();
 
             Log.w("DEPOSITS", result);
 
@@ -619,7 +602,7 @@ public class ProfileFragment extends Fragment {
 
         try {
             GetJSONResultFromURLTask getWithdrawals = new GetJSONResultFromURLTask();
-            String result = getWithdrawals.execute((withdrawalsURL + activity.getAccess_token())).get();
+            String result = getWithdrawals.execute((URL.WITHDRAWALS + activity.getAccess_token())).get();
 
             Log.w("WITHDRAWALS", result);
 
@@ -651,7 +634,7 @@ public class ProfileFragment extends Fragment {
 
         try {
             GetJSONResultFromURLTask getTips = new GetJSONResultFromURLTask();
-            String result = getTips.execute((tipsURL + activity.getAccess_token())).get();
+            String result = getTips.execute((URL.TIPS + activity.getAccess_token())).get();
 
             Log.w("TIPS", result);
 
@@ -701,7 +684,7 @@ public class ProfileFragment extends Fragment {
     public void onResume() {
         try {
             GetJSONResultFromURLTask userTask = new GetJSONResultFromURLTask();
-            String userResult = userTask.execute("https://api.primedice.com/api/users/1?access_token=" + activity.getAccess_token()).get();
+            String userResult = userTask.execute(URL.USER + activity.getAccess_token()).get();
 
             if (userResult != null) {
                 if (!userResult.equals("NoResult")) {
@@ -713,10 +696,4 @@ public class ProfileFragment extends Fragment {
         }
         super.onResume();
     }
-
-    /*
-    private void contactSupport() {
-        //No API available
-    }
-*/
 }

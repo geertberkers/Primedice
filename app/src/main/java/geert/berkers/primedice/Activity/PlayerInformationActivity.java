@@ -1,16 +1,21 @@
 package geert.berkers.primedice.Activity;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.concurrent.ExecutionException;
 
+import geert.berkers.primedice.Data.URL;
 import geert.berkers.primedice.DataHandler.GetJSONResultFromURLTask;
+import geert.berkers.primedice.Fragment.ChatFragment;
 import geert.berkers.primedice.R;
 import geert.berkers.primedice.Data.User;
 
@@ -34,7 +39,9 @@ public class PlayerInformationActivity extends AppCompatActivity {
         TextView txtWins = (TextView) findViewById(R.id.txtWins);
         TextView txtLosses = (TextView) findViewById(R.id.txtLosses);
         TextView txtLuck = (TextView) findViewById(R.id.txtLuck);
-        //TextView txtPowerLevel = (TextView) findViewById(R.id.txtPower);
+
+        Button btnPM = (Button) findViewById(R.id.btnPM);
+        Button btnTip = (Button) findViewById(R.id.btnTip);
 
         Bundle b = getIntent().getExtras();
         try {
@@ -51,14 +58,28 @@ public class PlayerInformationActivity extends AppCompatActivity {
                 txtWins.setText(player.getWins());
                 txtLosses.setText(player.getLosses());
                 txtLuck.setText(player.getLuck());
-                //txtPowerLevel.setText("Not implemented yet");
 
+                final Activity activity = this;
+                btnPM.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        ChatFragment.sendPM(v, playerName);
+                    }
+                });
+
+                btnTip.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        MainActivity.tipUser(activity, playerName);
+
+                    }
+                });
                 setTitle(player.getUsername().toUpperCase() + "'S INFO");
             } else throw new Exception("Player is null");
         } catch (Exception ex) {
             Toast.makeText(this.getApplicationContext(), "Player not found!", Toast.LENGTH_SHORT).show();
-            Log.e("NoBetFound", "Didn't find a bet!");
-            Log.e("NoBetFound", ex.toString());
+            Log.e("NoPlayerFound", "Didn't find a player!");
+            Log.e("NoPlayerFound", ex.toString());
 
             this.finish();
         }
@@ -76,14 +97,13 @@ public class PlayerInformationActivity extends AppCompatActivity {
     }
 
     private User getUser() {
-
         User user;
         String userResult = "NoResult";
 
         GetJSONResultFromURLTask userTask = new GetJSONResultFromURLTask();
 
         try {
-            userResult = userTask.execute("https://api.primedice.com/api/users/" + playerName).get();
+            userResult = userTask.execute(URL.GET_USER + playerName).get();
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         }

@@ -42,6 +42,7 @@ import java.text.DecimalFormat;
 import java.net.URISyntaxException;
 import java.util.concurrent.ExecutionException;
 
+import geert.berkers.primedice.Data.URL;
 import geert.berkers.primedice.DataHandler.PostToServerTask;
 import geert.berkers.primedice.R;
 import geert.berkers.primedice.Data.Bet;
@@ -61,30 +62,30 @@ import geert.berkers.primedice.Thread.AutomatedBetThread;
  */
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
 
-    private User user;
-    private String access_token, tipURL, logOutURL;
+    private static User user;
+    private static String access_token;
 
     private int betsStart, betCounter;
     private Long wageredStart;
     private double profitStart;
-    private TextView notification;
-    private ImageView closeNotification;
+    private static TextView notification;
+    private static ImageView closeNotification;
 
-    private Activity activity;
+    private static Activity activity;
     private LinearLayout drawer;
     private ListView menuListView;
-    private FragmentManager manager;
+    private static FragmentManager manager;
     private MenuAdapter menuAdapter;
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle drawerListener;
 
-    private BetFragment betFragment;
+    private static BetFragment betFragment;
     private ChatFragment chatFragment;
     private StatsFragment statsFragment;
-    private FaucetFragment faucetFragment;
+    private static FaucetFragment faucetFragment;
     private ProfileFragment profileFragment;
     private ProvablyFairFragment provablyFairFragment;
-    private AutomatedBetFragment automatedBetFragment;
+    private static AutomatedBetFragment automatedBetFragment;
 
     private AutomatedBetThread automatedBetThread;
 
@@ -169,8 +170,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         setTitleAndOpenedMenuItem("Bet");
 
         betCounter = 0;
-        tipURL = "https://api.primedice.com/api/tip?access_token=";
-        logOutURL = "https://api.primedice.com/api/logout?access_token=";
 
         Bundle b = getIntent().getExtras();
 
@@ -203,11 +202,17 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     }
 
-    // Tip the developer
-    private void tipDeveloper() {
-        String sathosiBaseTip = "0.00050001";
+    // Tip user
+    public static boolean tipUser(Activity a, final String userToTip) {
         final boolean[] firstEdit = {true};
-        final EditText edTipAmount = new EditText(this);
+        final boolean[] tipFinished = {false};
+
+        if( a == null){
+            a = activity;
+        }
+        String sathosiBaseTip = "0.00050001";
+        final EditText edTipAmount = new EditText(a);
+
         edTipAmount.setText(sathosiBaseTip);
         edTipAmount.setRawInputType(InputType.TYPE_CLASS_NUMBER);
         edTipAmount.setOnClickListener(new View.OnClickListener() {
@@ -220,9 +225,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             }
         });
 
-        AlertDialog.Builder tipDialog = new AlertDialog.Builder(this);
-        tipDialog.setTitle("Tip developer");
-        tipDialog.setMessage("Enter amount:");
+        AlertDialog.Builder tipDialog = new AlertDialog.Builder(a);
+        tipDialog.setTitle("TIP " + userToTip.toUpperCase());
+        tipDialog.setMessage("Tipping is an irreversible action.\nEnter amount:");
         tipDialog.setView(edTipAmount);
         tipDialog.setPositiveButton("Send", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialogInterface, int i) {
@@ -242,15 +247,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                             if (user.getBalance() < satoshi) {
                                 showNotification(true, "Insufficient funds", 5);
                             } else if (satoshiTip < 50001) {
-                                Toast.makeText(getApplicationContext(), "Tip must be at least 0.00050001 BTC!", Toast.LENGTH_LONG).show();
+                                Toast.makeText(activity, "Tip must be at least 0.00050001 BTC!", Toast.LENGTH_LONG).show();
                             } else {
-                                String urlParameters = "username=GeertDev" +
-                                        "&amount=" + URLEncoder.encode(String.valueOf(satoshiTip), "UTF-8");
+                                String urlParameters = "username=" + URLEncoder.encode(userToTip, "UTF-8")
+                                        + "&amount=" + URLEncoder.encode(String.valueOf(satoshiTip), "UTF-8");
 
                                 PostToServerTask tipDeveloperTask = new PostToServerTask();
 
                                 try {
-                                    String result = tipDeveloperTask.execute((tipURL + access_token), urlParameters).get();
+                                    String result = tipDeveloperTask.execute((URL.TIP + access_token), urlParameters).get();
                                     Log.i("Result", result);
 
                                     JSONObject jsonObject = new JSONObject(result);
@@ -259,7 +264,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
                                     updateBalanceInOpenedFragment();
 
-                                    Toast.makeText(getApplicationContext(), "Tipped " + edTipAmount.getText().toString() + " BTC to GeertDev.", Toast.LENGTH_LONG).show();
+                                    tipFinished[0] = true;
+
+                                    Toast.makeText(activity, "Tipped " + edTipAmount.getText().toString() + " BTC to GeertDev.", Toast.LENGTH_LONG).show();
                                 } catch (InterruptedException | ExecutionException | JSONException e) {
                                     e.printStackTrace();
                                 }
@@ -272,10 +279,20 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         );
         tipDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialogInterface, int i) {
-                setTitleAndOpenedMenuItem(manager.getBackStackEntryAt(manager.getBackStackEntryCount() - 1).getName());
+                tipFinished[0] = false;
             }
         });
         tipDialog.show();
+
+        return tipFinished[0];
+    }
+
+    // Tip the developer
+    private void tipDeveloper() {
+
+        if (!tipUser(this, "GeertDev")) {
+            setTitleAndOpenedMenuItem(manager.getBackStackEntryAt(manager.getBackStackEntryCount() - 1).getName());
+        }
     }
 
     // Log out without password set
@@ -326,7 +343,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         try {
             PostToServerTask logOutTask = new PostToServerTask();
 
-            result = logOutTask.execute(logOutURL + access_token, null).get();
+            result = logOutTask.execute(URL.LOG_OUT + access_token, null).get();
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         }
@@ -376,6 +393,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     }
 
+    // Place the automatic bet
     public Bet makeBet(int amount, String target, String condition) {
         automatedBetThread.betMade(false);
 
@@ -390,7 +408,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         "&condition=" + URLEncoder.encode(condition, "UTF-8");
 
                 PostToServerTask postToServerTask = new PostToServerTask();
-                String result = postToServerTask.execute(("https://api.primedice.com/api/bet?access_token=" + access_token), urlParameters).get();
+                String result = postToServerTask.execute((URL.BET + access_token), urlParameters).get();
 
                 if (result != null) {
                     JSONObject jsonObject = new JSONObject(result);
@@ -517,12 +535,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
             boolean rememberMe = sharedPref.getBoolean("remember_me", false);
 
-            if(!rememberMe){
+            if (!rememberMe) {
                 logOut(this);
             }
 
             super.onBackPressed();
-
         }
     }
 
@@ -548,8 +565,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     }
 
-    public void updateUser(User user) {
-        this.user = user;
+    public void updateUser(User updatedUser) {
+        user = updatedUser;
     }
 
     // Reset session wagered information
@@ -561,12 +578,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     // Show notification with text x for y seconds.
     // Use 0 if user must click it away him/herself
-    public void showNotification(final boolean error, final String text, final int seconds) {
+    public static void showNotification(final boolean error, final String text, final int seconds) {
 
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-
                 if (error) {
                     notification.setBackgroundResource(R.drawable.error);
                 } else {
@@ -596,7 +612,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     // Close (hide) current the notification
-    private void hideNotification() {
+    private static void hideNotification() {
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -607,17 +623,24 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     // Update balance in opened fragment
-    private void updateBalanceInOpenedFragment() {
+    public static void updateBalanceInOpenedFragment() {
         String currentFragment = manager.getBackStackEntryAt(manager.getBackStackEntryCount() - 1).getName();
 
         String balance = user.getBalanceAsString();
 
         // These fragments have no current balance: Profile, Stats, Chat, Provably fair
         switch (currentFragment) {
-            case "Bet":                 betFragment.updateBalance(balance);             break;
-            case "Automated betting":   automatedBetFragment.updateBalance(balance);    break;
-            case "Faucet":              faucetFragment.updateBalance(balance);          break;
-            default:                                                                    break;
+            case "Bet":
+                betFragment.updateBalance(balance);
+                break;
+            case "Automated betting":
+                automatedBetFragment.updateBalance(balance);
+                break;
+            case "Faucet":
+                faucetFragment.updateBalance(balance);
+                break;
+            default:
+                break;
         }
     }
 
@@ -649,9 +672,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         String currentFragment = manager.getBackStackEntryAt(manager.getBackStackEntryCount() - 1).getName();
 
         switch (currentFragment) {
-            case "Bet":                 betFragment.notifyAutomatedBetStopped();            break;
-            case "Automated betting":   automatedBetFragment.notifyAutomatedBetStopped();   break;
-            default:                                                                        break;
+            case "Bet":
+                betFragment.notifyAutomatedBetStopped();
+                break;
+            case "Automated betting":
+                automatedBetFragment.notifyAutomatedBetStopped();
+                break;
+            default:
+                break;
         }
     }
 
@@ -763,7 +791,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     };
 
-
     private final Emitter.Listener socketioAlert = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
@@ -798,7 +825,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private Socket mSocket;
     {
         try {
-            mSocket = IO.socket("https://sockets.primedice.com");
+            mSocket = IO.socket(URL.SOCKETS);
 
             mSocket.on(Socket.EVENT_CONNECT, socketioConnect)         // Connect sockets
                     .on("tip", socketioTip)                           // Get tip
@@ -814,7 +841,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     // TODO: General things to complete this application:
-    // Tip/PM user when opened
     // Log out task when not remembering
     // Bet failed multiple times in a row? -> Change seed!
 
@@ -822,6 +848,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     // Settings screen (alert time/notification/faucet timer/time settings)
 
     // Update UI
+    // - Tip developer with static method
     // - Check differences with site and fix it
     // - Update chat UI
     // - Scroll to new bet when adding it
