@@ -20,7 +20,6 @@ import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.ExecutionException;
 
@@ -38,7 +37,6 @@ public class FaucetFragment extends Fragment {
     private MainActivity activity;
 
     private Date nextClaim;
-    private Calendar calendar;
     private TextView txtBalance;
     private WebView faucetWebView;
     private String mime, encoding, html;
@@ -103,17 +101,14 @@ public class FaucetFragment extends Fragment {
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
     private void onClaimFaucet() {
-        calendar = Calendar.getInstance();
-
         if (txtBalance.getText().toString().equals("0.00000000")) {
             faucetWebView.evaluateJavascript("grecaptcha.getResponse()", new ValueCallback<String>() {
                 @Override
                 public void onReceiveValue(String value) {
 
-                    Log.w("FaucetResult", value);
                     String responseForAPI = value.replace("%22", "");
                     responseForAPI = responseForAPI.replace("\"", "");
-                    Log.w("ResponseForAPI", responseForAPI);
+                    Log.i("ResponseForAPI", responseForAPI);
 
                     if (nextClaim != null) {
                         Date now = new Date();
@@ -135,6 +130,7 @@ public class FaucetFragment extends Fragment {
         }
     }
 
+    @SuppressWarnings("deprecation")
     private void claimFaucet(String responseForAPI) {
         try {
             PostToServerTask claimFaucetTask = new PostToServerTask();
@@ -143,7 +139,7 @@ public class FaucetFragment extends Fragment {
             String result = claimFaucetTask.execute((URL.CLAIM_FAUCET + activity.getAccess_token()), urlParameters).get();
 
             if (result != null) {
-                Log.w("ClaimResult", result);
+                Log.i("CLAIM_FAUCET_RESULT", result);
 
                 JSONObject jsonResult = new JSONObject(result);
                 activity.getUser().updateUserBalance(jsonResult.getString("balance"));

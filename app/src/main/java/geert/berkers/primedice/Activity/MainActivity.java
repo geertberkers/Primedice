@@ -182,7 +182,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 this.profitStart = user.getProfit();
                 this.betsStart = user.getBets();
 
-                Log.i("User", user.toString());
+                Log.i("LOGGED_IN_USER", user.toString());
 
                 FragmentTransaction transaction = manager.beginTransaction();
                 transaction.add(R.id.content_frame, betFragment, "Bet");
@@ -192,8 +192,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 mSocket.connect();
             } else throw new Exception("User is null");
         } catch (Exception ex) {
-            Log.e("NoUserFound", "Didn't find a user!");
-            Log.e("NoUserFound", ex.toString());
+            ex.printStackTrace();
 
             Intent loginActivityIntent = new Intent(this, LoginActivity.class);
             loginActivityIntent.putExtra("info", "User not found. Log in.");
@@ -202,16 +201,57 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     }
 
+    // send PM
+    public static void sendPM(Activity a, final String toUsername) {
+        if (a == null) {
+            a = activity;
+        }
+
+        final EditText edMessage = new EditText(a);
+
+        AlertDialog.Builder pmDialog = new AlertDialog.Builder(a);
+        pmDialog.setTitle("MESSAGE " + toUsername);
+        pmDialog.setMessage("This message will only be seen by " + toUsername);
+        pmDialog.setView(edMessage);
+        pmDialog.setPositiveButton("Send", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialogInterface, int i) {
+                String message = edMessage.getText().toString();
+                try {
+                    String urlParameters = "room=" + URLEncoder.encode(ChatFragment.getRoom(), "UTF-8")
+                            + "&message=" + URLEncoder.encode(message, "UTF-8")
+                            + "&toUsername=" + URLEncoder.encode(toUsername, "UTF-8");
+
+                    PostToServerTask sendMessage = new PostToServerTask();
+                    String result = sendMessage.execute((URL.SEND_MESSAGE + access_token), urlParameters).get();
+                    System.out.println(result);
+
+                } catch (InterruptedException | ExecutionException | UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        pmDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialogInterface, int i) {
+
+            }
+        });
+        pmDialog.show();
+    }
+
     // Tip user
-    public static boolean tipUser(Activity a, final String userToTip) {
+    public static boolean tipUser(final Activity a, final String userToTip) {
         final boolean[] firstEdit = {true};
         final boolean[] tipFinished = {false};
 
-        if( a == null){
-            a = activity;
+        final Activity temp;
+        if (a == null) {
+            temp = activity;
+        } else {
+            temp = a;
         }
+
         String sathosiBaseTip = "0.00050001";
-        final EditText edTipAmount = new EditText(a);
+        final EditText edTipAmount = new EditText(temp);
 
         edTipAmount.setText(sathosiBaseTip);
         edTipAmount.setRawInputType(InputType.TYPE_CLASS_NUMBER);
@@ -225,7 +265,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             }
         });
 
-        AlertDialog.Builder tipDialog = new AlertDialog.Builder(a);
+        AlertDialog.Builder tipDialog = new AlertDialog.Builder(temp);
         tipDialog.setTitle("TIP " + userToTip.toUpperCase());
         tipDialog.setMessage("Tipping is an irreversible action.\nEnter amount:");
         tipDialog.setView(edTipAmount);
@@ -256,7 +296,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
                                 try {
                                     String result = tipDeveloperTask.execute((URL.TIP + access_token), urlParameters).get();
-                                    Log.i("Result", result);
+                                    Log.i("TIP_RESULT", result);
 
                                     JSONObject jsonObject = new JSONObject(result);
                                     JSONObject jsonUser = jsonObject.getJSONObject("user");
@@ -290,7 +330,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     // Tip the developer
     private void tipDeveloper() {
 
-        if (!tipUser(this, "GeertDev")) {
+        if (!tipUser(null, "GeertDev")) {
             setTitleAndOpenedMenuItem(manager.getBackStackEntryAt(manager.getBackStackEntryCount() - 1).getName());
         }
     }
@@ -527,7 +567,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             setTitleAndOpenedMenuItem(menuItem);
         } else {
 
-            Log.i("MainActivity", "Close");
+            Log.i("MainActivity", "Close application");
             stopAutomatedBetThread();
             mSocket.disconnect();
 
@@ -750,7 +790,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     }
                 }
             } catch (Exception ex) {
-                Log.e("BetException", ex.toString());
+                ex.printStackTrace();
             }
         }
     };

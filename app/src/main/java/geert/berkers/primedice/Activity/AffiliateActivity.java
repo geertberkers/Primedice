@@ -84,7 +84,7 @@ public class AffiliateActivity extends AppCompatActivity {
                 txtCommission.setText(commissionText);
                 txtRefferedUsers.setText(String.valueOf(referred));
 
-                Log.w("AffiliateInfo", result);
+                Log.i("AFFILIATE_INFO_RESULT", result);
 
                 txtAffiliateLink.setText(link);
 
@@ -179,7 +179,7 @@ public class AffiliateActivity extends AppCompatActivity {
             } else throw new Exception("User is null");
 
         } catch (Exception e) {
-            Log.e("UserException", e.toString());
+            e.printStackTrace();
 
             this.finish();
             e.printStackTrace();

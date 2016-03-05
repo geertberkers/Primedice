@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
 import geert.berkers.primedice.Activity.AffiliateActivity;
+import geert.berkers.primedice.Activity.LoginActivity;
 import geert.berkers.primedice.Activity.MainActivity;
 import geert.berkers.primedice.Activity.PaymentActivity;
 import geert.berkers.primedice.Activity.TipActivity;
@@ -217,23 +218,23 @@ public class ProfileFragment extends Fragment {
 
     private void checkToHide() {
         if (user.getAddressEnabled()) {
-            Log.w("Address", "Enabled");
+            Log.i("Address", "Enabled");
             btnSetEmergencyAddress.setVisibility(View.INVISIBLE);
             txtEmergencyAddressSet.setVisibility(View.VISIBLE);
         } else {
             btnSetEmergencyAddress.setVisibility(View.VISIBLE);
             txtEmergencyAddressSet.setVisibility(View.INVISIBLE);
-            Log.w("Address", "User need to set a address!");
+            Log.i("Address", "User need to set a address!");
         }
 
         if (user.getEmailEnabled()) {
-            Log.w("Email", "Enabled");
+            Log.i("Email", "Enabled");
             lblEmail.setVisibility(View.GONE);
             btnSetEmail.setVisibility(View.GONE);
             View emailDivider = view.findViewById(R.id.emailDivider);
             emailDivider.setVisibility(View.GONE);
         } else {
-            Log.w("Email", "User need to set a email!");
+            Log.i("Email", "User need to set a email!");
         }
 
         String setPasswordText;
@@ -246,7 +247,7 @@ public class ProfileFragment extends Fragment {
         btnSetPassword.setText(setPasswordText);
 
         if (user.getOTPEnabled()) {
-            Log.w("OTP", "Enabled");
+            Log.i("OTP", "Enabled");
             btnSetTwoFactor.setVisibility(View.INVISIBLE);
             txtTwoFactorSet.setVisibility(View.VISIBLE);
         } else {
@@ -571,7 +572,7 @@ public class ProfileFragment extends Fragment {
             GetJSONResultFromURLTask getDeposits = new GetJSONResultFromURLTask();
             String result = getDeposits.execute((URL.DEPOSITS + activity.getAccess_token())).get();
 
-            Log.w("DEPOSITS", result);
+            Log.i("DEPOSITS_RESULT", result);
 
             if (result != null) {
                 JSONObject json = new JSONObject(result);
@@ -604,7 +605,7 @@ public class ProfileFragment extends Fragment {
             GetJSONResultFromURLTask getWithdrawals = new GetJSONResultFromURLTask();
             String result = getWithdrawals.execute((URL.WITHDRAWALS + activity.getAccess_token())).get();
 
-            Log.w("WITHDRAWALS", result);
+            Log.i("WITHDRAWALS_RESULT", result);
 
             if (result != null) {
                 JSONObject json = new JSONObject(result);
@@ -636,7 +637,7 @@ public class ProfileFragment extends Fragment {
             GetJSONResultFromURLTask getTips = new GetJSONResultFromURLTask();
             String result = getTips.execute((URL.TIPS + activity.getAccess_token())).get();
 
-            Log.w("TIPS", result);
+            Log.i("TIPS_RESULT", result);
 
             if (result != null) {
                 JSONObject json = new JSONObject(result);
@@ -682,18 +683,7 @@ public class ProfileFragment extends Fragment {
 
     @Override
     public void onResume() {
-        try {
-            GetJSONResultFromURLTask userTask = new GetJSONResultFromURLTask();
-            String userResult = userTask.execute(URL.USER + activity.getAccess_token()).get();
-
-            if (userResult != null) {
-                if (!userResult.equals("NoResult")) {
-                    activity.updateUser(new User(userResult));
-                }
-            }
-        } catch (Exception ex){
-            // Error getting user.
-        }
+        activity.updateUser(LoginActivity.getUser(activity.getAccess_token()));
         super.onResume();
     }
 }

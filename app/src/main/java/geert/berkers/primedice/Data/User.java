@@ -8,23 +8,28 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.DecimalFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
 
 /**
  * Primedice Application Created by Geert on 23-1-2016.
  */
 public class User implements Parcelable {
 
+    private Long wagered;
+    private Date registered;
     private double balance, profit, affiliate_total;
     private boolean password, otp_enabled, email_enabled, address_enabled;
-    private Long wagered;
+    private SimpleDateFormat registeredDateFormat = new SimpleDateFormat("MMM dd yyyy");
     private int userID, bets, wins, losses, win_risk, lose_risk, messages, referred, nonce;
-    private String username, address, registered, client, previous_server, previous_client, previous_server_hashed, next_seed, server, otp_token, otp_qr;
+    private String username, address/*, registered*/, client, previous_server, previous_client, previous_server_hashed, next_seed, server, otp_token, otp_qr;
 
     // Create User from JSON
     public User(String jsonUserString) {
         try {
             JSONObject json = new JSONObject(jsonUserString);
-
             JSONObject jsonUser = json.getJSONObject("user");
 
             this.userID = jsonUser.getInt("userid");
@@ -32,7 +37,7 @@ public class User implements Parcelable {
             this.balance = jsonUser.getDouble("balance");
             this.password = jsonUser.getBoolean("password");
             this.address = jsonUser.getString("address");
-            this.registered = jsonUser.getString("registered");
+            setRegisteredFromDateFormat(jsonUser.getString("registered"));
             this.otp_enabled = jsonUser.getBoolean("otp_enabled");
             this.email_enabled = jsonUser.getBoolean("email_enabled");
             this.address_enabled = jsonUser.getBoolean("address_enabled");
@@ -57,7 +62,7 @@ public class User implements Parcelable {
                 this.otp_token = jsonUser.getString("otp_token");
                 this.otp_qr = jsonUser.getString("otp_qr");
             } catch (Exception ex) {
-                Log.i("2FA otp","Two Factor Authentication already set.");
+                Log.i("2FA OTP","Two Factor Authentication already set.");
             }
 
         } catch (JSONException e) {
@@ -66,16 +71,11 @@ public class User implements Parcelable {
     }
 
     // Create User to show
-    public User(boolean yourself, String jsonUserString) {
-        Log.i("Info", "Own account: " + yourself);
-
+    public User(JSONObject jsonUser) {
         try {
-            JSONObject json = new JSONObject(jsonUserString);
-            JSONObject jsonUser = json.getJSONObject("user");
-
             this.userID = jsonUser.getInt("userid");
             this.username = jsonUser.getString("username");
-            this.registered = jsonUser.getString("registered");
+            setRegisteredFromDateFormat(jsonUser.getString("registered"));
             this.wagered = jsonUser.getLong("wagered");
             this.profit = jsonUser.getDouble("profit");
             this.bets = jsonUser.getInt("bets");
@@ -85,7 +85,7 @@ public class User implements Parcelable {
             this.lose_risk = jsonUser.getInt("lose_risk");
             this.messages = jsonUser.getInt("messages");
         } catch (JSONException ex) {
-            Log.e("JSONError", ex.toString());
+            ex.printStackTrace();
         }
     }
 
@@ -96,7 +96,13 @@ public class User implements Parcelable {
         this.balance = read.readDouble();
         password = read.readString().equals("Y");
         this.address = read.readString();
-        this.registered = read.readString();
+
+        try {
+            this.registered = registeredDateFormat.parse(read.readString());
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
         otp_enabled = read.readString().equals("Y");
         email_enabled = read.readString().equals("Y");
         address_enabled = read.readString().equals("Y");
@@ -151,7 +157,7 @@ public class User implements Parcelable {
             arg0.writeString("N");
         }
         arg0.writeString(address);
-        arg0.writeString(registered);
+        arg0.writeString(getRegistered());
         if (otp_enabled) {
             arg0.writeString("Y");
         } else {
@@ -195,7 +201,7 @@ public class User implements Parcelable {
             this.balance = jsonUser.getDouble("balance");
             this.password = jsonUser.getBoolean("password");
             this.address = jsonUser.getString("address");
-            this.registered = jsonUser.getString("registered");
+            setRegisteredFromDateFormat(jsonUser.getString("registered"));
             this.otp_enabled = jsonUser.getBoolean("otp_enabled");
             this.email_enabled = jsonUser.getBoolean("email_enabled");
             this.address_enabled = jsonUser.getBoolean("address_enabled");
@@ -217,7 +223,7 @@ public class User implements Parcelable {
             this.next_seed = jsonUser.getString("next_seed");
             this.server = jsonUser.getString("server");
         } catch (Exception ex) {
-            Log.e("Error", ex.toString());
+            ex.printStackTrace();
         }
     }
 
@@ -276,7 +282,7 @@ public class User implements Parcelable {
     }
 
     public String getRegistered() {
-        return registered.substring(0, 10);
+        return registeredDateFormat.format(registered);
     }
 
     public String getWins() {
@@ -402,5 +408,16 @@ public class User implements Parcelable {
 
     public String getPreviousServerHashed() {
         return previous_server_hashed;
+    }
+
+    public void setRegisteredFromDateFormat(String timestamp) {
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+        formatter.setTimeZone(TimeZone.getTimeZone("UTC")); //2015-11-25T11:52:01.617Z
+
+        try {
+            registered = formatter.parse(timestamp);
+        } catch (ParseException ex) {
+            ex.printStackTrace();
+        }
     }
 }

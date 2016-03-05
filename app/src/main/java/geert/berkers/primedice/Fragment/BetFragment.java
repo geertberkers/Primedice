@@ -37,6 +37,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
+import geert.berkers.primedice.Activity.LoginActivity;
 import geert.berkers.primedice.Adapter.BetAdapter;
 import geert.berkers.primedice.Data.Bet;
 import geert.berkers.primedice.Data.URL;
@@ -46,7 +47,6 @@ import geert.berkers.primedice.DataHandler.MySQLiteHelper;
 import geert.berkers.primedice.DataHandler.PostToServerTask;
 import geert.berkers.primedice.Activity.MainActivity;
 import geert.berkers.primedice.R;
-import geert.berkers.primedice.Data.User;
 
 /**
  * Primedice Application Created by Geert on 2-2-2016.
@@ -90,6 +90,8 @@ public class BetFragment extends Fragment {
                 String stopBetting = "STOP AUTOMATED BETTING";
                 btnRollDice.setText(stopBetting);
             }
+
+            activity.updateUser(LoginActivity.getUser(activity.getAccess_token()));
         }
 
         txtBalance.setText(activity.getUser().getBalanceAsString());
@@ -188,8 +190,8 @@ public class BetFragment extends Fragment {
                 try {
                     String betAmountString = edBetAmount.getText().toString();
                     betAmountString = betAmountString.replace(",", ".");
-                    double betAmountDouble = Double.valueOf(betAmountString);
 
+                    double betAmountDouble = Double.valueOf(betAmountString);
                     double toSatoshiMultiplier = 100000000;
                     double satoshi = betAmountDouble * toSatoshiMultiplier;
 
@@ -424,43 +426,28 @@ public class BetFragment extends Fragment {
                             Toast.makeText(activity.getApplicationContext(), "Withdrawal must be at least 0.0010000 BTC!", Toast.LENGTH_LONG).show();
                         } else {
                             try {
-
-                                String urlParameters =
-                                        "amount=" + URLEncoder.encode(String.valueOf(satoshiWithdrawAmount), "UTF-8") +
-                                                "&address=" + URLEncoder.encode(withdrawalAdress, "UTF-8");
-
+                                String urlParameters = "amount=" + URLEncoder.encode(String.valueOf(satoshiWithdrawAmount), "UTF-8")
+                                        + "&address=" + URLEncoder.encode(withdrawalAdress, "UTF-8");
 
                                 PostToServerTask placeWithdrawalTask = new PostToServerTask();
                                 String result = placeWithdrawalTask.execute((URL.WITHDRAW + activity.getAccess_token()), urlParameters).get();
-                                //String resultExample = "{\"amount\":100000,\"sent\":100000,\"txid\":\"8f0159c9af5ba2b325bf93085632e91a65595f0fb8e4bca2f9507bd1be619ddf\",\"address\":\"19ZgWmESFWmhcQKDP9ZxhUeLvTACXNyUjS\",\"confirmed\":true,\"timestamp\":\"2016-01-30T01:20:33.580Z\"}";
 
                                 try {
                                     JSONObject jsonResult = new JSONObject(result);
 
                                     String txid = jsonResult.getString("txid");
                                     String notification = "Withdrawed " + withdrawalAmount + " BTC to " + withdrawalAdress + ".\nTXID: " + txid;
+
                                     MainActivity.showNotification(true, notification, 0);
                                 } catch (JSONException e) {
                                     e.printStackTrace();
                                 }
 
-                                String userResult = "NoResult";
-                                try {
-                                    GetJSONResultFromURLTask userTask = new GetJSONResultFromURLTask();
-                                    userResult = userTask.execute(URL.USER + activity.getAccess_token()).get();
-                                } catch (InterruptedException | ExecutionException e) {
-                                    e.printStackTrace();
-                                }
+                                activity.updateUser(LoginActivity.getUser(activity.getAccess_token()));
+                                txtBalance.setText(activity.getUser().getBalanceAsString());
 
-                                if (userResult != null) {
-                                    if (!userResult.equals("NoResult")) {
-                                        activity.updateUser(new User(userResult));
-                                        txtBalance.setText(activity.getUser().getBalanceAsString());
-                                    }
-                                }
                             } catch (InterruptedException | ExecutionException e) {
 
-                                Toast.makeText(activity.getApplicationContext(), "Withdrawal failed!", Toast.LENGTH_LONG).show();
                                 e.printStackTrace();
                             }
                         }
@@ -684,24 +671,19 @@ public class BetFragment extends Fragment {
 
                     addBet(bet, false, true);
                 } else {
-                    GetJSONResultFromURLTask userTask = new GetJSONResultFromURLTask();
-                    String userResult = userTask.execute(URL.USER + activity.getAccess_token()).get();
 
-                    if (userResult != null) {
-                        if (!userResult.equals("NoResult")) {
-                            activity.updateUser(new User(userResult));
+                    activity.updateUser(LoginActivity.getUser(activity.getAccess_token()));
 
-                            String error;
-                            if (betAmount > (int) activity.getUser().getBalance()) {
-                                error = "Insufficient funds!";
-                            } else {
-                                error = "Betting to fast!";
-                            }
-
-                            MainActivity.showNotification(true, error, 5);
-                        }
+                    String error;
+                    if (betAmount > (int) activity.getUser().getBalance()) {
+                        error = "Insufficient funds!";
+                    } else {
+                        error = "Betting to fast!";
                     }
+
+                    MainActivity.showNotification(true, error, 5);
                 }
+
             } catch (InterruptedException | ExecutionException | JSONException | UnsupportedEncodingException e) {
                 e.printStackTrace();
             }

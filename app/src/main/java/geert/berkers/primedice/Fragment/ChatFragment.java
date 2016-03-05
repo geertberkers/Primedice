@@ -1,9 +1,6 @@
 package geert.berkers.primedice.Fragment;
 
-import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Fragment;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -111,7 +108,7 @@ public class ChatFragment extends Fragment {
 
         addSpinnerListener();
 
-        Log.w("ChatFragment", "Socket subscribed on message");
+        Log.i("ChatFragment", "Socket subscribed on message");
         socket.on("msg", socketioMSG);
         socket.on("pm", socketioPM);
     }
@@ -269,7 +266,7 @@ public class ChatFragment extends Fragment {
             toUsername = temp.substring(0, length);
         } else if (message.startsWith("/tip ")) {
             toUsername = message.substring(5);
-            MainActivity.tipUser(null,toUsername);
+            MainActivity.tipUser(null, toUsername);
             return;
         } else if (message.startsWith("/ignore ")) {
             toUsername = message.substring(8);
@@ -311,11 +308,10 @@ public class ChatFragment extends Fragment {
 
                 String result = getBetsTask.execute((URL.BET_LOOKUP + bet.replace(",", ""))).get();
 
-                //TODO: Fix bet date.
                 if (result != null) {
                     JSONObject jsonBet = new JSONObject(result);
                     Bet b = new Bet(jsonBet.getJSONObject("bet"));
-                    //b.setDate()
+
                     Intent betInfoIntent = new Intent(mainActivity, BetInformationActivity.class);
                     betInfoIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     betInfoIntent.putExtra("bet", b);
@@ -347,10 +343,10 @@ public class ChatFragment extends Fragment {
             e.printStackTrace();
         }
 
-        Log.i("Result", result);
+        Log.i("MESSAGE_RESULT", result);
     }
 
-    private static String getRoom() {
+    public static String getRoom() {
         if (currentRoom == Message.ENGLISH) {
             return "English";
         } else {
@@ -368,7 +364,7 @@ public class ChatFragment extends Fragment {
             messages = russianMessages;
         }
 
-        messages.add(new Message(room, messageType, messageTag, message, sender, toUsername, time));
+        messages.add(new Message(messageType, messageTag, message, sender, toUsername, time));
 
         // Remove oldest messages when reaches over 50
         while (messages.size() > 50) {
@@ -429,61 +425,22 @@ public class ChatFragment extends Fragment {
         socket.off("msg", socketioMSG);
         socket.off("pm", socketioPM);
 
-        Log.w("ChatFragment", "Socket de-subscribed on message");
-    }
-
-    public static void sendPM(final View v, final String toUsername) {
-        mainActivity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                final EditText edMessage = new EditText(v.getContext());
-
-                AlertDialog.Builder pmDialog = new AlertDialog.Builder(v.getContext());
-                pmDialog.setTitle("MESSAGE " + toUsername);
-                pmDialog.setMessage("This message will only be seen by " + toUsername);
-                pmDialog.setView(edMessage);
-                pmDialog.setPositiveButton("Send", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        String message = edMessage.getText().toString();
-                        try {
-                            String urlParameters = "room=" + URLEncoder.encode(getRoom(), "UTF-8")
-                                    + "&message=" + URLEncoder.encode(message, "UTF-8")
-                                    + "&toUsername=" + URLEncoder.encode(toUsername, "UTF-8");
-
-                            PostToServerTask sendMessage = new PostToServerTask();
-                            String result = sendMessage.execute((URL.SEND_MESSAGE + access_token), urlParameters).get();
-                            System.out.println(result);
-
-                        } catch (InterruptedException | ExecutionException | UnsupportedEncodingException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                });
-                pmDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialogInterface, int i) {
-
-                    }
-                });
-                pmDialog.show();
-            }
-        });
+        Log.i("ChatFragment", "Socket de-subscribed on message");
     }
 
     // Ignore user
     public static void ignoreOrUnignoreUser(String user) {
-        if(ignoredUsers.contains(user.toLowerCase())) {
+        if (ignoredUsers.contains(user.toLowerCase())) {
             ignoredUsers.add(user.toLowerCase());
-        }
-        else{
+        } else {
             ignoredUsers.remove(user.toLowerCase());
         }
     }
 
     public static String getUserIgnoreString(String user) {
-        if(ignoredUsers.contains(user.toLowerCase())) {
+        if (ignoredUsers.contains(user.toLowerCase())) {
             return "UNIGNORE";
-        }
-        else{
+        } else {
             return "IGNORE";
         }
     }

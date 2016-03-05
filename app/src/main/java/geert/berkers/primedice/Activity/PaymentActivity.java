@@ -32,7 +32,9 @@ public class PaymentActivity extends AppCompatActivity {
             ArrayList<Payment> paymentsList = b.getParcelableArrayList("payments");
 
             if (title != null) {
-                getSupportActionBar().setTitle(title);
+                if(getSupportActionBar() != null) {
+                    getSupportActionBar().setTitle(title);
+                }
             } else throw new Exception("Title is null");
 
             if (paymentsList != null) {
@@ -41,8 +43,7 @@ public class PaymentActivity extends AppCompatActivity {
             } else throw new Exception("Payments is null");
 
         } catch (Exception ex) {
-            Log.e("PaymentsException", ex.toString());
-
+            ex.printStackTrace();
             this.finish();
         }
     }

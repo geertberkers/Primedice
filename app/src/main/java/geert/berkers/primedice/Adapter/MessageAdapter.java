@@ -184,7 +184,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
                         @Override
                         public boolean onMenuItemClick(MenuItem item) {
                             switch (item.toString()) {
-                                case "MESSAGE":     ChatFragment.sendPM(v, sender);             break;
+                                case "MESSAGE":     MainActivity.sendPM(null, sender);          break;
                                 case "TIP USER":    MainActivity.tipUser(null, sender);         break;
                                 case "IGNORE":      ChatFragment.ignoreOrUnignoreUser(sender);  break;
                                 case "UNIGNORE":    ChatFragment.ignoreOrUnignoreUser(sender);  break;

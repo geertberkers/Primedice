@@ -58,7 +58,7 @@ class Connection {
             bufferedReader.close();
 
             String result = response.toString();
-            Log.i("Server Response", result);
+            Log.i("RESPONSE_SERVER", result);
 
             return result;
         } catch (IOException e) {

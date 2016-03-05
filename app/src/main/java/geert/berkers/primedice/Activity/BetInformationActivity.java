@@ -60,9 +60,7 @@ public class BetInformationActivity extends AppCompatActivity {
             } else throw new Exception("Bet is null");
         } catch (Exception ex) {
             Toast.makeText(this.getApplicationContext(),"Bet not found!", Toast.LENGTH_SHORT).show();
-            Log.e("NoBetFound", "Didn't find a bet!");
-            Log.e("NoBetFound", ex.toString());
-
+            ex.printStackTrace();
             this.finish();
         }
     }

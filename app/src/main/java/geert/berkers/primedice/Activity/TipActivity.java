@@ -24,7 +24,10 @@ public class TipActivity extends AppCompatActivity {
         setContentView(R.layout.tips_layout);
 
         ListView tipsListView = (ListView) findViewById(R.id.tipsListView);
-        getSupportActionBar().setTitle("Tips");
+
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Tips");
+        }
 
         Bundle b = getIntent().getExtras();
 
@@ -37,8 +40,7 @@ public class TipActivity extends AppCompatActivity {
             } else throw new Exception("Tips are null");
 
         } catch (Exception ex) {
-            Log.e("TipsException", ex.toString());
-
+            ex.printStackTrace();
             this.finish();
         }
     }

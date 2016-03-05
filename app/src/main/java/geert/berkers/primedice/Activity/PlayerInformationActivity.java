@@ -1,23 +1,25 @@
 package geert.berkers.primedice.Activity;
 
-import android.app.Activity;
 import android.os.Bundle;
-import android.support.v4.app.NavUtils;
-import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
-import android.view.MenuItem;
 import android.view.View;
+import android.app.Activity;
+import android.widget.Toast;
+import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
+import android.support.v4.app.NavUtils;
+import android.support.v7.app.AppCompatActivity;
+
+import org.json.JSONObject;
+import org.json.JSONException;
 
 import java.util.concurrent.ExecutionException;
 
-import geert.berkers.primedice.Data.URL;
-import geert.berkers.primedice.DataHandler.GetJSONResultFromURLTask;
-import geert.berkers.primedice.Fragment.ChatFragment;
 import geert.berkers.primedice.R;
+import geert.berkers.primedice.Data.URL;
 import geert.berkers.primedice.Data.User;
+import geert.berkers.primedice.DataHandler.GetJSONResultFromURLTask;
+
 
 /**
  * Primedice Application Created by Geert on 27-1-2016.
@@ -63,24 +65,22 @@ public class PlayerInformationActivity extends AppCompatActivity {
                 btnPM.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        ChatFragment.sendPM(v, playerName);
+                        MainActivity.sendPM(activity, playerName);
                     }
                 });
 
+                //TODO FIX: Notifications not visible in this activity
                 btnTip.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         MainActivity.tipUser(activity, playerName);
-
                     }
                 });
                 setTitle(player.getUsername().toUpperCase() + "'S INFO");
             } else throw new Exception("Player is null");
         } catch (Exception ex) {
             Toast.makeText(this.getApplicationContext(), "Player not found!", Toast.LENGTH_SHORT).show();
-            Log.e("NoPlayerFound", "Didn't find a player!");
-            Log.e("NoPlayerFound", ex.toString());
-
+            ex.printStackTrace();
             this.finish();
         }
     }
@@ -97,7 +97,6 @@ public class PlayerInformationActivity extends AppCompatActivity {
     }
 
     private User getUser() {
-        User user;
         String userResult = "NoResult";
 
         GetJSONResultFromURLTask userTask = new GetJSONResultFromURLTask();
@@ -107,12 +106,20 @@ public class PlayerInformationActivity extends AppCompatActivity {
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         }
-        if (userResult == null || userResult.equals("NoResult")) {
-            user = null;
-        } else {
-            user = new User(false, userResult);
-        }
 
-        return user;
+        if (userResult != null) {
+            if (!userResult.equals("NoResult")) {
+
+                try {
+                    JSONObject json = new JSONObject(userResult);
+                    JSONObject jsonUser = json.getJSONObject("user");
+
+                    return new User(jsonUser);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return null;
     }
 }

@@ -41,7 +41,7 @@ public class LoginActivity extends AppCompatActivity {
     private EditText txtUsername, txtPassword, txtTFA;
 
     private boolean rememberMe = false;
-    private String access_token = null;
+    private static String access_token = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,9 +57,11 @@ public class LoginActivity extends AppCompatActivity {
         txtUsername = (EditText) findViewById(R.id.etUsername);
         txtPassword = (EditText) findViewById(R.id.etPassword);
 
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
-        getSupportActionBar().setIcon(R.mipmap.primedice);
-        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(ContextCompat.getColor(getApplicationContext(), R.color.primedicecolor)));
+        if(getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayShowHomeEnabled(true);
+            getSupportActionBar().setIcon(R.mipmap.primedice);
+            getSupportActionBar().setBackgroundDrawable(new ColorDrawable(ContextCompat.getColor(getApplicationContext(), R.color.primedicecolor)));
+        }
 
         txtRegister.setPaintFlags(txtRegister.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
 
@@ -192,7 +194,7 @@ public class LoginActivity extends AppCompatActivity {
 
                         loginFromAccessToken(access_token);
                     }
-                    Log.i("result", loginResult);
+                    Log.i("LOGIN_RESULT", loginResult);
                 }
             }
         }
@@ -202,7 +204,7 @@ public class LoginActivity extends AppCompatActivity {
     private void loginFromAccessToken(String access_token) {
         String loginRegister = "Login or register!";
         if (access_token != null) {
-            User user = getUser();
+            User user = getUser(access_token);
 
             if (user != null) {
                 Intent mainActivity = new Intent(this, MainActivity.class);
@@ -246,29 +248,24 @@ public class LoginActivity extends AppCompatActivity {
                 }
             }
         } catch (JSONException e) {
-            Log.e("error", e.toString());
+            e.printStackTrace();
         }
     }
 
     // Create user object from server response
-    private User getUser() {
-
-        User user;
-        String userResult = "NoResult";
-
-        GetJSONResultFromURLTask userTask = new GetJSONResultFromURLTask();
-
+    public static User getUser(String access_token) {
         try {
-            userResult = userTask.execute(URL.USER + access_token).get();
+            GetJSONResultFromURLTask userTask = new GetJSONResultFromURLTask();
+            String userResult = userTask.execute(URL.USER + access_token).get();
+
+            if (userResult != null) {
+                if (!userResult.equals("NoResult")) {
+                    return new User(userResult);
+                }
+            }
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         }
-        if (userResult == null || userResult.equals("NoResult")) {
-            user = null;
-        } else {
-            user = new User(userResult);
-        }
-
-        return user;
+        return null;
     }
 }

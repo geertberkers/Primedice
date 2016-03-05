@@ -6,6 +6,10 @@ import android.util.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.text.DecimalFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
 
 /**
  * Primedice Application Created by Geert on 26-1-2016.
@@ -13,14 +17,15 @@ import java.text.DecimalFormat;
 public class Bet implements Parcelable {
 
     private long id;
+    private Date date;
     private boolean win, jackpot;
     private int amount, profit, nonce;
     private double target, roll, multiplier;
-    private String player, playerID, condition, timestamp, client,server;
+    private String player, playerID, condition, client,server;
+    private SimpleDateFormat betDateFormat = new SimpleDateFormat("MMM dd yyyy, HH:mm:ss");
 
     public Bet(JSONObject bet) {
         try {
-            //Log.i("Bet", bet.toString());
             this.id = bet.getLong("id");
             this.player = bet.getString("player");
             this.playerID = bet.getString("player_id");
@@ -38,7 +43,7 @@ public class Bet implements Parcelable {
             this.nonce = bet.getInt("nonce");
             this.client = bet.getString("client");
             this.multiplier = bet.getDouble("multiplier");
-            this.timestamp = bet.getString("timestamp");
+            setDateFromTimestamp(bet.getString("timestamp"));
             try {
                 this.jackpot = bet.getBoolean("jackpot");
             }
@@ -47,7 +52,7 @@ public class Bet implements Parcelable {
             }
             this.server = bet.getString("server");
         } catch (JSONException ex) {
-            Log.e("JSON Error", ex.toString());
+            ex.printStackTrace();
         }
     }
 
@@ -65,7 +70,11 @@ public class Bet implements Parcelable {
         this.nonce = read.readInt();
         this.client = read.readString();
         this.multiplier = read.readDouble();
-        this.timestamp = read.readString();
+        try {
+            this.date = betDateFormat.parse(read.readString());
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
         jackpot = read.readString().equals("Y");
         this.server = read.readString();
     }
@@ -97,7 +106,7 @@ public class Bet implements Parcelable {
         this.client = client;
         this.multiplier = multiplier;
         this.server = server;
-        this.timestamp = timestamp;
+        setDateFromTimestamp(timestamp);
     }
 
     @Override
@@ -119,7 +128,8 @@ public class Bet implements Parcelable {
         arg0.writeInt(nonce);
         arg0.writeString(client);
         arg0.writeDouble(multiplier);
-        arg0.writeString(timestamp);
+        //arg0.writeString(timestamp);
+        arg0.writeString(getTimeOfBet());
         if(jackpot)  { arg0.writeString("Y"); } else { arg0.writeString("N"); }
         arg0.writeString(server);
     }
@@ -164,7 +174,7 @@ public class Bet implements Parcelable {
     }
 
     public String getTimeOfBet() {
-        return timestamp.substring(0, 10) + " " + timestamp.substring(11, 19) + " GMT";
+        return betDateFormat.format(date);
     }
 
     public int getAmount(){
@@ -198,5 +208,38 @@ public class Bet implements Parcelable {
 
     public String getNonce() {
         return String.valueOf(nonce);
+    }
+
+    public void setDateFromTimestamp(String timestamp) {
+        SimpleDateFormat formatter;
+
+        // Timestamp from PD with GET BET API.
+        // Timezone is UTC
+        // Sat Mar 05 2016 14:03:33 GMT+0000 (UTC)
+        if(timestamp.endsWith(" GMT+0000 (UTC)")){
+            timestamp = timestamp.substring(0, timestamp.indexOf(" GMT+0000 (UTC)"));
+            formatter = new SimpleDateFormat("EEE MMM dd yyyy HH:mm:ss");
+            formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+        }
+        // Timestamp from MySQLITE DB.
+        // Timezone is default already
+        // Mar 05 2016, 14:03:33
+       else if(!timestamp.contains("-")){
+            formatter = betDateFormat;
+        }
+        // Timestamp from PD with place bet.
+        // Timezone is UTC
+        // 2016-03-05T13:24:59.888Z
+        else{
+            formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+            formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+        }
+
+        // Parse date
+        try {
+            date = formatter.parse(timestamp);
+        } catch (ParseException ex) {
+            ex.printStackTrace();
+        }
     }
 }
