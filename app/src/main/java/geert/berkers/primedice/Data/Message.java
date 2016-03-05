@@ -26,6 +26,7 @@ public class Message {
     public static final int ADMIN = 3;
     public static final int SUPPORT = 4;
 
+    private int room;
     private int type;
     private int tag;
 
@@ -34,7 +35,8 @@ public class Message {
     private String toUsername;
     private String time;
 
-    public Message(int type, int tag, String message, String sender, String toUsername, String time) {
+    public Message(int room, int type, int tag, String message, String sender, String toUsername, String time) {
+        this.room = room;
         this.type = type;
         this.tag = tag;
         this.message = message;
@@ -59,6 +61,10 @@ public class Message {
         return localFormat.format(value);
     }
 
+    public int getRoom() {
+        return room;
+    }
+
     public String getSender() {
         return sender;
     }
@@ -68,7 +74,7 @@ public class Message {
     }
 
     public String getMessage() {
-        return message.replace("\n"," ");
+        return message.replace("\n", " ");
     }
 
     public int getTag() {

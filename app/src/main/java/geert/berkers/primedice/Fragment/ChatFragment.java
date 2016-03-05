@@ -72,7 +72,6 @@ public class ChatFragment extends Fragment {
     }
 
     private void initControls() {
-        //activity = getActivity();
         mainActivity = (MainActivity) getActivity();
 
         mMessagesView = (RecyclerView) view.findViewById(R.id.messages);
@@ -85,19 +84,27 @@ public class ChatFragment extends Fragment {
 
         mAdapter = new MessageAdapter(new ArrayList<Message>());
 
-        getMessages("English");
-        getMessages("Russian");
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+                englishMessages = getMessages("English");
+                russianMessages = getMessages("Russian");
 
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(mainActivity);
-        if (sharedPref.getString("message_room", "English").equals("English")) {
-            currentRoom = Message.ENGLISH;
-            mAdapter = new MessageAdapter(englishMessages);
-        } else {
-            currentRoom = Message.RUSSIAN;
-            mAdapter = new MessageAdapter(russianMessages);
-        }
+                SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(mainActivity);
+                if (sharedPref.getString("message_room", "English").equals("English")) {
+                    currentRoom = Message.ENGLISH;
+                    mAdapter = new MessageAdapter(englishMessages);
+                    System.out.println("ENGLISH");
+                } else {
+                    currentRoom = Message.RUSSIAN;
+                    mAdapter = new MessageAdapter(russianMessages);
+                    System.out.println("RUSSIAN");
 
-        mMessagesView.setAdapter(mAdapter);
+                }
+                setAdapter(mAdapter);
+            }
+        };
+        thread.start();
 
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -113,8 +120,18 @@ public class ChatFragment extends Fragment {
         socket.on("pm", socketioPM);
     }
 
+    private void setAdapter(final MessageAdapter mAdapter) {
+        mainActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mMessagesView.setAdapter(mAdapter);
+                scrollToBottom();
+            }
+        });
+    }
+
     // Get latest messages
-    private void getMessages(String room) {
+    private List<Message> getMessages(String room) {
         String result = "NoResult";
         try {
             GetJSONResultFromURLTask sendMessage = new GetJSONResultFromURLTask();
@@ -129,18 +146,18 @@ public class ChatFragment extends Fragment {
                     JSONObject json = new JSONObject(result);
                     JSONArray msgArray = json.getJSONArray("messages");
 
+                    ArrayList<Message> messages = new ArrayList<>();
                     for (int i = 0; i < msgArray.length(); i++) {
                         JSONObject jsonMessage = msgArray.getJSONObject(i);
-
-                        addMessageFromJSON(jsonMessage);
+                        messages.add(createMessageFromJSON(jsonMessage));
                     }
-
-                    scrollToBottom();
+                    return messages;
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
             }
         }
+        return null;
     }
 
     // Handle spinner clicks
@@ -180,7 +197,7 @@ public class ChatFragment extends Fragment {
     }
 
     // Create and add message from JSON
-    private void addMessageFromJSON(JSONObject jsonMessage) {
+    private Message createMessageFromJSON(JSONObject jsonMessage) {
         try {
             String room = jsonMessage.getString("room");
             String message = jsonMessage.getString("message");
@@ -189,8 +206,13 @@ public class ChatFragment extends Fragment {
 
             String tag = String.valueOf(jsonMessage.get("admin"));
             String type = String.valueOf(jsonMessage.get("prefix"));
-            String toUsername = jsonMessage.getString("toUsername");
-
+            String toUsername = null;
+            try {
+                 toUsername = String.valueOf(jsonMessage.get("toUsername"));
+            }
+            catch (Exception ex){
+                Log.i("MESSAGE", "This message isn't a pm");
+            }
             int messageRoom;
             int messageType;
             int messageTag;
@@ -243,11 +265,11 @@ public class ChatFragment extends Fragment {
                     break;
             }
 
-            if (!ignoredUsers.contains(sender.toLowerCase())) {
-                addMessage(messageRoom, messageType, messageTag, message, sender, toUsername, time);
-            }
+            return new Message(messageRoom, messageType, messageTag, message, sender, toUsername, time);
+
         } catch (JSONException e) {
-            // return;
+            e.printStackTrace();
+            return null;
         }
     }
 
@@ -355,23 +377,25 @@ public class ChatFragment extends Fragment {
     }
 
     // Add message to the list
-    private void addMessage(int room, int messageType, int messageTag, String message, String sender, String toUsername, String time) {
+    private void addMessage(Message message) {
         final List<Message> messages;
 
-        if (room == Message.ENGLISH) {
+        if (message.getRoom() == Message.ENGLISH) {
             messages = englishMessages;
         } else {
             messages = russianMessages;
         }
 
-        messages.add(new Message(messageType, messageTag, message, sender, toUsername, time));
+        if(!ignoredUsers.contains(message.getSender().toLowerCase())) {
+            messages.add(message);
+        }
 
         // Remove oldest messages when reaches over 50
         while (messages.size() > 50) {
             messages.remove(0);
         }
 
-        if (currentRoom == room) {
+        if (message.getRoom() == currentRoom) {
             mainActivity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -384,7 +408,13 @@ public class ChatFragment extends Fragment {
 
     // Scroll list to bottom
     private void scrollToBottom() {
-        mMessagesView.scrollToPosition(mAdapter.getItemCount() - 1);
+        mainActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+
+                mMessagesView.scrollToPosition(mAdapter.getItemCount() - 1);
+            }
+        });
     }
 
     // Set needed information for this fragment
@@ -399,12 +429,12 @@ public class ChatFragment extends Fragment {
         public void call(final Object... args) {
             final JSONObject jsonMessage = (JSONObject) args[0];
 
-            getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    addMessageFromJSON(jsonMessage);
-                }
-            });
+          //  getActivity().runOnUiThread(new Runnable() {
+          //      @Override
+         //       public void run() {
+                    addMessage(createMessageFromJSON(jsonMessage));
+          //      }
+          //  });
         }
     };
 
@@ -413,8 +443,7 @@ public class ChatFragment extends Fragment {
         @Override
         public void call(Object... args) {
             JSONObject jsonPM = (JSONObject) args[0];
-
-            addMessageFromJSON(jsonPM);
+            addMessage(createMessageFromJSON(jsonPM));
         }
     };
 
@@ -431,12 +460,15 @@ public class ChatFragment extends Fragment {
     // Ignore user
     public static void ignoreOrUnignoreUser(String user) {
         if (ignoredUsers.contains(user.toLowerCase())) {
-            ignoredUsers.add(user.toLowerCase());
-        } else {
             ignoredUsers.remove(user.toLowerCase());
+            MainActivity.showNotification(false, user + " unignored", 5);
+        } else {
+            ignoredUsers.add(user.toLowerCase());
+            MainActivity.showNotification(false, user + " ignored", 5);
         }
     }
 
+    // Get ignored for message in chat
     public static String getUserIgnoreString(String user) {
         if (ignoredUsers.contains(user.toLowerCase())) {
             return "UNIGNORE";

@@ -126,7 +126,7 @@ public class FaucetFragment extends Fragment {
                 }
             });
         } else {
-            Toast.makeText(activity.getApplicationContext(), "Balance is not null!", Toast.LENGTH_LONG).show();
+            MainActivity.showNotification(true, "Balance is not null!", 5);
         }
     }
 

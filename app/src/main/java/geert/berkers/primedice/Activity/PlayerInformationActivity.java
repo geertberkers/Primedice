@@ -49,6 +49,8 @@ public class PlayerInformationActivity extends AppCompatActivity {
         try {
             playerName = b.getString("playerName");
 
+            boolean ownAccount = MainActivity.getUserName().equals(playerName);
+
             User player = getUser();
 
             if (player != null) {
@@ -61,21 +63,31 @@ public class PlayerInformationActivity extends AppCompatActivity {
                 txtLosses.setText(player.getLosses());
                 txtLuck.setText(player.getLuck());
 
-                final Activity activity = this;
-                btnPM.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        MainActivity.sendPM(activity, playerName);
-                    }
-                });
+                if (!ownAccount) {
+                    final Activity activity = this;
 
-                //TODO FIX: Notifications not visible in this activity
-                btnTip.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        MainActivity.tipUser(activity, playerName);
-                    }
-                });
+                    btnPM.setVisibility(View.VISIBLE);
+                    btnTip.setVisibility(View.VISIBLE);
+
+                    btnPM.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            MainActivity.sendPM(activity, playerName);
+                        }
+                    });
+
+                    // Notifications not visible in this activity.
+                    btnTip.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            MainActivity.tipUser(activity, playerName);
+                        }
+                    });
+                }
+                else{
+                    btnPM.setVisibility(View.GONE);
+                    btnTip.setVisibility(View.GONE);
+                }
                 setTitle(player.getUsername().toUpperCase() + "'S INFO");
             } else throw new Exception("Player is null");
         } catch (Exception ex) {

@@ -500,7 +500,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         } else if (menuAdapter.getItem(position).equals("Provably fair")) {
             showFragment(provablyFairFragment, backStackIndex, "Provably fair");
         } else if (menuAdapter.getItem(position).equals("Faucet")) {
-            showFragment(faucetFragment, backStackIndex, "Provably fair");
+            showFragment(faucetFragment, backStackIndex, "Faucet");
         } else if (menuAdapter.getItem(position).equals("Tip Developer")) {
             tipDeveloper();
         } else if (menuAdapter.getItem(position).equals("Log out")) {
@@ -731,6 +731,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     }
 
+    public static String getUserName(){
+        return user.getUsername();
+    }
     private final Emitter.Listener socketioConnect = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
@@ -881,14 +884,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     // TODO: General things to complete this application:
-    // Log out task when not remembering
     // Bet failed multiple times in a row? -> Change seed!
 
+    // Clickable links in chat (With API for allowed sites)
     // Notification tip/deposit
     // Settings screen (alert time/notification/faucet timer/time settings)
 
     // Update UI
-    // - Tip developer with static method
     // - Check differences with site and fix it
     // - Update chat UI
     // - Scroll to new bet when adding it

@@ -103,7 +103,6 @@ public class ProfileFragment extends Fragment {
         btnSetEmail = (Button) view.findViewById(R.id.btnEmail);
         btnSetTwoFactor = (Button) view.findViewById(R.id.btnTwoFactor);
         btnSetPassword = (Button) view.findViewById(R.id.btnSetPassword);
-        //btnContactSupport = (Button) view.findViewById(R.id.btnContactSupport);
         btnShowDeposits = (Button) view.findViewById(R.id.btnShowDeposits);
         btnShowWithdrawals = (Button) view.findViewById(R.id.btnShowWithdrawals);
         btnSetEmergencyAddress = (Button) view.findViewById(R.id.btnSetEmergencyAddress);
@@ -176,7 +175,8 @@ public class ProfileFragment extends Fragment {
 
         btnSetEmergencyAddress.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {setEmergencyAddress();
+            public void onClick(View v) {
+                setEmergencyAddress();
             }
         });
 
