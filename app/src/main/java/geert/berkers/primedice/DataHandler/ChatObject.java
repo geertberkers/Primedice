@@ -1,6 +1,7 @@
 package geert.berkers.primedice.DataHandler;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.text.style.ClickableSpan;
 import android.view.View;
 
@@ -17,26 +18,25 @@ import geert.berkers.primedice.Data.URL;
 /**
  * Pimedice Application Created by Geert on 4-3-2016.
  */
-public class MyClickableSpan extends ClickableSpan {
+public class ChatObject extends ClickableSpan {
 
     public final static int BET = 0;
     public final static int USER = 1;
+    public final static int LINK = 2;
 
-    private String value;
-    private int clickableObject;
+    private final String value;
+    private final int chatObject;
 
-    public MyClickableSpan(int clickableObject, String value) {
-        this.clickableObject = clickableObject;
-        this.value = value.toLowerCase();
+    public ChatObject(int chatObject, String value) {
+        this.chatObject = chatObject;
+        this.value = value;
     }
-
 
     @Override
     public void onClick(View widget) {
-        if (clickableObject == BET) {
+        if (chatObject == BET) {
             try {
-                GetJSONResultFromURLTask getBetsTask = new GetJSONResultFromURLTask();
-
+                GetFromServerTask getBetsTask = new GetFromServerTask();
                 String result = getBetsTask.execute((URL.BET_LOOKUP + value.replace(",", ""))).get();
 
                 if (result != null) {
@@ -52,11 +52,14 @@ public class MyClickableSpan extends ClickableSpan {
                 e.printStackTrace();
             }
 
-        } else {
+        } else  if (chatObject == USER){
             Intent playerInfoIntent = new Intent(widget.getContext(), PlayerInformationActivity.class);
             playerInfoIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             playerInfoIntent.putExtra("playerName", value);
             widget.getContext().startActivity(playerInfoIntent);
+        } else{
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(value));
+            widget.getContext().startActivity(browserIntent);
         }
     }
 }

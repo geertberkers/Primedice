@@ -45,10 +45,6 @@ public class Payment implements Parcelable{
         }
     }
 
-    public int getId() {
-        return id;
-    }
-
     public String getAmount() {
 
         double satoshi = Long.valueOf(amount);

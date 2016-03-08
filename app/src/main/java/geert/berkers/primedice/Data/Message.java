@@ -26,14 +26,14 @@ public class Message {
     public static final int ADMIN = 3;
     public static final int SUPPORT = 4;
 
-    private int room;
-    private int type;
-    private int tag;
+    private final int room;
+    private final int type;
+    private final int tag;
 
-    private String message;
-    private String sender;
-    private String toUsername;
-    private String time;
+    private final String message;
+    private final String sender;
+    private final String toUsername;
+    private final String time;
 
     public Message(int room, int type, int tag, String message, String sender, String toUsername, String time) {
         this.room = room;

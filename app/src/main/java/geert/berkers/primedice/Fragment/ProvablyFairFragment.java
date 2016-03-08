@@ -27,7 +27,7 @@ import geert.berkers.primedice.Activity.BetInformationActivity;
 import geert.berkers.primedice.Activity.MainActivity;
 import geert.berkers.primedice.Data.Bet;
 import geert.berkers.primedice.Data.URL;
-import geert.berkers.primedice.DataHandler.GetJSONResultFromURLTask;
+import geert.berkers.primedice.DataHandler.GetFromServerTask;
 import geert.berkers.primedice.DataHandler.PostToServerTask;
 import geert.berkers.primedice.R;
 
@@ -77,12 +77,12 @@ public class ProvablyFairFragment extends Fragment {
     }
 
     private void setInformation() {
-        txtClientSeed.setText(activity.getUser().getClient());
-        txtServeSeedHashed.setText(activity.getUser().getServer());
-        txtBetsMade.setText(String.valueOf(activity.getUser().getNonce()));
-        txtPreviousClientSeed.setText(activity.getUser().getPreviousClient());
-        txtPreviousServerSeedRevealed.setText(activity.getUser().getPreviousServer());
-        txtPreviousServerSeedHashed.setText(activity.getUser().getPreviousServerHashed());
+        txtClientSeed.setText(MainActivity.getUser().getClient());
+        txtServeSeedHashed.setText(MainActivity.getUser().getServer());
+        txtBetsMade.setText(String.valueOf(MainActivity.getUser().getNonce()));
+        txtPreviousClientSeed.setText(MainActivity.getUser().getPreviousClient());
+        txtPreviousServerSeedRevealed.setText(MainActivity.getUser().getPreviousServer());
+        txtPreviousServerSeedHashed.setText(MainActivity.getUser().getPreviousServerHashed());
     }
 
     private void setListeners() {
@@ -134,7 +134,7 @@ public class ProvablyFairFragment extends Fragment {
                                 String next_seed = seeds.getString("next_seed");
                                 String server = seeds.getString("server");
 
-                                activity.getUser().updateSeeds(client, previous_server, previous_client, previous_server_hashed, next_seed, server);
+                                MainActivity.getUser().updateSeeds(client, previous_server, previous_client, previous_server_hashed, next_seed, server);
                             }
                         } catch (InterruptedException | ExecutionException | JSONException | UnsupportedEncodingException e) {
                             e.printStackTrace();
@@ -163,7 +163,7 @@ public class ProvablyFairFragment extends Fragment {
 
                     Bet bet = null;
                     try {
-                        GetJSONResultFromURLTask getBetsTask = new GetJSONResultFromURLTask();
+                        GetFromServerTask getBetsTask = new GetFromServerTask();
                         String result = getBetsTask.execute((URL.BET_LOOKUP + betid)).get();
 
                         JSONObject jsonBet = new JSONObject(result);

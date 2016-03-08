@@ -30,7 +30,7 @@ import java.util.concurrent.ExecutionException;
 import geert.berkers.primedice.Data.URL;
 import geert.berkers.primedice.DataHandler.PostToServerTask;
 import geert.berkers.primedice.R;
-import geert.berkers.primedice.DataHandler.GetJSONResultFromURLTask;
+import geert.berkers.primedice.DataHandler.GetFromServerTask;
 import geert.berkers.primedice.Data.User;
 
 /**
@@ -66,7 +66,7 @@ public class AffiliateActivity extends AppCompatActivity {
 
                 link = URL.REFERRAL + user.getUsername();
 
-                GetJSONResultFromURLTask getAffiliateInfoTask = new GetJSONResultFromURLTask();
+                GetFromServerTask getAffiliateInfoTask = new GetFromServerTask();
                 String result = getAffiliateInfoTask.execute(URL.AFFILIATE + access_token).get();
 
                 JSONObject json = new JSONObject(result);

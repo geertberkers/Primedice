@@ -69,12 +69,14 @@ public class AutomatedBetFragment extends Fragment {
                 btnText = "ROLL DICE";
             }
 
-            bets = db.getAllBetsFromUser(activity.getUser().getUsername());
+            bets = db.getAllBetsFromUser(MainActivity.getUser().getUsername());
             betAdapter.setNewBetsList(bets);
             btnRollDice.setText(btnText);
         }
 
-        txtBalance.setText(activity.getUser().getBalanceAsString());
+        setListViewHeightBasedOnChildren(betsListView);
+
+        txtBalance.setText(MainActivity.getUser().getBalanceAsString());
 
         return view;
     }
@@ -105,7 +107,7 @@ public class AutomatedBetFragment extends Fragment {
         betsListView = (ListView) view.findViewById(R.id.betsListView);
 
         db = new MySQLiteHelper(activity);
-        bets = db.getAllBetsFromUser(activity.getUser().getUsername());
+        bets = db.getAllBetsFromUser(MainActivity.getUser().getUsername());
 
         betAdapter = new BetAdapter(activity.getApplicationContext(), bets);
         betsListView.setAdapter(betAdapter);
@@ -269,8 +271,6 @@ public class AutomatedBetFragment extends Fragment {
 
         cbLimitRolls.setChecked(false);
         setNumberOfRollsLayout.setVisibility(View.GONE);
-
-        setListViewHeightBasedOnChildren(betsListView);
     }
 
     // Switch High/Low bet
@@ -502,6 +502,7 @@ public class AutomatedBetFragment extends Fragment {
             @Override
             public void run() {
                 betAdapter.setNewBetsList(bets);
+                setListViewHeightBasedOnChildren(betsListView);
             }
         });
     }

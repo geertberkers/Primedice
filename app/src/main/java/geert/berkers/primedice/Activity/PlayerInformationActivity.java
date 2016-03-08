@@ -18,7 +18,7 @@ import java.util.concurrent.ExecutionException;
 import geert.berkers.primedice.R;
 import geert.berkers.primedice.Data.URL;
 import geert.berkers.primedice.Data.User;
-import geert.berkers.primedice.DataHandler.GetJSONResultFromURLTask;
+import geert.berkers.primedice.DataHandler.GetFromServerTask;
 
 
 /**
@@ -49,7 +49,7 @@ public class PlayerInformationActivity extends AppCompatActivity {
         try {
             playerName = b.getString("playerName");
 
-            boolean ownAccount = MainActivity.getUserName().equals(playerName);
+            boolean ownAccount = MainActivity.getUser().getUsername().equals(playerName);
 
             User player = getUser();
 
@@ -83,8 +83,7 @@ public class PlayerInformationActivity extends AppCompatActivity {
                             MainActivity.tipUser(activity, playerName);
                         }
                     });
-                }
-                else{
+                } else {
                     btnPM.setVisibility(View.GONE);
                     btnTip.setVisibility(View.GONE);
                 }
@@ -109,28 +108,19 @@ public class PlayerInformationActivity extends AppCompatActivity {
     }
 
     private User getUser() {
-        String userResult = "NoResult";
-
-        GetJSONResultFromURLTask userTask = new GetJSONResultFromURLTask();
-
         try {
-            userResult = userTask.execute(URL.GET_USER + playerName).get();
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-        }
+            GetFromServerTask userTask = new GetFromServerTask();
+            String userResult = userTask.execute(URL.GET_USER + playerName).get();
 
-        if (userResult != null) {
-            if (!userResult.equals("NoResult")) {
+            if (userResult != null) {
+                JSONObject json = new JSONObject(userResult);
+                JSONObject jsonUser = json.getJSONObject("user");
 
-                try {
-                    JSONObject json = new JSONObject(userResult);
-                    JSONObject jsonUser = json.getJSONObject("user");
-
-                    return new User(jsonUser);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+                return new User(jsonUser);
             }
+        } catch (InterruptedException | ExecutionException | JSONException e) {
+            e.printStackTrace();
+
         }
         return null;
     }

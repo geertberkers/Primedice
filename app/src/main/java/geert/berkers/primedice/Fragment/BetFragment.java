@@ -37,16 +37,18 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
-import geert.berkers.primedice.Activity.LoginActivity;
 import geert.berkers.primedice.Adapter.BetAdapter;
 import geert.berkers.primedice.Data.Bet;
 import geert.berkers.primedice.Data.URL;
 import geert.berkers.primedice.DataHandler.DownloadImageTask;
-import geert.berkers.primedice.DataHandler.GetJSONResultFromURLTask;
+import geert.berkers.primedice.DataHandler.GetFromServerTask;
 import geert.berkers.primedice.DataHandler.MySQLiteHelper;
 import geert.berkers.primedice.DataHandler.PostToServerTask;
 import geert.berkers.primedice.Activity.MainActivity;
 import geert.berkers.primedice.R;
+
+import static geert.berkers.primedice.Activity.MainActivity.getUser;
+import static geert.berkers.primedice.Activity.MainActivity.updateUser;
 
 /**
  * Primedice Application Created by Geert on 2-2-2016.
@@ -62,15 +64,15 @@ public class BetFragment extends Fragment {
     private static final int HR_BETS = 3;
 
     private int betAmount;
-    private MySQLiteHelper db;
     private Bitmap resultImage;
     private View withdrawalView;
     private DecimalFormat format;
     private ListView betListView;
     private boolean maxPressed, betHigh;
+    private MySQLiteHelper mySQLiteHelper;
     private ArrayList<Bet> myBets, allBets, hrBets;
     private Double betMultiplier, betPercentage, target;
-    private EditText edBetAmount, edProfitonWin, edWithdrawalAdress;
+    private EditText edBetAmount, edProfitOnWin, edWithdrawalAddress;
     private TextView txtBalance, txtMyBets, txtAllBets, txtHighRollers;
     private Button btnDeposit, btnWithdraw, btnHalfBet, btnDoubleBet, btnMaxBet, btnHighLow, btnMultiplier, btnPercentage, btnRollDice;
 
@@ -83,7 +85,7 @@ public class BetFragment extends Fragment {
             setListeners();
             setInformation();
         } else {
-            myBets = db.getAllBetsFromUser(activity.getUser().getUsername());
+            myBets = mySQLiteHelper.getAllBetsFromUser(MainActivity.getUser().getUsername());
             showBets(myBets);
 
             if (activity.isBettingAutomatic()) {
@@ -91,10 +93,10 @@ public class BetFragment extends Fragment {
                 btnRollDice.setText(stopBetting);
             }
 
-            activity.updateUser(LoginActivity.getUser(activity.getAccess_token()));
+            updateUser();
         }
 
-        txtBalance.setText(activity.getUser().getBalanceAsString());
+        txtBalance.setText(getUser().getBalanceAsString());
 
         return view;
     }
@@ -108,7 +110,7 @@ public class BetFragment extends Fragment {
         btnWithdraw = (Button) view.findViewById(R.id.btnWithdraw);
 
         edBetAmount = (EditText) view.findViewById(R.id.edBetAmount);
-        edProfitonWin = (EditText) view.findViewById(R.id.edProfitonWin);
+        edProfitOnWin = (EditText) view.findViewById(R.id.edProfitonWin);
 
         btnHalfBet = (Button) view.findViewById(R.id.btnHalfBet);
         btnDoubleBet = (Button) view.findViewById(R.id.btnDoubleBet);
@@ -127,47 +129,50 @@ public class BetFragment extends Fragment {
     }
 
     private void setInformation() {
-        maxPressed = false;
-        betHigh = false;
         betAmount = 0;
         betMultiplier = 2.0;
         betPercentage = 49.50;
+
+        betHigh = false;
+        maxPressed = false;
+        openedBet = MY_BETS;
         target = betPercentage;
 
         myBets = new ArrayList<>();
         allBets = new ArrayList<>();
         hrBets = new ArrayList<>();
 
-        openedBet = MY_BETS;
-
-        db = new MySQLiteHelper(activity);
         format = new DecimalFormat("0.00000000");
+        txtBalance.setText(MainActivity.getUser().getBalanceAsString());
 
-        txtBalance.setText(activity.getUser().getBalanceAsString());
-        myBets = db.getAllBetsFromUser(activity.getUser().getUsername());
+        mySQLiteHelper = new MySQLiteHelper(activity);
+        txtBalance.setText(MainActivity.getUser().getBalanceAsString());
+        myBets = mySQLiteHelper.getAllBetsFromUser(MainActivity.getUser().getUsername());
         showBets(myBets);
 
         allBets = getBets("bets");
         hrBets = getBets("highrollers");
 
         downloadImage();
+
+        //SocketIO.getInstance(activity.getAccess_token()).connect();
     }
 
     // Download image for deposits
     private void downloadImage() {
         try {
-            String address = activity.getUser().getAddress();
+            String address = MainActivity.getUser().getAddress();
 
             if (address == null || address.equals("null")) {
                 String result;
                 try {
-                    GetJSONResultFromURLTask getAddressTask = new GetJSONResultFromURLTask();
+                    GetFromServerTask getAddressTask = new GetFromServerTask();
                     result = getAddressTask.execute(URL.DEPOSIT + activity.getAccess_token()).get();
 
                     JSONObject jsonResult = new JSONObject(result);
 
                     String newAddress = jsonResult.getString("address");
-                    activity.getUser().setAddress(newAddress);
+                    MainActivity.getUser().setAddress(newAddress);
 
                 } catch (InterruptedException | ExecutionException | JSONException e) {
                     e.printStackTrace();
@@ -203,7 +208,7 @@ public class BetFragment extends Fragment {
 
                     String winOnProfit = format.format(((betAmount * betMultiplier) - betAmount) / 100000000);
                     winOnProfit = winOnProfit.replace(",", ".");
-                    edProfitonWin.setText(winOnProfit);
+                    edProfitOnWin.setText(winOnProfit);
                 } catch (Exception ex) {
                     Toast.makeText(activity.getApplicationContext(), "Use numbers only!", Toast.LENGTH_SHORT).show();
                 }
@@ -241,7 +246,7 @@ public class BetFragment extends Fragment {
         btnMaxBet.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String btcBalance = activity.getUser().getBalanceAsString();
+                String btcBalance = MainActivity.getUser().getBalanceAsString();
                 betAmount = (int) (Double.valueOf(btcBalance) * 100000000);
                 updateBetAmount();
                 maxPressed = true;
@@ -324,7 +329,7 @@ public class BetFragment extends Fragment {
         final AlertDialog.Builder alertDialog = new AlertDialog.Builder(activity);
         alertDialog.setTitle("DEPOSIT");
         alertDialog.setView(depositAdressImage);
-        alertDialog.setMessage("Your deposit adress is: " + activity.getUser().getAddress());
+        alertDialog.setMessage("Your deposit adress is: " + MainActivity.getUser().getAddress());
         alertDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -334,7 +339,7 @@ public class BetFragment extends Fragment {
         alertDialog.setNeutralButton("Copy", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
-                ClipData clip = ClipData.newPlainText("BTC adress", activity.getUser().getAddress());
+                ClipData clip = ClipData.newPlainText("BTC adress", MainActivity.getUser().getAddress());
                 clipboard.setPrimaryClip(clip);
 
                 Toast.makeText(activity.getApplicationContext(), "Copied BTC address!", Toast.LENGTH_SHORT).show();
@@ -344,7 +349,7 @@ public class BetFragment extends Fragment {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 try {
-                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("bitcoin:" + activity.getUser().getAddress()));
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("bitcoin:" + MainActivity.getUser().getAddress()));
                     startActivity(browserIntent);
                 } catch (ActivityNotFoundException ex) {
                     Toast.makeText(activity.getApplicationContext(), "No apps to open this!", Toast.LENGTH_LONG).show();
@@ -370,7 +375,7 @@ public class BetFragment extends Fragment {
             e.printStackTrace();
         }
 
-        edWithdrawalAdress = (EditText) withdrawalView.findViewById(R.id.edWithdrawalAdress);
+        edWithdrawalAddress = (EditText) withdrawalView.findViewById(R.id.edWithdrawalAdress);
         final EditText edWithdrawalAmount = (EditText) withdrawalView.findViewById(R.id.edWithdrawalAmount);
 
         final Button btnScan = (Button) withdrawalView.findViewById(R.id.btnScan);
@@ -387,7 +392,7 @@ public class BetFragment extends Fragment {
         btnMaxWithdawAmount.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                edWithdrawalAmount.setText(activity.getUser().getBalanceAsString());
+                edWithdrawalAmount.setText(MainActivity.getUser().getBalanceAsString());
             }
         });
 
@@ -397,7 +402,7 @@ public class BetFragment extends Fragment {
         alertDialog.setView(withdrawalView);
         alertDialog.setPositiveButton("WITHDRAW", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
-                String withdrawalAdress = edWithdrawalAdress.getText().toString();
+                String withdrawalAdress = edWithdrawalAddress.getText().toString();
                 String withdrawalAmount = edWithdrawalAmount.getText().toString();
 
                 if (withdrawalAdress.length() == 0) {
@@ -420,7 +425,7 @@ public class BetFragment extends Fragment {
 
                         int satoshiWithdrawAmount = (int) satoshiDouble;
 
-                        if (activity.getUser().getBalance() < satoshiDouble) {
+                        if (MainActivity.getUser().getBalance() < satoshiDouble) {
                             Toast.makeText(activity.getApplicationContext(), "Not enough balance to withdraw!", Toast.LENGTH_LONG).show();
                         } else if (satoshiWithdrawAmount < 100000) {
                             Toast.makeText(activity.getApplicationContext(), "Withdrawal must be at least 0.0010000 BTC!", Toast.LENGTH_LONG).show();
@@ -443,8 +448,8 @@ public class BetFragment extends Fragment {
                                     e.printStackTrace();
                                 }
 
-                                activity.updateUser(LoginActivity.getUser(activity.getAccess_token()));
-                                txtBalance.setText(activity.getUser().getBalanceAsString());
+                                updateUser();
+                                txtBalance.setText(MainActivity.getUser().getBalanceAsString());
 
                             } catch (InterruptedException | ExecutionException e) {
 
@@ -466,7 +471,12 @@ public class BetFragment extends Fragment {
 
     // Update bet amount
     private void updateBetAmount() {
-        String rollDice = "ROLL DICE";
+        String rollDice;
+        if(activity.isBettingAutomatic()){
+            rollDice = "STOP AUTOMATED BETTING";
+        }else {
+            rollDice = "ROLL DICE";
+        }
         btnRollDice.setText(rollDice);
         String betAmountString = format.format((double) betAmount / 100000000);
         betAmountString = betAmountString.replace(",", ".");
@@ -632,7 +642,7 @@ public class BetFragment extends Fragment {
 
             rollDice = "Confirm MAX bet";
             btnRollDice.setText(rollDice);
-        } else if (betAmount > (int) activity.getUser().getBalance()) {
+        } else if (betAmount > (int) MainActivity.getUser().getBalance()) {
             MainActivity.showNotification(true, "Insufficient balance", 5);
         } else {
             rollDice = "ROLL DICE";
@@ -664,7 +674,7 @@ public class BetFragment extends Fragment {
                     JSONObject jsonUser = jsonObject.getJSONObject("user");
 
                     // Update user
-                    activity.getUser().updateUser(jsonUser);
+                    MainActivity.getUser().updateUser(jsonUser);
 
                     // Create and handle bet
                     Bet bet = new Bet(jsonBet);
@@ -672,10 +682,10 @@ public class BetFragment extends Fragment {
                     addBet(bet, false, true);
                 } else {
 
-                    activity.updateUser(LoginActivity.getUser(activity.getAccess_token()));
+                    updateUser();
 
                     String error;
-                    if (betAmount > (int) activity.getUser().getBalance()) {
+                    if (betAmount > (int) MainActivity.getUser().getBalance()) {
                         error = "Insufficient funds!";
                     } else {
                         error = "Betting to fast!";
@@ -688,7 +698,7 @@ public class BetFragment extends Fragment {
                 e.printStackTrace();
             }
 
-            txtBalance.setText(activity.getUser().getBalanceAsString());
+            txtBalance.setText(MainActivity.getUser().getBalanceAsString());
             showBets(myBets);
         }
     }
@@ -704,7 +714,7 @@ public class BetFragment extends Fragment {
         String url = URL.API + getThese;
 
         try {
-            GetJSONResultFromURLTask getBetsTask = new GetJSONResultFromURLTask();
+            GetFromServerTask getBetsTask = new GetFromServerTask();
             String result = getBetsTask.execute(url).get();
             if (getThese.equals("bets")) {
                 allBets = getBetsListFromJSON(result, getThese);
@@ -739,7 +749,7 @@ public class BetFragment extends Fragment {
     }
 
     public void setWithdrawalAdress(String withdrawalAdress) {
-        edWithdrawalAdress.setText(withdrawalAdress);
+        edWithdrawalAddress.setText(withdrawalAdress);
     }
 
     // Add bet to the list and show if opened
@@ -758,12 +768,12 @@ public class BetFragment extends Fragment {
             });
         } else if (ownBet) {
             myBets.add(0, bet);
-            db.addBet(bet);
+            mySQLiteHelper.addBet(bet);
 
             // Remove bet if saved more than 30 bets
             if (myBets.size() > 30) {
                 for (int i = 30; i < myBets.size(); i++) {
-                    db.deleteBet(myBets.get(i));
+                    mySQLiteHelper.deleteBet(myBets.get(i));
                     myBets.remove(i);
                 }
             }
@@ -774,6 +784,7 @@ public class BetFragment extends Fragment {
                 @Override
                 public void run() {
                     showBets(myBets);
+                    txtBalance.setText(getUser().getBalanceAsString());
                 }
             });
         } else {

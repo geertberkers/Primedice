@@ -10,7 +10,7 @@ import java.net.URL;
  */
 public class PostToServerTask extends AsyncTask<String, Void, String> {
 
-    private Connection connection;
+    private APIConnector APIConnector;
 
     @Override
     protected String doInBackground(String... params) {
@@ -18,22 +18,22 @@ public class PostToServerTask extends AsyncTask<String, Void, String> {
     }
 
     private String postToServer(String betURL, String urlParameters) {
-        String result = "NoResult";
+        String result = null;
 
         try {
             URL url = new URL(betURL);
 
-            connection = new Connection(url, "POST");
+            APIConnector = new APIConnector(url, "POST");
 
             if(urlParameters != null) {
-                connection.setRequestParameters(urlParameters);
+                APIConnector.setRequestParameters(urlParameters);
             }
 
-            result = connection.getResult();
+            result = APIConnector.getResult();
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } finally {
-            connection.closeConnection();
+            APIConnector.closeConnection();
         }
 
         return result;

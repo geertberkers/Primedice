@@ -10,17 +10,17 @@ public class AutomatedBetThread {
 
     private boolean shouldStop = false;
     private int betAmount;
-    private int startAmount;
-    private String target;
-    private String condition;
+    private final int startAmount;
+    private final String target;
+    private final String condition;
     private int numberOfRolls;
-    private boolean increaseOnWin;
-    private boolean increaseOnLoss;
-    private double increaseOnWinValue;
-    private double increaseOnLossValue;
-    private MainActivity activity;
+    private final boolean increaseOnWin;
+    private final boolean increaseOnLoss;
+    private final double increaseOnWinValue;
+    private final double increaseOnLossValue;
+    private final MainActivity activity;
 
-    public boolean previousBetMade = false;
+    private boolean previousBetMade = false;
 
     public AutomatedBetThread(MainActivity activity, int startAmount, String target, String condition, int numberOfRolls, boolean increaseOnWin, boolean increaseOnLoss, double increaseOnWinValue, double increaseOnLossValue) {
         this.activity = activity;

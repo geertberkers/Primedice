@@ -4,7 +4,6 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -47,7 +46,7 @@ public class BetInformationActivity extends AppCompatActivity {
                 String payoutString = bet.getPayout() + "x";
                 txtPayout.setText(payoutString);
                 txtBetGame.setText(bet.getBetGame());
-                txtBetProtif.setText(bet.getProfit());
+                txtBetProtif.setText(bet.getProfitString());
 
                 boolean win = bet.getWinOrLose();
                 if (!win) {

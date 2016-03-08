@@ -1,5 +1,7 @@
 package geert.berkers.primedice.Adapter;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -9,6 +11,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import java.util.ArrayList;
 
 import geert.berkers.primedice.Activity.BetInformationActivity;
@@ -65,7 +69,7 @@ public class BetAdapter extends BaseAdapter {
 
         betID.setText(betArrayList.get(position).getIDString());
         player.setText(betArrayList.get(position).getPlayer());
-        profit.setText(betArrayList.get(position).getProfit());
+        profit.setText(betArrayList.get(position).getProfitString());
 
         // Change color to red if lost and green if won
         if (!betArrayList.get(position).getWinOrLose()) {
@@ -93,6 +97,17 @@ public class BetAdapter extends BaseAdapter {
             }
         });
 
+        betID.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                ClipboardManager clipboard = (ClipboardManager) v.getContext().getSystemService(Context.CLIPBOARD_SERVICE);
+                ClipData clip = ClipData.newPlainText("Primedice Bet", betArrayList.get(position).getIDString());
+                clipboard.setPrimaryClip(clip);
+
+                Toast.makeText(v.getContext(), "Copied bet ID!", Toast.LENGTH_SHORT).show();
+                return true;
+            }
+        });
         // Add onclick function. This opens the player information
         player.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -101,6 +116,18 @@ public class BetAdapter extends BaseAdapter {
                 playerInfoIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 playerInfoIntent.putExtra("playerName", betArrayList.get(position).getPlayer());
                 v.getContext().startActivity(playerInfoIntent);
+            }
+        });
+
+        player.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                ClipboardManager clipboard = (ClipboardManager) v.getContext().getSystemService(Context.CLIPBOARD_SERVICE);
+                ClipData clip = ClipData.newPlainText("Primedice user", betArrayList.get(position).getPlayer());
+                clipboard.setPrimaryClip(clip);
+
+                Toast.makeText(v.getContext(), "Copier username!", Toast.LENGTH_SHORT).show();
+                return true;
             }
         });
 

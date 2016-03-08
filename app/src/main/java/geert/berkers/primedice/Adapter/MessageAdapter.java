@@ -1,11 +1,15 @@
 package geert.berkers.primedice.Adapter;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.method.LinkMovementMethod;
+import android.text.style.ClickableSpan;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -13,13 +17,14 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.List;
 
 import geert.berkers.primedice.Activity.MainActivity;
 import geert.berkers.primedice.Activity.PlayerInformationActivity;
 import geert.berkers.primedice.Data.Message;
-import geert.berkers.primedice.DataHandler.MyClickableSpan;
+import geert.berkers.primedice.DataHandler.ChatObject;
 import geert.berkers.primedice.Fragment.ChatFragment;
 import geert.berkers.primedice.R;
 
@@ -91,9 +96,13 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
             String messageText = message.getMessage();
             SpannableString spannableString = new SpannableString(messageText);
 
-            setSpannableString(spannableString, messageText, "u:", MyClickableSpan.USER);
-            setSpannableString(spannableString, messageText, "b:", MyClickableSpan.BET);
-            setSpannableString(spannableString, messageText, "bet:", MyClickableSpan.BET);
+            setSpannableString(spannableString, messageText, "u:", ChatObject.USER);
+            setSpannableString(spannableString, messageText, "b:", ChatObject.BET);
+            setSpannableString(spannableString, messageText, "bet:", ChatObject.BET);
+
+            for (String link : MainActivity.allowedLinksInChat) {
+                setSpannableString(spannableString, messageText, link, ChatObject.LINK);
+            }
 
             this.message.setText(spannableString);
             this.message.setLinkTextColor(Color.BLUE);
@@ -105,8 +114,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
             this.toUsername.setVisibility(View.GONE);
 
             String toUser = message.getToUsername();
-            if(toUser != null){
-                if(!toUser.equals("null")) {
+            if (toUser != null) {
+                if (!toUser.equals("null")) {
                     toUser = "to " + message.getToUsername();
                     this.toUsername.setText(toUser);
                     this.toUsername.setVisibility(View.VISIBLE);
@@ -184,15 +193,48 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
                         @Override
                         public boolean onMenuItemClick(MenuItem item) {
                             switch (item.toString()) {
-                                case "MESSAGE":     MainActivity.sendPM(null, sender);          break;
-                                case "TIP USER":    MainActivity.tipUser(null, sender);         break;
-                                case "IGNORE":      ChatFragment.ignoreOrUnignoreUser(sender);  break;
-                                case "UNIGNORE":    ChatFragment.ignoreOrUnignoreUser(sender);  break;
-                                default:            return false;
+                                case "MESSAGE":
+                                    MainActivity.sendPM(null, sender);
+                                    break;
+                                case "TIP USER":
+                                    MainActivity.tipUser(null, sender);
+                                    break;
+                                case "IGNORE":
+                                    ChatFragment.ignoreOrUnignoreUser(sender);
+                                    break;
+                                case "UNIGNORE":
+                                    ChatFragment.ignoreOrUnignoreUser(sender);
+                                    break;
+                                default:
+                                    return false;
                             }
                             return true;
                         }
                     });
+                }
+            });
+
+            this.sender.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    ClipboardManager clipboard = (ClipboardManager) v.getContext().getSystemService(Context.CLIPBOARD_SERVICE);
+                    ClipData clip = ClipData.newPlainText("Primedice user", sender);
+                    clipboard.setPrimaryClip(clip);
+
+                    Toast.makeText(v.getContext(), "Copied message!", Toast.LENGTH_SHORT).show();
+                    return true;
+                }
+            });
+
+            this.message.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    ClipboardManager clipboard = (ClipboardManager) v.getContext().getSystemService(Context.CLIPBOARD_SERVICE);
+                    ClipData clip = ClipData.newPlainText("Primedice chat message", message.getText().toString());
+                    clipboard.setPrimaryClip(clip);
+
+                    Toast.makeText(v.getContext(), "Copied message!", Toast.LENGTH_SHORT).show();
+                    return true;
                 }
             });
         }
@@ -208,7 +250,10 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
 
                 int endIndex = startIndex + value.length();
 
-                spannableString.setSpan(new MyClickableSpan(clickableObject, value.replace(split, "")), startIndex, endIndex, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                if (clickableObject != ChatObject.LINK) {
+                    value = value.replace(split, "");
+                }
+                spannableString.setSpan(new ChatObject(clickableObject, value), startIndex, endIndex, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
         }
     }

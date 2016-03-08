@@ -22,7 +22,7 @@ public class User implements Parcelable {
     private Date registered;
     private double balance, profit, affiliate_total;
     private boolean password, otp_enabled, email_enabled, address_enabled;
-    private SimpleDateFormat registeredDateFormat = new SimpleDateFormat("MMM dd yyyy");
+    private final SimpleDateFormat registeredDateFormat = new SimpleDateFormat("MMM dd yyyy");
     private int userID, bets, wins, losses, win_risk, lose_risk, messages, referred, nonce;
     private String username, address/*, registered*/, client, previous_server, previous_client, previous_server_hashed, next_seed, server, otp_token, otp_qr;
 
@@ -260,9 +260,6 @@ public class User implements Parcelable {
         return address;
     }
 
-    public void setBalance(double newBalance){
-        this.balance = newBalance;
-    }
     public void setAddress(String newAddress){
         this.address = newAddress;
     }
@@ -410,7 +407,7 @@ public class User implements Parcelable {
         return previous_server_hashed;
     }
 
-    public void setRegisteredFromDateFormat(String timestamp) {
+    private void setRegisteredFromDateFormat(String timestamp) {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
         formatter.setTimeZone(TimeZone.getTimeZone("UTC")); //2015-11-25T11:52:01.617Z
 

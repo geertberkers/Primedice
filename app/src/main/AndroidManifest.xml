@@ -64,7 +64,6 @@
                 android:value=".Activity.MainActivity" />
         </activity>
 
-        <service android:name=".Thread.SocketService"/>
     </application>
 
 

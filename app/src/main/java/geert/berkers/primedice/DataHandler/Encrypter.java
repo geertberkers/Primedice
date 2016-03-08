@@ -1,4 +1,4 @@
-package geert.berkers.primedice.Data;
+package geert.berkers.primedice.DataHandler;
 
 /**
  * Primedice Application Created by Geert on 2-3-2016.
@@ -10,13 +10,12 @@ import javax.crypto.spec.SecretKeySpec;
 
 import static javax.crypto.Cipher.getInstance;
 
-
-public class Encryption {
+public class Encrypter {
 
     private Cipher cipher;
     private SecretKeySpec secretKeySpec;
 
-    public Encryption(String privateKey) throws Exception {
+    public Encrypter(String privateKey) throws Exception {
         byte[] bytesOfMessage = privateKey.getBytes("UTF-8");
         MessageDigest messageDigest = MessageDigest.getInstance("MD5");
 

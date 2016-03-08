@@ -3,7 +3,6 @@ package geert.berkers.primedice.DataHandler;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
-import android.util.Log;
 
 import java.io.InputStream;
 

@@ -25,27 +25,26 @@ import android.widget.Toast;
 import com.google.zxing.integration.android.IntentIntegrator;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.JSONException;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.io.UnsupportedEncodingException;
 import java.util.concurrent.ExecutionException;
 
-import geert.berkers.primedice.Activity.AffiliateActivity;
-import geert.berkers.primedice.Activity.LoginActivity;
-import geert.berkers.primedice.Activity.MainActivity;
-import geert.berkers.primedice.Activity.PaymentActivity;
-import geert.berkers.primedice.Activity.TipActivity;
-import geert.berkers.primedice.Data.Payment;
+import geert.berkers.primedice.R;
 import geert.berkers.primedice.Data.Tip;
 import geert.berkers.primedice.Data.URL;
-import geert.berkers.primedice.DataHandler.DownloadImageTask;
-import geert.berkers.primedice.DataHandler.GetJSONResultFromURLTask;
-import geert.berkers.primedice.DataHandler.PostToServerTask;
-import geert.berkers.primedice.R;
 import geert.berkers.primedice.Data.User;
+import geert.berkers.primedice.Data.Payment;
+import geert.berkers.primedice.Activity.TipActivity;
+import geert.berkers.primedice.Activity.MainActivity;
+import geert.berkers.primedice.Activity.PaymentActivity;
+import geert.berkers.primedice.Activity.AffiliateActivity;
+import geert.berkers.primedice.DataHandler.DownloadImageTask;
+import geert.berkers.primedice.DataHandler.GetFromServerTask;
+import geert.berkers.primedice.DataHandler.PostToServerTask;
 
 /**
  * Primedice Application Created by Geert on 2-2-2016.
@@ -53,15 +52,14 @@ import geert.berkers.primedice.Data.User;
 public class ProfileFragment extends Fragment {
 
     private MainActivity activity;
-    private View view, setPasswordView, twoFacterView, emergencyAddressView;
 
     private User user;
     private Bitmap otpQRImage;
-    private LinearLayout showedLogLayout, showedAffiliateLayout;
-    private RelativeLayout securityLayout, showedSecurityLayout, logLayout, affiliateLayout;
-
     private EditText edEmergencyAddress;
-    private Button btnSetPassword, btnSetEmail, btnSetTwoFactor, btnSetEmergencyAddress, btnShowDeposits, btnShowWithdrawals, btnTipLog;//, btnContactSupport;
+    private LinearLayout showedLogLayout, showedAffiliateLayout;
+    private View view, setPasswordView, twoFactorView, emergencyAddressView;
+    private RelativeLayout securityLayout, showedSecurityLayout, logLayout, affiliateLayout;
+    private Button btnSetPassword, btnSetEmail, btnSetTwoFactor, btnSetEmergencyAddress, btnShowDeposits, btnShowWithdrawals, btnTipLog;
     private TextView txtUsername, txtDateJoined, lblEmail, txtTwoFactorSet, txtEmergencyAddressSet, securityPlus, logPlus, affiliatePlus, txtAffiliateLink, txtAffiliateInformation;
 
     @Override
@@ -258,7 +256,7 @@ public class ProfileFragment extends Fragment {
     }
 
     private void setInformation() {
-        user = activity.getUser();
+        user = MainActivity.getUser();
 
         txtDateJoined.setText(user.getRegistered());
 
@@ -440,30 +438,30 @@ public class ProfileFragment extends Fragment {
     private void setTwoFactor() {
         LayoutInflater factory = LayoutInflater.from(activity);
 
-        if (twoFacterView != null) {
-            ViewGroup parent = (ViewGroup) twoFacterView.getParent();
+        if (twoFactorView != null) {
+            ViewGroup parent = (ViewGroup) twoFactorView.getParent();
             if (parent != null) {
-                parent.removeView(twoFacterView);
+                parent.removeView(twoFactorView);
             }
         }
         try {
-            twoFacterView = factory.inflate(R.layout.twofactor_layout, null);
+            twoFactorView = factory.inflate(R.layout.twofactor_layout, null);
         } catch (InflateException e) {
             e.printStackTrace();
         }
 
-        final EditText edOtp = (EditText) twoFacterView.findViewById(R.id.edOtp);
-        final EditText edPassword = (EditText) twoFacterView.findViewById(R.id.edPassword);
+        final EditText edOtp = (EditText) twoFactorView.findViewById(R.id.edOtp);
+        final EditText edPassword = (EditText) twoFactorView.findViewById(R.id.edPassword);
 
-        final TextView edOtpToken = (TextView) twoFacterView.findViewById(R.id.edOtpToken);
+        final TextView edOtpToken = (TextView) twoFactorView.findViewById(R.id.edOtpToken);
         edOtpToken.setText(user.getOTPToken());
 
-        final ImageView otpQR = (ImageView) twoFacterView.findViewById(R.id.optQR);
+        final ImageView otpQR = (ImageView) twoFactorView.findViewById(R.id.optQR);
         otpQR.setImageBitmap(otpQRImage);
 
         final AlertDialog.Builder alertDialog = new AlertDialog.Builder(activity);
         alertDialog.setTitle("MULTIFACTOR LOGIN");
-        alertDialog.setView(twoFacterView);
+        alertDialog.setView(twoFactorView);
         alertDialog.setPositiveButton("SET", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
 
@@ -569,7 +567,7 @@ public class ProfileFragment extends Fragment {
         ArrayList<Payment> deposits = new ArrayList<>();
 
         try {
-            GetJSONResultFromURLTask getDeposits = new GetJSONResultFromURLTask();
+            GetFromServerTask getDeposits = new GetFromServerTask();
             String result = getDeposits.execute((URL.DEPOSITS + activity.getAccess_token())).get();
 
             Log.i("DEPOSITS_RESULT", result);
@@ -602,7 +600,7 @@ public class ProfileFragment extends Fragment {
         ArrayList<Payment> withdrawals = new ArrayList<>();
 
         try {
-            GetJSONResultFromURLTask getWithdrawals = new GetJSONResultFromURLTask();
+            GetFromServerTask getWithdrawals = new GetFromServerTask();
             String result = getWithdrawals.execute((URL.WITHDRAWALS + activity.getAccess_token())).get();
 
             Log.i("WITHDRAWALS_RESULT", result);
@@ -634,7 +632,7 @@ public class ProfileFragment extends Fragment {
         ArrayList<Tip> tips = new ArrayList<>();
 
         try {
-            GetJSONResultFromURLTask getTips = new GetJSONResultFromURLTask();
+            GetFromServerTask getTips = new GetFromServerTask();
             String result = getTips.execute((URL.TIPS + activity.getAccess_token())).get();
 
             Log.i("TIPS_RESULT", result);
@@ -664,7 +662,7 @@ public class ProfileFragment extends Fragment {
     private void openAffiliateInfo() {
         Intent affiliateIntent = new Intent(activity.getApplicationContext(), AffiliateActivity.class);
         affiliateIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        affiliateIntent.putExtra("user", activity.getUser());
+        affiliateIntent.putExtra("user", MainActivity.getUser());
         affiliateIntent.putExtra("access_token", activity.getAccess_token());
         activity.getApplicationContext().startActivity(affiliateIntent);
     }
@@ -683,7 +681,7 @@ public class ProfileFragment extends Fragment {
 
     @Override
     public void onResume() {
-        activity.updateUser(LoginActivity.getUser(activity.getAccess_token()));
+        MainActivity.updateUser();
         super.onResume();
     }
 }

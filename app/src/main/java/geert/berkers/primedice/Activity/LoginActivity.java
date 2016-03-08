@@ -24,11 +24,11 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.concurrent.ExecutionException;
 
-import geert.berkers.primedice.Data.Encryption;
+import geert.berkers.primedice.DataHandler.Encrypter;
 import geert.berkers.primedice.Data.URL;
 import geert.berkers.primedice.DataHandler.PostToServerTask;
 import geert.berkers.primedice.R;
-import geert.berkers.primedice.DataHandler.GetJSONResultFromURLTask;
+import geert.berkers.primedice.DataHandler.GetFromServerTask;
 import geert.berkers.primedice.Data.User;
 
 public class LoginActivity extends AppCompatActivity {
@@ -57,7 +57,7 @@ public class LoginActivity extends AppCompatActivity {
         txtUsername = (EditText) findViewById(R.id.etUsername);
         txtPassword = (EditText) findViewById(R.id.etPassword);
 
-        if(getSupportActionBar() != null) {
+        if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayShowHomeEnabled(true);
             getSupportActionBar().setIcon(R.mipmap.primedice);
             getSupportActionBar().setBackgroundDrawable(new ColorDrawable(ContextCompat.getColor(getApplicationContext(), R.color.primedicecolor)));
@@ -106,9 +106,9 @@ public class LoginActivity extends AppCompatActivity {
             rememberMe = sharedPref.getBoolean("remember_me", false);
             cbRememberMe.setChecked(rememberMe);
 
-            if(rememberMe) {
+            if (rememberMe) {
                 try {
-                    Encryption encrypter = new Encryption(PRIVATE_KEY);
+                    Encrypter encrypter = new Encrypter(PRIVATE_KEY);
                     String encryptedString = sharedPref.getString("access_token", null);
 
                     if (encryptedString != null) {
@@ -116,7 +116,7 @@ public class LoginActivity extends AppCompatActivity {
                         byte[] encrypted = Base64.decode(encryptedString, Base64.DEFAULT);
                         byte[] decrypted = encrypter.decrypt(encrypted);
 
-                        access_token = new String (decrypted, "UTF-8");
+                        access_token = new String(decrypted, "UTF-8");
 
                         loginFromAccessToken(access_token);
                     }
@@ -128,24 +128,21 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     //Register a user
-    public void register(String username) {
+    private void register(String username) {
         try {
-            String urlParameters = "username=" + URLEncoder.encode(String.valueOf(username), "UTF-8");
-            // + "&affiliate=GeertBerkers";
+            String urlParameters = "username=" + URLEncoder.encode(String.valueOf(username), "UTF-8") + "&affiliate=GeertDev";
 
             PostToServerTask postToServerTask = new PostToServerTask();
             String result = postToServerTask.execute(URL.REGISTER, urlParameters).get();
 
             if (result != null) {
                 getAccestokenFromLoginResult(result);
-
                 loginFromAccessToken(access_token);
-
             } else {
                 String registerFailed = "Registering failed!";
                 txtResult.setText(registerFailed);
             }
-        } catch (UnsupportedEncodingException | ExecutionException | InterruptedException /*| JSONException*/ e) {
+        } catch (UnsupportedEncodingException | ExecutionException | InterruptedException  e) {
             e.printStackTrace();
         }
     }
@@ -169,32 +166,33 @@ public class LoginActivity extends AppCompatActivity {
                 } else if (password.length() == 0) {
                     Toast.makeText(getApplicationContext(), "Fill in a password!", Toast.LENGTH_SHORT).show();
                 } else {
-                    String loginResult = "NoResult";
-                    PostToServerTask login = new PostToServerTask();
 
                     try {
-                        String urlParameters =
-                                "username=" + URLEncoder.encode(username, "UTF-8") +
-                                        "&password=" + URLEncoder.encode(password, "UTF-8");
+                        String urlParameters = "username=" + URLEncoder.encode(username, "UTF-8")
+                                + "&password=" + URLEncoder.encode(password, "UTF-8");
 
                         if (tfa.length() != 0) {
                             urlParameters = urlParameters + "&otp=" + URLEncoder.encode(tfa, "UTF-8");
                         }
-                        loginResult = login.execute(URL.LOG_IN, urlParameters, tfa).get();
+
+                        PostToServerTask loginTast = new PostToServerTask();
+                        String loginResult = loginTast.execute(URL.LOG_IN, urlParameters, tfa).get();
+
+                        if (loginResult == null){
+                            loginResult = "Couldn't log in! Try again.";
+                            txtResult.setText(loginResult);
+                        } else {
+                            getAccestokenFromLoginResult(loginResult);
+                            loginFromAccessToken(access_token);
+                        }
+
+                        Log.i("LOGIN_RESULT", loginResult);
+
                     } catch (InterruptedException | ExecutionException | UnsupportedEncodingException e) {
                         e.printStackTrace();
                     }
 
-                    if (loginResult == null || loginResult.equals("NoResult")) {
-                        loginResult = "Couldn't log in! Try again.";
 
-                        txtResult.setText(loginResult);
-                    } else {
-                        getAccestokenFromLoginResult(loginResult);
-
-                        loginFromAccessToken(access_token);
-                    }
-                    Log.i("LOGIN_RESULT", loginResult);
                 }
             }
         }
@@ -227,7 +225,7 @@ public class LoginActivity extends AppCompatActivity {
 
             access_token = oneObject.optString("access_token");
 
-            if(rememberMe) {
+            if (rememberMe) {
                 if (access_token != null) {
                     // Save access_token in shared preferences for automatic login next time
                     SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
@@ -235,7 +233,7 @@ public class LoginActivity extends AppCompatActivity {
                     editor.clear();
                     editor.putBoolean("remember_me", rememberMe);
                     try {
-                        Encryption encrypter = new Encryption(PRIVATE_KEY);
+                        Encrypter encrypter = new Encrypter(PRIVATE_KEY);
                         byte[] encrypted = encrypter.encrypt(access_token.getBytes("UTF-8"));
                         String encryptedString = Base64.encodeToString(encrypted, Base64.DEFAULT);
                         editor.putString("access_token", encryptedString);
@@ -255,13 +253,11 @@ public class LoginActivity extends AppCompatActivity {
     // Create user object from server response
     public static User getUser(String access_token) {
         try {
-            GetJSONResultFromURLTask userTask = new GetJSONResultFromURLTask();
+            GetFromServerTask userTask = new GetFromServerTask();
             String userResult = userTask.execute(URL.USER + access_token).get();
 
             if (userResult != null) {
-                if (!userResult.equals("NoResult")) {
-                    return new User(userResult);
-                }
+                return new User(userResult);
             }
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();

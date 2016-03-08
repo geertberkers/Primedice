@@ -8,9 +8,9 @@ import java.net.URL;
 /**
  * Primedice Application Created by Geert on 23-1-2016.
  */
-public class GetJSONResultFromURLTask extends AsyncTask<String, Void, String> {
+public class GetFromServerTask extends AsyncTask<String, Void, String> {
 
-    private Connection connection;
+    private APIConnector APIConnector;
 
     @Override
     protected String doInBackground(String... params) {
@@ -18,18 +18,16 @@ public class GetJSONResultFromURLTask extends AsyncTask<String, Void, String> {
     }
 
     private String getJSONResult(String URL) {
-        String result = "NoResult";
+        String result = null;
 
         try {
             URL url = new URL(URL);
-
-            connection = new Connection(url, "GET");
-
-            result = connection.getResult();
+            APIConnector = new APIConnector(url, "GET");
+            result = APIConnector.getResult();
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } finally {
-            connection.closeConnection();
+            APIConnector.closeConnection();
         }
 
         return result;

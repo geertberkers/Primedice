@@ -5,7 +5,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
 
 import java.util.ArrayList;
 
@@ -77,7 +76,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put(ID, bet.getIDString());
         values.put(USER, bet.getPlayer());
-        values.put(PROFIT, bet.getProfit());
+        values.put(PROFIT, bet.getProfitString());
 
         if (bet.getWinOrLose()) {
             values.put(WIN, "Y");

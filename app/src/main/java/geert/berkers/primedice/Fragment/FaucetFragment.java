@@ -50,7 +50,7 @@ public class FaucetFragment extends Fragment {
         }
 
         refreshFaucet();
-        txtBalance.setText(activity.getUser().getBalanceAsString());
+        txtBalance.setText(MainActivity.getUser().getBalanceAsString());
 
         return view;
     }
@@ -89,7 +89,7 @@ public class FaucetFragment extends Fragment {
         btnCancelFaucet.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                txtBalance.setText(activity.getUser().getBalanceAsString());
+                txtBalance.setText(MainActivity.getUser().getBalanceAsString());
                 refreshFaucet();
             }
         });
@@ -142,9 +142,9 @@ public class FaucetFragment extends Fragment {
                 Log.i("CLAIM_FAUCET_RESULT", result);
 
                 JSONObject jsonResult = new JSONObject(result);
-                activity.getUser().updateUserBalance(jsonResult.getString("balance"));
+                MainActivity.getUser().updateUserBalance(jsonResult.getString("balance"));
 
-                txtBalance.setText(activity.getUser().getBalanceAsString());
+                txtBalance.setText(MainActivity.getUser().getBalanceAsString());
                 Toast.makeText(activity.getApplicationContext(), "Faucet claimed!", Toast.LENGTH_LONG).show();
 
                 nextClaim = new Date();

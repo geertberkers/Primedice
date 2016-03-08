@@ -34,5 +34,5 @@ public class URL {
     public final static String DOWNLOAD_QR = "https://chart.googleapis.com/chart?chs=500x500&cht=qr&chl=";
     public final static String EMERGENCY_ADDRESS = "https://api.primedice.com/api/emergency?access_token=";
     public final static String REF_COMMISSION = "https://api.primedice.com/api/affiliate/withdraw?access_token=";
-
+    public static final String GET_ALLOWED_CHAT_LINKS = "http://athena.fhict.nl/users/i279380/getAllowedLinks.php";
 }

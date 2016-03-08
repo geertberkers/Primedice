@@ -13,11 +13,11 @@ import java.net.URL;
 /**
  * Primedice Application Created by Geert on 26-2-2016.
  */
-class Connection {
+class APIConnector {
 
     private HttpURLConnection connection;
 
-    public Connection(URL url, String requestMethod) {
+    public APIConnector(URL url, String requestMethod) {
         try {
             connection = (HttpURLConnection) url.openConnection();
             connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");

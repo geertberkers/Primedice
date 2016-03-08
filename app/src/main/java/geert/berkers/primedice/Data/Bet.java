@@ -2,7 +2,7 @@ package geert.berkers.primedice.Data;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.util.Log;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.text.DecimalFormat;
@@ -22,7 +22,7 @@ public class Bet implements Parcelable {
     private int amount, profit, nonce;
     private double target, roll, multiplier;
     private String player, playerID, condition, client,server;
-    private SimpleDateFormat betDateFormat = new SimpleDateFormat("MMM dd yyyy, HH:mm:ss");
+    private final SimpleDateFormat betDateFormat = new SimpleDateFormat("MMM dd yyyy, HH:mm:ss");
 
     public Bet(JSONObject bet) {
         try {
@@ -153,7 +153,7 @@ public class Bet implements Parcelable {
         return this.player;
     }
 
-    public String getProfit() {
+    public String getProfitString() {
         return satToBTC(profit);
     }
 
@@ -177,8 +177,8 @@ public class Bet implements Parcelable {
         return betDateFormat.format(date);
     }
 
-    public int getAmount(){
-        return amount;
+    public int getProfit(){
+        return profit;
     }
 
     public String getWagered() {
@@ -210,7 +210,7 @@ public class Bet implements Parcelable {
         return String.valueOf(nonce);
     }
 
-    public void setDateFromTimestamp(String timestamp) {
+    private void setDateFromTimestamp(String timestamp) {
         SimpleDateFormat formatter;
 
         // Timestamp from PD with GET BET API.
