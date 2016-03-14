@@ -122,6 +122,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
                     this.message.setBackgroundResource(R.drawable.chat_background_pm);
                 }
             }
+
             tag.setVisibility(View.VISIBLE);
             type.setVisibility(View.VISIBLE);
 
@@ -221,7 +222,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
                     ClipData clip = ClipData.newPlainText("Primedice user", sender);
                     clipboard.setPrimaryClip(clip);
 
-                    Toast.makeText(v.getContext(), "Copied message!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(v.getContext(), "Copied \"" + sender + "\"", Toast.LENGTH_SHORT).show();
                     return true;
                 }
             });
@@ -239,7 +240,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
             });
         }
 
-        // Make users and bets clickable
+        // Make users, links and bets clickable
         private void setSpannableString(SpannableString spannableString, String messageText, String split, int clickableObject) {
             for (int startIndex = -1; (startIndex = messageText.toLowerCase().indexOf(split, startIndex + 1)) != -1; ) {
                 String value = messageText.substring(startIndex).toLowerCase();
@@ -247,6 +248,17 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
                 if (value.contains(" ")) {
                     value = value.substring(0, value.indexOf(" "));
                 }
+
+                value = value.replace("!", "");
+                value = value.replace("@", "");
+                value = value.replace("#", "");
+                value = value.replace("$", "");
+                value = value.replace("%", "");
+                value = value.replace("^", "");
+                value = value.replace("&", "");
+                value = value.replace("*", "");
+                value = value.replace("(", "");
+                value = value.replace(")", "");
 
                 int endIndex = startIndex + value.length();
 

@@ -51,7 +51,6 @@ public class ChatObject extends ClickableSpan {
             } catch (InterruptedException | ExecutionException | JSONException e) {
                 e.printStackTrace();
             }
-
         } else  if (chatObject == USER){
             Intent playerInfoIntent = new Intent(widget.getContext(), PlayerInformationActivity.class);
             playerInfoIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

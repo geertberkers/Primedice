@@ -71,7 +71,6 @@ public class ChatFragment extends Fragment {
             currentRoom = Message.RUSSIAN;
             System.out.println("RUSSIAN Room set");
         }
-
     }
 
     @Override
@@ -331,6 +330,8 @@ public class ChatFragment extends Fragment {
             return;
         } else if (message.startsWith("/")) {
             MainActivity.showNotification(true, "Chat error: Try again!", 5);
+            return;
+        } else if(message.length() == 0){
             return;
         }
 

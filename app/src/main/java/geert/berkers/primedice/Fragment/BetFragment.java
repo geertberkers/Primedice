@@ -398,7 +398,7 @@ public class BetFragment extends Fragment {
 
         final AlertDialog.Builder alertDialog = new AlertDialog.Builder(activity);
         alertDialog.setTitle("PLACE A WITHDRAWAL");
-        alertDialog.setMessage("Withdrawal fee: 0.0001 BTC.");
+        alertDialog.setMessage("Withdrawal fee: 0.0002 BTC.");
         alertDialog.setView(withdrawalView);
         alertDialog.setPositiveButton("WITHDRAW", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
@@ -441,9 +441,9 @@ public class BetFragment extends Fragment {
                                     JSONObject jsonResult = new JSONObject(result);
 
                                     String txid = jsonResult.getString("txid");
-                                    String notification = "Withdrawed " + withdrawalAmount + " BTC to " + withdrawalAdress + ".\nTXID: " + txid;
+                                    String notification = "Withdrawed " + withdrawalAmount + " BTC to " + withdrawalAdress;
 
-                                    MainActivity.showNotification(true, notification, 0);
+                                    MainActivity.showNotification(false, notification, 0);
                                 } catch (JSONException e) {
                                     e.printStackTrace();
                                 }

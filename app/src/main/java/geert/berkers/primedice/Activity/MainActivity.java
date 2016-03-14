@@ -67,6 +67,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     // <editor-fold defaultstate="collapsed" desc="Fields...">
     private Socket socket;
     private static User user;
+    private static int betErrorCounter;
     private static String access_token;
     private static TextView notification;
     private static ImageView closeNotification;
@@ -171,6 +172,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         setTitleAndOpenedMenuItem("Bet");
         Bundle b = getIntent().getExtras();
 
+        betErrorCounter = 0;
+
         try {
             user = b.getParcelable("userParcelable");
             access_token = b.getString("access_token");
@@ -203,6 +206,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 socket.emit("user", access_token);
                 socket.emit("chat");
                 socket.emit("stats");
+
             } else throw new Exception("User is null");
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -668,15 +672,27 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
+
+                notification.setText(text);
+                notification.setVisibility(View.VISIBLE);
+                closeNotification.setVisibility(View.VISIBLE);
+
                 if (error) {
                     notification.setBackgroundResource(R.drawable.error);
                 } else {
                     notification.setBackgroundResource(R.drawable.notification);
                 }
 
-                notification.setVisibility(View.VISIBLE);
-                closeNotification.setVisibility(View.VISIBLE);
-                notification.setText(text);
+                if(text.equals("Bet error") || text.equals("Betting to fast")) {
+                    betErrorCounter++;
+
+                    if (betErrorCounter >= 5) {
+                        notification.setText("Change seed!");
+                        betErrorCounter = 0;
+                    }
+                } else{
+                    betErrorCounter = 0;
+                }
 
                 if (seconds != 0) {
                     Thread thread = new Thread() {
@@ -694,6 +710,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 }
             }
         });
+
+
     }
 
     // Close (hide) current the notification
@@ -766,18 +784,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     //</editor-fold>
 
     // TODO: General things to complete this application:
-    // Bet failed multiple times in a row? -> Change seed!
-    // Improve speed of application using threads
 
-    // Clickable links in chat (With API for allowed sites)
+    // Update UI (style/font)
+    // - Check website style
+    // - Check fonts
+
+    // Maybe for a later version:
     // Notification tip/deposit
-    // Settings screen (alert time/notification/faucet timer/time settings)
-
-    // Update UI
-    // - Check differences with site and fix it
-    // - Update chat UI
-    // - Scroll to new bet when adding it
-
+    // Settings screen (alert time/notifications/faucet timer)
 
     // Reset session wagered information
     public void resetSessionStats() {

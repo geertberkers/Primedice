@@ -67,9 +67,13 @@ public class BetAdapter extends BaseAdapter {
         betID.setPaintFlags(betID.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
         player.setPaintFlags(player.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
 
-        betID.setText(betArrayList.get(position).getIDString());
-        player.setText(betArrayList.get(position).getPlayer());
-        profit.setText(betArrayList.get(position).getProfitString());
+        final String betIDValue = betArrayList.get(position).getIDString();
+        final String playerValue = betArrayList.get(position).getPlayer();
+        String profitValue = betArrayList.get(position).getProfitString();
+
+        betID.setText(betIDValue);
+        player.setText(playerValue);
+        profit.setText(profitValue);
 
         // Change color to red if lost and green if won
         if (!betArrayList.get(position).getWinOrLose()) {
@@ -101,7 +105,7 @@ public class BetAdapter extends BaseAdapter {
             @Override
             public boolean onLongClick(View v) {
                 ClipboardManager clipboard = (ClipboardManager) v.getContext().getSystemService(Context.CLIPBOARD_SERVICE);
-                ClipData clip = ClipData.newPlainText("Primedice Bet", betArrayList.get(position).getIDString());
+                ClipData clip = ClipData.newPlainText("Primedice Bet", betIDValue);
                 clipboard.setPrimaryClip(clip);
 
                 Toast.makeText(v.getContext(), "Copied bet ID!", Toast.LENGTH_SHORT).show();
@@ -114,7 +118,7 @@ public class BetAdapter extends BaseAdapter {
             public void onClick(View v) {
                 Intent playerInfoIntent = new Intent(v.getContext(), PlayerInformationActivity.class);
                 playerInfoIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                playerInfoIntent.putExtra("playerName", betArrayList.get(position).getPlayer());
+                playerInfoIntent.putExtra("playerName", playerValue);
                 v.getContext().startActivity(playerInfoIntent);
             }
         });
@@ -123,10 +127,10 @@ public class BetAdapter extends BaseAdapter {
             @Override
             public boolean onLongClick(View v) {
                 ClipboardManager clipboard = (ClipboardManager) v.getContext().getSystemService(Context.CLIPBOARD_SERVICE);
-                ClipData clip = ClipData.newPlainText("Primedice user", betArrayList.get(position).getPlayer());
+                ClipData clip = ClipData.newPlainText("Primedice user", playerValue);
                 clipboard.setPrimaryClip(clip);
 
-                Toast.makeText(v.getContext(), "Copier username!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(v.getContext(), "Copied \"" + playerValue + "\"", Toast.LENGTH_SHORT).show();
                 return true;
             }
         });

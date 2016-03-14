@@ -2,7 +2,10 @@ package geert.berkers.primedice.Activity;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Paint;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.preference.PreferenceManager;
 import android.support.v4.content.ContextCompat;
@@ -14,6 +17,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -47,6 +51,8 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        setBackground();
 
         btnLogin = (Button) findViewById(R.id.btnLogin);
         txtResult = (TextView) findViewById(R.id.txtResult);
@@ -87,6 +93,14 @@ public class LoginActivity extends AppCompatActivity {
                 txtRegister.setText(lbl);
             }
         });
+    }
+
+    private void setBackground() {
+        LinearLayout loginActivity = (LinearLayout) findViewById(R.id.loginActivity);
+        Bitmap backgroundImage = BitmapFactory.decodeResource(this.getResources(), R.drawable.pd_background_portrait_small);
+        backgroundImage = resizeBackgroundImage(backgroundImage);
+        BitmapDrawable background = new BitmapDrawable(backgroundImage);
+        loginActivity.setBackgroundDrawable(background);
     }
 
     @Override
@@ -142,7 +156,7 @@ public class LoginActivity extends AppCompatActivity {
                 String registerFailed = "Registering failed!";
                 txtResult.setText(registerFailed);
             }
-        } catch (UnsupportedEncodingException | ExecutionException | InterruptedException  e) {
+        } catch (UnsupportedEncodingException | ExecutionException | InterruptedException e) {
             e.printStackTrace();
         }
     }
@@ -178,7 +192,7 @@ public class LoginActivity extends AppCompatActivity {
                         PostToServerTask loginTast = new PostToServerTask();
                         String loginResult = loginTast.execute(URL.LOG_IN, urlParameters, tfa).get();
 
-                        if (loginResult == null){
+                        if (loginResult == null) {
                             loginResult = "Couldn't log in! Try again.";
                             txtResult.setText(loginResult);
                         } else {
@@ -191,8 +205,6 @@ public class LoginActivity extends AppCompatActivity {
                     } catch (InterruptedException | ExecutionException | UnsupportedEncodingException e) {
                         e.printStackTrace();
                     }
-
-
                 }
             }
         }
@@ -263,5 +275,19 @@ public class LoginActivity extends AppCompatActivity {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public Bitmap resizeBackgroundImage(Bitmap bitmap) {
+        if (bitmap.getHeight() > 4096 || bitmap.getWidth() > 4096) {
+            int width = (int) (bitmap.getWidth() * 0.9);
+            int height = (int) (bitmap.getHeight() * 0.9);
+
+            Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, width, height, false);
+
+            return resizeBackgroundImage(resizedBitmap);
+
+        } else{
+            return bitmap;
+        }
     }
 }
