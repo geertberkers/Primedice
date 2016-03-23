@@ -37,7 +37,11 @@ public class BetInformationActivity extends AppCompatActivity {
 
             if (bet != null) {
                 txtUsername.setText(bet.getPlayer());
-                txtRoll.setText(String.valueOf(bet.getRoll()));
+                String roll = String.valueOf(bet.getRoll());
+                if(roll.substring(roll.indexOf(".")).length() == 2){
+                    roll = roll + "0";
+                }
+                txtRoll.setText(roll);
                 txtServerseed.setText(bet.getServerseed());
                 String clientSeed= bet.getClientseed() + "-" + bet.getNonce();
                 txtClientseed.setText(clientSeed);

@@ -542,8 +542,8 @@ public class BetFragment extends Fragment {
 
                     df = new DecimalFormat("0.000");
                     double percentageDouble = Double.valueOf(percentage.replace("%", ""));
-                    newBetMultiplier = 99 / percentageDouble;
-                    String multiplier = df.format(newBetMultiplier).replace(",", ".");
+                    betMultiplier = 99 / percentageDouble;
+                    String multiplier = df.format(betMultiplier).replace(",", ".");
                     if (multiplier.indexOf(".") == 4) {
                         multiplier = multiplier.substring(0, 4);
                     } else {
