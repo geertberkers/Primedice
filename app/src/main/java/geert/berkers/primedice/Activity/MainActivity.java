@@ -822,5 +822,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         });
         tipDialog.show();
     }
+
+    public void openFaucetFragment(View v){
+        int backStackIndex = manager.getBackStackEntryCount() - 1;
+        setTitleAndOpenedMenuItem("Faucet");
+        showFragment(faucetFragment,backStackIndex,"Faucet");
+    }
 }
 

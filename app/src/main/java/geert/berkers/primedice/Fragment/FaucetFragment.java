@@ -126,7 +126,7 @@ public class FaucetFragment extends Fragment {
                 }
             });
         } else {
-            MainActivity.showNotification(true, "Balance is not 0!", 5);
+            MainActivity.showNotification(true, "Balance must be zero to claim.", 5);
         }
     }
 

@@ -7,4 +7,6 @@
 /build
 /captures
 privatekey.txt
-getAllowedLinks.php
+php/getAllowedLinks.php
+php/addAllowedLink.php
+pd_app_key.jks

@@ -265,7 +265,11 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
                 if (clickableObject != ChatObject.LINK) {
                     value = value.replace(split, "");
                 }
-                spannableString.setSpan(new ChatObject(clickableObject, value), startIndex, endIndex, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+                // Minimum length user or bet = 3
+                if(value.length() >= 3) {
+                    spannableString.setSpan(new ChatObject(clickableObject, value), startIndex, endIndex, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                }
             }
         }
     }

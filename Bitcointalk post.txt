@@ -1,0 +1,54 @@
+[size=15pt][b][u]Primedice Android Application![/u][/b][/size]
+
+[b]Small intro:[/b]
+I am a student Software Engineer in the Netherlands.
+I didn't like to gamble on the mobile website, so I decided to make an Androidd application.
+
+Now it is time to publish the first test version of this application.
+I already tested it, but now it is time for other users to test!
+
+[b]Phones tested:[/b]
+- OnePlus One (GeertBerkers)
+- OnePlus Two (GeertBerkers
+
+[b]Who wants to help me?[/b]
+If you want to help me test this Primedice application, send me a PM with your Primedice username and which phone you got!
+I will respond and send you a link with downloadable application.
+We will stay in contact trough PM. I will make a google spreadsheat for reporting bugs.
+
+[b]Screenshot:[/b]
+[img width=540 height=960]https://raw.githubusercontent.com/geertberkers/Primedice/master/screenshots/Primedice%20Application.png[/img]
+
+[b]Video demonstration:[/b]
+https://www.youtube.com/watch?v=it7iIeHphBE
+
+[b]Implemented in this version:[/b]
+[list]
+[li]Login (including automatic login & 2FA)[/li]
+[li]Registering[/li]
+[li]Betting[/li]
+[li]Chatting (including / commands)[/li]
+[li]Deposits[/li]
+[li]Withdrawals[/li]
+[li]Tipping[/li]
+[li]Faucet[/li]
+[li]Profile[/li]
+[li]Stats[/li]
+[li]Provably fair[/li]
+[li]Bet lookup[/li]
+[li]Open bets[/li]
+[li]Open users[/li]
+[li]Open allowed links in chat[/li]
+[/list]
+
+[b]Source code:[/b]
+I uploaded the source code to Github.
+Now developers can see and confirm that I won't scam!
+Link: https://github.com/geertberkers/Primedice
+
+[b]Special Thanks![/b]
+[list]
+[li]Everyone for the positive feedback[/li]
+[li]Primedice team for a lot of information[/li]
+[li]People who want to help me testing it on other phones.[/li]
+[/list]
