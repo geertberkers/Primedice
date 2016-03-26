@@ -52,8 +52,6 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        setBackground();
-
         btnLogin = (Button) findViewById(R.id.btnLogin);
         txtResult = (TextView) findViewById(R.id.txtResult);
         txtRegister = (TextView) findViewById(R.id.txtRegister);
@@ -93,14 +91,6 @@ public class LoginActivity extends AppCompatActivity {
                 txtRegister.setText(lbl);
             }
         });
-    }
-
-    private void setBackground() {
-        LinearLayout loginActivity = (LinearLayout) findViewById(R.id.loginActivity);
-        Bitmap backgroundImage = BitmapFactory.decodeResource(this.getResources(), R.drawable.pd_background_portrait_small);
-        backgroundImage = resizeBackgroundImage(backgroundImage);
-        BitmapDrawable background = new BitmapDrawable(backgroundImage);
-        loginActivity.setBackgroundDrawable(background);
     }
 
     @Override

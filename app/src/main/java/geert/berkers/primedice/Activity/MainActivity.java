@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.app.FragmentManager;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -18,6 +19,7 @@ import android.text.InputType;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.EditText;
@@ -101,6 +103,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     // <editor-fold defaultstate="collapsed" desc="onCreate methods...">
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        System.out.println("MainActivity Created");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -178,6 +181,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             user = b.getParcelable("userParcelable");
             access_token = b.getString("access_token");
 
+            System.out.println("User created");
             if (user != null) {
                 this.wageredStart = user.getWageredAsLong();
                 this.profitStart = user.getProfit();
@@ -189,6 +193,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 transaction.add(R.id.content_frame, betFragment, "Bet");
                 transaction.addToBackStack("Bet");
                 transaction.commit();
+                System.out.println("Betfragment commited");
 
                 GetFromServerTask getAllowedLinksForChat = new GetFromServerTask();
                 String result = getAllowedLinksForChat.execute(URL.GET_ALLOWED_CHAT_LINKS).get();
@@ -199,13 +204,24 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     allowedLinksInChat.add(jsonSite.getString("site"));
                 }
 
+                System.out.println("Allowed Links created");
                 chatFragment.setMessagesBeforeCreate(access_token, this);
 
-                socket = SocketIO.getInstance();
-                socket.connect();
-                socket.emit("user", access_token);
-                socket.emit("chat");
-                socket.emit("stats");
+
+                System.out.println("Start sockets");
+                // Wait for everything to get loaded, then start sockets
+                Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        socket = SocketIO.getInstance();
+                        socket.connect();
+                        socket.emit("user", access_token);
+                        socket.emit("chat");
+                        socket.emit("stats");
+                        System.out.println("Sockets started!");
+                    }
+                }, 5000);
 
             } else throw new Exception("User is null");
         } catch (Exception ex) {
@@ -332,7 +348,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         } else {
             Log.i("MainActivity", "Close application");
 
-            socket.disconnect();
+            if (socket != null) {
+                socket.disconnect();
+            }
+
             stopAutomatedBetThread();
 
             // If account isn't remembered, logout
@@ -601,7 +620,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         tipDialog.show();
     }
 
-    private static EditText createEditTextTipAmount(Activity a){
+    private static EditText createEditTextTipAmount(Activity a) {
         String sathosiBaseTip = "0.00050001";
         final boolean[] firstEdit = {true};
         final EditText edTipAmount = new EditText(a);
@@ -621,7 +640,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     // Tip the user
-    private static void doTip(EditText edTipAmount, String username){
+    private static void doTip(EditText edTipAmount, String username) {
         try {
             double doubleTipValue = Double.valueOf(edTipAmount.getText().toString());
 
@@ -683,14 +702,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     notification.setBackgroundResource(R.drawable.notification);
                 }
 
-                if(text.equals("Bet error") || text.equals("Betting to fast")) {
+                if (text.equals("Bet error") || text.equals("Betting to fast")) {
                     betErrorCounter++;
 
                     if (betErrorCounter >= 5) {
                         notification.setText("Change seed!");
                         betErrorCounter = 0;
                     }
-                } else{
+                } else {
                     betErrorCounter = 0;
                 }
 
@@ -823,10 +842,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         tipDialog.show();
     }
 
-    public void openFaucetFragment(View v){
+    public void openFaucetFragment(View v) {
         int backStackIndex = manager.getBackStackEntryCount() - 1;
         setTitleAndOpenedMenuItem("Faucet");
-        showFragment(faucetFragment,backStackIndex,"Faucet");
+        showFragment(faucetFragment, backStackIndex, "Faucet");
     }
 }
 

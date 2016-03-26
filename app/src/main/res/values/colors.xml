@@ -15,4 +15,5 @@
     <color name="generate_formula_bg">#eeeeee</color>
     <color name="link_blue">#3baade</color>
     <color name="yellow">#ffff00</color>
+    <color name="background_login">#434959</color>
 </resources>

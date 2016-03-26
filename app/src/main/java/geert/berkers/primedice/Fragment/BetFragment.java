@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
@@ -62,7 +63,7 @@ public class BetFragment extends Fragment {
     private static final int MY_BETS = 1;
     private static final int ALL_BETS = 2;
     private static final int HR_BETS = 3;
-
+    ImageView newImage = null;
     private int betAmount;
     private Bitmap resultImage;
     private View withdrawalView;
@@ -70,7 +71,9 @@ public class BetFragment extends Fragment {
     private ListView betListView;
     private boolean maxPressed, betHigh;
     private MySQLiteHelper mySQLiteHelper;
-    private ArrayList<Bet> myBets, allBets, hrBets;
+    private ArrayList<Bet> myBets = new ArrayList<>();
+    private ArrayList<Bet> allBets = new ArrayList<>();
+    private ArrayList<Bet> hrBets = new ArrayList<>();
     private Double betMultiplier, betPercentage, target;
     private EditText edBetAmount, edProfitOnWin, edWithdrawalAddress;
     private TextView txtBalance, txtMyBets, txtAllBets, txtHighRollers;
@@ -138,10 +141,6 @@ public class BetFragment extends Fragment {
         openedBet = MY_BETS;
         target = betPercentage;
 
-        myBets = new ArrayList<>();
-        allBets = new ArrayList<>();
-        hrBets = new ArrayList<>();
-
         format = new DecimalFormat("0.00000000");
         txtBalance.setText(MainActivity.getUser().getBalanceAsString());
 
@@ -150,40 +149,40 @@ public class BetFragment extends Fragment {
         myBets = mySQLiteHelper.getAllBetsFromUser(MainActivity.getUser().getUsername());
         showBets(myBets);
 
+        System.out.println("Own bets set");
+
         allBets = getBets("bets");
         hrBets = getBets("highrollers");
+        System.out.println("Bets and highrollers created");
 
         downloadImage();
+        System.out.println("BetFragment done");
 
-        //SocketIO.getInstance(activity.getAccess_token()).connect();
     }
 
     // Download image for deposits
     private void downloadImage() {
-        try {
-            String address = MainActivity.getUser().getAddress();
 
-            if (address == null || address.equals("null")) {
-                String result;
-                try {
-                    GetFromServerTask getAddressTask = new GetFromServerTask();
-                    result = getAddressTask.execute(URL.DEPOSIT + activity.getAccess_token()).get();
+        String address = MainActivity.getUser().getAddress();
 
-                    JSONObject jsonResult = new JSONObject(result);
+        if (address == null || address.equals("null")) {
+            String result;
+            try {
+                GetFromServerTask getAddressTask = new GetFromServerTask();
+                result = getAddressTask.execute(URL.DEPOSIT + activity.getAccess_token()).get();
 
-                    String newAddress = jsonResult.getString("address");
-                    MainActivity.getUser().setAddress(newAddress);
+                JSONObject jsonResult = new JSONObject(result);
 
-                } catch (InterruptedException | ExecutionException | JSONException e) {
-                    e.printStackTrace();
-                }
+                String newAddress = jsonResult.getString("address");
+                MainActivity.getUser().setAddress(newAddress);
+
+            } catch (InterruptedException | ExecutionException | JSONException e) {
+                e.printStackTrace();
             }
-
-            DownloadImageTask downloadImageTask = new DownloadImageTask();
-            resultImage = downloadImageTask.execute(URL.DOWNLOAD_QR + address).get();
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
         }
+
+        newImage = new ImageView(activity);
+        new DownloadImageTask().execute((URL.DOWNLOAD_QR + address), newImage);
     }
 
     // Handle all button clicks
@@ -323,12 +322,15 @@ public class BetFragment extends Fragment {
 
     // Deposit some BTC!
     private void deposit() {
-        ImageView depositAdressImage = new ImageView(activity);
-        depositAdressImage.setImageBitmap(resultImage);
+
+        ViewGroup parent = (ViewGroup) newImage.getParent();
+        if (parent != null) {
+            parent.removeView(newImage);
+        }
 
         final AlertDialog.Builder alertDialog = new AlertDialog.Builder(activity);
         alertDialog.setTitle("DEPOSIT");
-        alertDialog.setView(depositAdressImage);
+        alertDialog.setView(newImage);
         alertDialog.setMessage("Your deposit adress is: " + MainActivity.getUser().getAddress());
         alertDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
@@ -472,9 +474,9 @@ public class BetFragment extends Fragment {
     // Update bet amount
     private void updateBetAmount() {
         String rollDice;
-        if(activity.isBettingAutomatic()){
+        if (activity.isBettingAutomatic()) {
             rollDice = "STOP AUTOMATED BETTING";
-        }else {
+        } else {
             rollDice = "ROLL DICE";
         }
         btnRollDice.setText(rollDice);
@@ -744,6 +746,7 @@ public class BetFragment extends Fragment {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+        System.out.println("Bets created: " + getThese);
 
         return betArrayList;
     }

@@ -54,7 +54,7 @@ public class ProfileFragment extends Fragment {
     private MainActivity activity;
 
     private User user;
-    private Bitmap otpQRImage;
+    private ImageView otpQRDownload;
     private EditText edEmergencyAddress;
     private LinearLayout showedLogLayout, showedAffiliateLayout;
     private View view, setPasswordView, twoFactorView, emergencyAddressView;
@@ -270,13 +270,9 @@ public class ProfileFragment extends Fragment {
 
         String imageURL = user.getOTPQR();
         if (imageURL != null) {
-            try {
-                imageURL = imageURL.replace("166x166", "500x500");
-                DownloadImageTask downloadImageTask = new DownloadImageTask();
-                otpQRImage = downloadImageTask.execute(imageURL).get();
-            } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
-            }
+            imageURL = imageURL.replace("166x166", "500x500");
+            otpQRDownload = new ImageView(activity);
+            new DownloadImageTask().execute(imageURL, otpQRDownload);
         }
     }
 
@@ -457,7 +453,7 @@ public class ProfileFragment extends Fragment {
         edOtpToken.setText(user.getOTPToken());
 
         final ImageView otpQR = (ImageView) twoFactorView.findViewById(R.id.optQR);
-        otpQR.setImageBitmap(otpQRImage);
+        otpQR.setImageDrawable(otpQRDownload.getDrawable());
 
         final AlertDialog.Builder alertDialog = new AlertDialog.Builder(activity);
         alertDialog.setTitle("MULTIFACTOR LOGIN");

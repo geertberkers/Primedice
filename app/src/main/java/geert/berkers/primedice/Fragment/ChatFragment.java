@@ -54,8 +54,8 @@ public class ChatFragment extends Fragment {
     private RecyclerView mMessagesView;
 
     private MessageAdapter mAdapter;
-    private List<Message> englishMessages;
-    private List<Message> russianMessages;
+    private List<Message> englishMessages = new ArrayList<>();
+    private List<Message> russianMessages = new ArrayList<>();
     private static List<String> ignoredUsers = new ArrayList<>();
 
     public void setMessagesBeforeCreate(String access_token, Activity activity) {
@@ -139,6 +139,7 @@ public class ChatFragment extends Fragment {
                     messages.add(createMessageFromJSON(jsonMessage));
                 }
 
+                System.out.println("Messages created");
                 return messages;
             }
         } catch (InterruptedException | ExecutionException | JSONException e) {
@@ -331,7 +332,7 @@ public class ChatFragment extends Fragment {
         } else if (message.startsWith("/")) {
             MainActivity.showNotification(true, "Chat error: Try again!", 5);
             return;
-        } else if(message.length() == 0){
+        } else if (message.length() == 0) {
             return;
         }
 
