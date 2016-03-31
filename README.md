@@ -1,11 +1,16 @@
 # Primedice
-Unoffial Primedice application for Android. 
+Unofficial Primedice application for Android. 
+
+DISCLAIMER:
+By using this application, you agree to the Terms of Services from Primedice.
+I'm not responsible for any lost BTC. Gambling is risky and might lose your bitcoin.
+If you minimize the application, it keeps running when you started Automated Betting. Be aware of this!
 
 Implemented in current version:
 - Login (including automatic login & 2FA)
 - Registering
 - Betting
-- Chatting (including / commands)
+- Chatting (including all commands like /tip)
 - Deposits
 - Withdrawals
 - Tipping
@@ -18,12 +23,8 @@ Implemented in current version:
 - Open users
 - Encrypted token
 
-Since there is no Android application for Primedice, I decided to make on.
-I will use the same looks as the site, but first I want to implement all the code.
-
 Plans for later versions:
 - Notifications when app closed
-- Open links in chat
 - Settings screen
 
 Made by Geert Berkers

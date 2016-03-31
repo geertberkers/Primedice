@@ -10,7 +10,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.app.FragmentManager;
-import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -19,7 +18,6 @@ import android.text.InputType;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.EditText;
@@ -33,7 +31,6 @@ import com.github.nkzawa.socketio.client.Socket;
 import com.google.zxing.integration.android.IntentResult;
 import com.google.zxing.integration.android.IntentIntegrator;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONException;
 
@@ -41,11 +38,13 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import geert.berkers.primedice.Data.Message;
-import geert.berkers.primedice.Data.URL;
+import geert.berkers.primedice.Data.URLS;
 import geert.berkers.primedice.DataHandler.GetFromServerTask;
+import geert.berkers.primedice.DataHandler.LoadChatTask;
 import geert.berkers.primedice.DataHandler.PostToServerTask;
 import geert.berkers.primedice.DataHandler.SocketIO;
 import geert.berkers.primedice.R;
@@ -66,7 +65,6 @@ import geert.berkers.primedice.Thread.AutomatedBetThread;
  */
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
 
-    // <editor-fold defaultstate="collapsed" desc="Fields...">
     private Socket socket;
     private static User user;
     private static int betErrorCounter;
@@ -98,9 +96,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private AutomatedBetThread automatedBetThread;
 
     public static ArrayList<String> allowedLinksInChat = new ArrayList<>();
-    // </editor-fold>
 
-    // <editor-fold defaultstate="collapsed" desc="onCreate methods...">
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         System.out.println("MainActivity Created");
@@ -193,35 +189,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 transaction.add(R.id.content_frame, betFragment, "Bet");
                 transaction.addToBackStack("Bet");
                 transaction.commit();
-                System.out.println("Betfragment commited");
 
-                GetFromServerTask getAllowedLinksForChat = new GetFromServerTask();
-                String result = getAllowedLinksForChat.execute(URL.GET_ALLOWED_CHAT_LINKS).get();
-
-                JSONArray jsonArray = new JSONArray(result);
-                for (int i = 0; i < jsonArray.length(); i++) {
-                    JSONObject jsonSite = jsonArray.getJSONObject(i);
-                    allowedLinksInChat.add(jsonSite.getString("site"));
-                }
-
-                System.out.println("Allowed Links created");
-                chatFragment.setMessagesBeforeCreate(access_token, this);
-
-
-                System.out.println("Start sockets");
-                // Wait for everything to get loaded, then start sockets
-                Handler handler = new Handler();
-                handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        socket = SocketIO.getInstance();
-                        socket.connect();
-                        socket.emit("user", access_token);
-                        socket.emit("chat");
-                        socket.emit("stats");
-                        System.out.println("Sockets started!");
-                    }
-                }, 5000);
+                new LoadChatTask(this).execute(access_token);
 
             } else throw new Exception("User is null");
         } catch (Exception ex) {
@@ -233,35 +202,43 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             this.finish();
         }
     }
-    // </editor-fold>
 
-    // <editor-fold defaultstate="collapsed" desc="Override and layout methods...">
+    public void initChatFragment(int room, List<Message> englishMessages, List<Message> russianMessages){
+        chatFragment.initChatFragment(access_token, room, englishMessages, russianMessages);
+    }
+    public void startSockets(){
+        socket = SocketIO.getInstance();
+        socket.connect();
+        socket.emit("user", access_token);
+        socket.emit("chat");
+        socket.emit("stats");
+        System.out.println("Sockets started!");
+    }
+
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         menuListView.setItemChecked(position, true);
         setTitleAndOpenedMenuItem(menuAdapter.getItem(position));
 
-        int backStack = manager.getBackStackEntryCount();
-        int backStackIndex = backStack - 1;
+        String selectedItem = menuAdapter.getItem(position);
 
-        if (menuAdapter.getItem(position).equals("Bet")) {
+        if (selectedItem.equals("Bet")) {
             manager.popBackStack("Bet", 0);
-        } else if (menuAdapter.getItem(position).equals("Profile")) {
-            showFragment(profileFragment, backStackIndex, "Profile");
-        } else if (menuAdapter.getItem(position).equals("Stats")) {
-            showStats(backStackIndex);
-        } else if (menuAdapter.getItem(position).equals("Chat")) {
-            showFragment(chatFragment, backStackIndex, "Chat");
-        } else if (menuAdapter.getItem(position).equals("Automated betting")) {
-            showFragment(automatedBetFragment, backStackIndex, "Automated betting");
-        } else if (menuAdapter.getItem(position).equals("Provably fair")) {
-            showFragment(provablyFairFragment, backStackIndex, "Provably fair");
-        } else if (menuAdapter.getItem(position).equals("Faucet")) {
-            showFragment(faucetFragment, backStackIndex, "Faucet");
-        } else if (menuAdapter.getItem(position).equals("Tip Developer")) {
+        } else if (selectedItem.equals("Profile")) {
+            showFragment(profileFragment, "Profile");
+        } else if (selectedItem.equals("Stats")) {
+            showStats();
+        } else if (selectedItem.equals("Chat")) {
+            showFragment(chatFragment, "Chat");
+        } else if (selectedItem.equals("Automated betting")) {
+            showFragment(automatedBetFragment, "Automated betting");
+        } else if (selectedItem.equals("Provably fair")) {
+            showFragment(provablyFairFragment, "Provably fair");
+        } else if (selectedItem.equals("Faucet")) {
+            showFragment(faucetFragment, "Faucet");
+        } else if (selectedItem.equals("Tip Developer")) {
             tipDeveloper();
-        } else if (menuAdapter.getItem(position).equals("Log out")) {
-            // Check if password set
+        } else if (selectedItem.equals("Log out")) {
             if (!user.getPasswordSet()) {
                 logOutNoPasswordSet(this);
             } else {
@@ -273,7 +250,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     // Show statistics and set information
-    private void showStats(int backStackIndex) {
+    private void showStats() {
         DecimalFormat format = new DecimalFormat("0.00000000");
 
         double wageredSessionDouble = (double) user.getWageredAsLong() - wageredStart;
@@ -289,11 +266,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         String betsSession = String.valueOf(betsSessionInt);
 
         statsFragment.setInformation(user, wageredSession, profitSession, betsSession);
-        showFragment(statsFragment, backStackIndex, "Stats");
+        showFragment(statsFragment, "Stats");
     }
 
     // Show the fragment
-    private void showFragment(Fragment fragment, int backStackIndex, String fragmentName) {
+    private void showFragment(Fragment fragment, String fragmentName) {
+        int backStackIndex = manager.getBackStackEntryCount() - 1;
+
         if (!manager.getBackStackEntryAt(backStackIndex).getName().equals(fragmentName)) {
             FragmentTransaction transaction = manager.beginTransaction();
             transaction.replace(R.id.content_frame, fragment, fragmentName);
@@ -373,9 +352,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             menuAdapter.setSelectedMenuItem(title);
         }
     }
-    // </editor-fold>
 
-    // <editor-fold defaultstate="collapsed" desc="Getters...">
     public static User getUser() {
         return user;
     }
@@ -383,9 +360,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public String getAccess_token() {
         return access_token;
     }
-    // </editor-fold>
 
-    // <editor-fold defaultstate="collapsed" desc="Log out methods...">
     // Log out without password set
     private void logOutNoPasswordSet(final Activity a) {
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
@@ -404,7 +379,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         alertDialog.setNeutralButton("SET PASSWORD", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialogInterface, int i) {
                 setTitleAndOpenedMenuItem("Profile");
-                showFragment(profileFragment, manager.getBackStackEntryCount() - 1, "Profile");
+                showFragment(profileFragment, "Profile");
             }
         });
         alertDialog.show();
@@ -432,7 +407,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private void logOut(Activity a) {
         try {
             PostToServerTask logOutTask = new PostToServerTask();
-            String result = logOutTask.execute(URL.LOG_OUT + access_token, null).get();
+            String result = logOutTask.execute(URLS.LOG_OUT + access_token, null).get();
 
             if (result != null) {
                 SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
@@ -449,9 +424,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             e.printStackTrace();
         }
     }
-    //</editor-fold>
-
-    // <editor-fold defaultstate="collapsed" desc="Automatic bets methods...">
 
     // Start automated betting
     public void startAutomatedBetThread(int amount, String target, String condition, int numberOfRolls, boolean increaseOnWin, boolean increaseOnLoss, double increaseOnWinValue, double increaseOnLossValue) {
@@ -480,7 +452,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         "&condition=" + URLEncoder.encode(condition, "UTF-8");
 
                 PostToServerTask postToServerTask = new PostToServerTask();
-                String result = postToServerTask.execute((URL.BET + access_token), urlParameters).get();
+                String result = postToServerTask.execute((URLS.BET + access_token), urlParameters).get();
 
                 if (result != null) {
                     JSONObject jsonObject = new JSONObject(result);
@@ -547,12 +519,19 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     }
 
-    // </editor-fold>
-
-    // <editor-fold defaultstate="collapsed" desc="Static methods...">
     // Get user from server
     public static void updateUser() {
-        user = LoginActivity.getUser(access_token);
+        try {
+            //TODO: Remove .get() from AsyncTask
+            GetFromServerTask userTask = new GetFromServerTask();
+            String userResult = userTask.execute(URLS.USER + access_token).get();
+
+            if (userResult != null) {
+                user = new User(userResult);
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
     }
 
     // send PM
@@ -576,7 +555,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                             + "&toUsername=" + URLEncoder.encode(toUsername, "UTF-8");
 
                     PostToServerTask sendMessage = new PostToServerTask();
-                    String result = sendMessage.execute((URL.SEND_MESSAGE + access_token), urlParameters).get();
+                    String result = sendMessage.execute((URLS.SEND_MESSAGE + access_token), urlParameters).get();
                     System.out.println(result);
 
                 } catch (InterruptedException | ExecutionException | UnsupportedEncodingException e) {
@@ -665,7 +644,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 PostToServerTask tipDeveloperTask = new PostToServerTask();
 
                 try {
-                    String result = tipDeveloperTask.execute((URL.TIP + access_token), urlParameters).get();
+                    String result = tipDeveloperTask.execute((URLS.TIP + access_token), urlParameters).get();
                     Log.i("Result", result);
 
                     JSONObject jsonObject = new JSONObject(result);
@@ -800,13 +779,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
         chatFragment.addMessage(message, showMessages);
     }
-    //</editor-fold>
 
     // TODO: General things to complete this application:
 
     // Update UI (style/font)
     // - Check website style
     // - Check fonts
+
 
     // Maybe for a later version:
     // Notification tip/deposit
@@ -843,9 +822,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     public void openFaucetFragment(View v) {
-        int backStackIndex = manager.getBackStackEntryCount() - 1;
         setTitleAndOpenedMenuItem("Faucet");
-        showFragment(faucetFragment, backStackIndex, "Faucet");
+        showFragment(faucetFragment, "Faucet");
     }
 }
 

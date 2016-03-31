@@ -1,42 +1,37 @@
 package geert.berkers.primedice.Activity;
 
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Paint;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
-import android.preference.PreferenceManager;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.util.Base64;
 import android.util.Log;
+import android.os.Bundle;
 import android.view.View;
+import android.util.Base64;
+import android.widget.Toast;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
+import android.graphics.Paint;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
+import android.graphics.drawable.ColorDrawable;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
 
-import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.JSONException;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.io.UnsupportedEncodingException;
 import java.util.concurrent.ExecutionException;
 
-import geert.berkers.primedice.DataHandler.Encrypter;
-import geert.berkers.primedice.Data.URL;
-import geert.berkers.primedice.DataHandler.PostToServerTask;
 import geert.berkers.primedice.R;
-import geert.berkers.primedice.DataHandler.GetFromServerTask;
-import geert.berkers.primedice.Data.User;
+import geert.berkers.primedice.Data.URLS;
+import geert.berkers.primedice.DataHandler.Encrypter;
+import geert.berkers.primedice.DataHandler.LoginTask;
+import geert.berkers.primedice.DataHandler.PostToServerTask;
 
 public class LoginActivity extends AppCompatActivity {
 
+    // Change it to secret private_key before building app!
     private static final String PRIVATE_KEY = "GeertsPrivateKey";
 
     private Button btnLogin;
@@ -122,12 +117,13 @@ public class LoginActivity extends AppCompatActivity {
 
                         access_token = new String(decrypted, "UTF-8");
 
-                        loginFromAccessToken(access_token);
+                        new LoginTask(this).execute(access_token);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
+
         }
     }
 
@@ -136,12 +132,12 @@ public class LoginActivity extends AppCompatActivity {
         try {
             String urlParameters = "username=" + URLEncoder.encode(String.valueOf(username), "UTF-8") + "&affiliate=GeertDev";
 
-            PostToServerTask postToServerTask = new PostToServerTask();
-            String result = postToServerTask.execute(URL.REGISTER, urlParameters).get();
+            PostToServerTask registerTask = new PostToServerTask();
+            String result = registerTask.execute(URLS.REGISTER, urlParameters).get();
 
             if (result != null) {
-                getAccestokenFromLoginResult(result);
-                loginFromAccessToken(access_token);
+                getAccessTokenFromLoginResult(result);
+                new LoginTask(this).execute(access_token);
             } else {
                 String registerFailed = "Registering failed!";
                 txtResult.setText(registerFailed);
@@ -179,15 +175,15 @@ public class LoginActivity extends AppCompatActivity {
                             urlParameters = urlParameters + "&otp=" + URLEncoder.encode(tfa, "UTF-8");
                         }
 
-                        PostToServerTask loginTast = new PostToServerTask();
-                        String loginResult = loginTast.execute(URL.LOG_IN, urlParameters, tfa).get();
+                        PostToServerTask loginTask = new PostToServerTask();
+                        String loginResult = loginTask.execute(URLS.LOG_IN, urlParameters, tfa).get();
 
                         if (loginResult == null) {
                             loginResult = "Couldn't log in! Try again.";
                             txtResult.setText(loginResult);
                         } else {
-                            getAccestokenFromLoginResult(loginResult);
-                            loginFromAccessToken(access_token);
+                            getAccessTokenFromLoginResult(loginResult);
+                            new LoginTask(this).execute(access_token);
                         }
 
                         Log.i("LOGIN_RESULT", loginResult);
@@ -200,28 +196,8 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
-    // Login with your access_token
-    private void loginFromAccessToken(String access_token) {
-        String loginRegister = "Login or register!";
-        if (access_token != null) {
-            User user = getUser(access_token);
-
-            if (user != null) {
-                Intent mainActivity = new Intent(this, MainActivity.class);
-                mainActivity.putExtra("userParcelable", user);
-                mainActivity.putExtra("access_token", access_token);
-                startActivity(mainActivity);
-                this.finish();
-            } else {
-                txtResult.setText(loginRegister);
-            }
-        } else {
-            txtResult.setText(loginRegister);
-        }
-    }
-
-    // Get the acces_token from the server response
-    private void getAccestokenFromLoginResult(String loginResult) {
+    // Get the access_token from the server response
+    private void getAccessTokenFromLoginResult(String loginResult) {
         try {
             JSONObject oneObject = new JSONObject(loginResult);
 
@@ -234,50 +210,21 @@ public class LoginActivity extends AppCompatActivity {
                     SharedPreferences.Editor editor = sharedPref.edit();
                     editor.clear();
                     editor.putBoolean("remember_me", rememberMe);
+
                     try {
                         Encrypter encrypter = new Encrypter(PRIVATE_KEY);
                         byte[] encrypted = encrypter.encrypt(access_token.getBytes("UTF-8"));
                         String encryptedString = Base64.encodeToString(encrypted, Base64.DEFAULT);
                         editor.putString("access_token", encryptedString);
-
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                    //editor.putString("access_token", access_token);
+
                     editor.apply();
                 }
             }
         } catch (JSONException e) {
             e.printStackTrace();
-        }
-    }
-
-    // Create user object from server response
-    public static User getUser(String access_token) {
-        try {
-            GetFromServerTask userTask = new GetFromServerTask();
-            String userResult = userTask.execute(URL.USER + access_token).get();
-
-            if (userResult != null) {
-                return new User(userResult);
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public Bitmap resizeBackgroundImage(Bitmap bitmap) {
-        if (bitmap.getHeight() > 4096 || bitmap.getWidth() > 4096) {
-            int width = (int) (bitmap.getWidth() * 0.9);
-            int height = (int) (bitmap.getHeight() * 0.9);
-
-            Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, width, height, false);
-
-            return resizeBackgroundImage(resizedBitmap);
-
-        } else{
-            return bitmap;
         }
     }
 }

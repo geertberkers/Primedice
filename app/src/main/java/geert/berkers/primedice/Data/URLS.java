@@ -3,7 +3,7 @@ package geert.berkers.primedice.Data;
 /**
  * Primedice Application Created by Geert on 4-3-2016.
  */
-public class URL {
+public class URLS {
 
     public final static String API ="https://api.primedice.com/api/";
     public final static String PRIMEDICE = "https://primedice.com/play";

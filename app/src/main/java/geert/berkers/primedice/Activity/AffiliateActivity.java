@@ -27,7 +27,7 @@ import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.util.concurrent.ExecutionException;
 
-import geert.berkers.primedice.Data.URL;
+import geert.berkers.primedice.Data.URLS;
 import geert.berkers.primedice.DataHandler.PostToServerTask;
 import geert.berkers.primedice.R;
 import geert.berkers.primedice.DataHandler.GetFromServerTask;
@@ -59,30 +59,30 @@ public class AffiliateActivity extends AppCompatActivity {
                 Button btnWithdraw = (Button) findViewById(R.id.btnWithdrawCommision);
                 TextView txtAffiliateLinkInfo = (TextView) findViewById(R.id.affiliateLinkInfo);
                 TextView txtAffiliateLink = (TextView) findViewById(R.id.affiliateLink);
-                final TextView txtAvailableCommision = (TextView) findViewById(R.id.txtAvailableCommission);
-                TextView txtTotalCommision = (TextView) findViewById(R.id.txtTotalCommission);
+                final TextView txtAvailableCommission = (TextView) findViewById(R.id.txtAvailableCommission);
+                TextView txtTotalCommission = (TextView) findViewById(R.id.txtTotalCommission);
                 TextView txtCommission = (TextView) findViewById(R.id.txtCommission);
-                TextView txtRefferedUsers = (TextView) findViewById(R.id.txtRefferedUsers);
+                TextView txtReferredUsers = (TextView) findViewById(R.id.txtRefferedUsers);
 
-                link = URL.REFERRAL + user.getUsername();
+                link = URLS.REFERRAL + user.getUsername();
 
                 GetFromServerTask getAffiliateInfoTask = new GetFromServerTask();
-                String result = getAffiliateInfoTask.execute(URL.AFFILIATE + access_token).get();
+                String result = getAffiliateInfoTask.execute(URLS.AFFILIATE + access_token).get();
 
                 JSONObject json = new JSONObject(result);
                 JSONObject affiliate = json.getJSONObject("affiliate");
 
-                final String availableCommision = affiliate.getString("affiliate_balance");
-                String totalCommision = affiliate.getString("affiliate_total");
+                final String availableCommission = affiliate.getString("affiliate_balance");
+                String totalCommission = affiliate.getString("affiliate_total");
                 String commission = String.valueOf(affiliate.getInt("comission"));
                 String commissionLevel = affiliate.getString("level");
                 String commissionText = commission + "% (" + commissionLevel + ")";
                 int referred = affiliate.getInt("referred");
 
-                txtAvailableCommision.setText(satoshiStringToBTCString(availableCommision));
-                txtTotalCommision.setText(satoshiStringToBTCString(totalCommision));
+                txtAvailableCommission.setText(satoshiStringToBTCString(availableCommission));
+                txtTotalCommission.setText(satoshiStringToBTCString(totalCommission));
                 txtCommission.setText(commissionText);
-                txtRefferedUsers.setText(String.valueOf(referred));
+                txtReferredUsers.setText(String.valueOf(referred));
 
                 Log.i("AFFILIATE_INFO_RESULT", result);
 
@@ -126,7 +126,7 @@ public class AffiliateActivity extends AppCompatActivity {
                         btnMax.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                String btcWithdrawAmount = satoshiStringToBTCString(availableCommision);
+                                String btcWithdrawAmount = satoshiStringToBTCString(availableCommission);
                                 btcWithdrawAmount = btcWithdrawAmount.replace(" BTC","");
                                 withdrawAmount.setText(btcWithdrawAmount);
 
@@ -159,10 +159,10 @@ public class AffiliateActivity extends AppCompatActivity {
                                     String urlParameters = "amount=" + URLEncoder.encode(String.valueOf(satoshiWithdrawAmount), "UTF-8");
 
                                     PostToServerTask getRefCommissionTask = new PostToServerTask();
-                                    String result = getRefCommissionTask.execute(URL.REF_COMMISSION + access_token, urlParameters).get();
+                                    String result = getRefCommissionTask.execute(URLS.REF_COMMISSION + access_token, urlParameters).get();
 
                                     JSONObject json = new JSONObject(result);
-                                    txtAvailableCommision.setText(satoshiStringToBTCString(json.getString("affiliate_balance")));
+                                    txtAvailableCommission.setText(satoshiStringToBTCString(json.getString("affiliate_balance")));
 
                                 } catch (InterruptedException | ExecutionException | JSONException | UnsupportedEncodingException e) {
                                     e.printStackTrace();

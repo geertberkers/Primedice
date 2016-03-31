@@ -15,7 +15,7 @@ import java.text.DecimalFormat;
 import geert.berkers.primedice.Activity.MainActivity;
 import geert.berkers.primedice.Data.Bet;
 import geert.berkers.primedice.Data.Message;
-import geert.berkers.primedice.Data.URL;
+import geert.berkers.primedice.Data.URLS;
 import geert.berkers.primedice.Fragment.ChatFragment;
 
 /**
@@ -32,7 +32,7 @@ public class SocketIO {
         try {
             betCounter = 0;
 
-            socket = IO.socket(URL.SOCKETS);
+            socket = IO.socket(URLS.SOCKETS);
 
             socket.on(Socket.EVENT_CONNECT, socketioConnect);       // Connect sockets
             socket.on(Socket.EVENT_DISCONNECT, socketioDisconnect); // Disconnect sockets
@@ -72,12 +72,12 @@ public class SocketIO {
             Log.i("MainActivity", "TIP Result: " + obj.toString());
 
             try {
-                String sendername = obj.getString("sender");
+                String senderName = obj.getString("sender");
                 int amount = obj.getInt("amount");
                 double amountDouble = (double) amount;
                 DecimalFormat format = new DecimalFormat("0.00000000");
                 String amountString = format.format(amountDouble / 100000000);
-                String notification = "Received tip of " + amountString + " BTC from " + sendername;
+                String notification = "Received tip of " + amountString + " BTC from " + senderName;
 
                 MainActivity.updateUser();
                 MainActivity.updateBalanceInOpenedFragment();
@@ -98,12 +98,17 @@ public class SocketIO {
             try {
                 Bet bet = new Bet(obj);
 
+                int profit = bet.getProfit();
+
+                if (profit < 0){
+                    profit = -profit;
+                }
+
                 // Check if bet is HR bet or Normal bet
-                if (bet.getProfit() >= 10000000) {
+                if (profit >= 10000000) {
                     betCounter++;
                     MainActivity.addBetAndBalanceInOpenedFragment(bet, true, false);
                 } else {
-
                     //Only add 1/3 else to fast for application
                     betCounter++;
                     if (betCounter >= 3) {

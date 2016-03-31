@@ -13,7 +13,7 @@ import java.util.concurrent.ExecutionException;
 import geert.berkers.primedice.Activity.BetInformationActivity;
 import geert.berkers.primedice.Activity.PlayerInformationActivity;
 import geert.berkers.primedice.Data.Bet;
-import geert.berkers.primedice.Data.URL;
+import geert.berkers.primedice.Data.URLS;
 
 /**
  * Pimedice Application Created by Geert on 4-3-2016.
@@ -37,7 +37,8 @@ public class ChatObject extends ClickableSpan {
         if (chatObject == BET) {
             try {
                 GetFromServerTask getBetsTask = new GetFromServerTask();
-                String result = getBetsTask.execute((URL.BET_LOOKUP + value.replace(",", ""))).get();
+                //TODO: Remove .get() from AsyncTask
+                String result = getBetsTask.execute((URLS.BET_LOOKUP + value.replace(",", ""))).get();
 
                 if (result != null) {
                     JSONObject jsonBet = new JSONObject(result);

@@ -1,11 +1,8 @@
 package geert.berkers.primedice.Fragment;
 
-import android.app.Activity;
 import android.app.Fragment;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -18,7 +15,6 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Spinner;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -34,7 +30,7 @@ import geert.berkers.primedice.Adapter.MessageAdapter;
 import geert.berkers.primedice.Data.Bet;
 import geert.berkers.primedice.Data.Message;
 import geert.berkers.primedice.Activity.MainActivity;
-import geert.berkers.primedice.Data.URL;
+import geert.berkers.primedice.Data.URLS;
 import geert.berkers.primedice.DataHandler.PostToServerTask;
 import geert.berkers.primedice.R;
 import geert.berkers.primedice.DataHandler.GetFromServerTask;
@@ -58,19 +54,11 @@ public class ChatFragment extends Fragment {
     private List<Message> russianMessages = new ArrayList<>();
     private static List<String> ignoredUsers = new ArrayList<>();
 
-    public void setMessagesBeforeCreate(String access_token, Activity activity) {
+    public void initChatFragment(String access_token, int room, List<Message> englishMessages, List<Message> russianMessages) {
+        currentRoom = room;
         this.access_token = access_token;
-        englishMessages = getMessages("English");
-        russianMessages = getMessages("Russian");
-
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(activity);
-        if (sharedPref.getString("message_room", "English").equals("English")) {
-            currentRoom = Message.ENGLISH;
-            System.out.println("ENGLISH Room set");
-        } else {
-            currentRoom = Message.RUSSIAN;
-            System.out.println("RUSSIAN Room set");
-        }
+        this.englishMessages = englishMessages;
+        this.russianMessages = russianMessages;
     }
 
     @Override
@@ -122,12 +110,12 @@ public class ChatFragment extends Fragment {
             }
         });
     }
-
+/*
     // Get latest messages
     private List<Message> getMessages(String room) {
         try {
             GetFromServerTask sendMessage = new GetFromServerTask();
-            String result = sendMessage.execute((URL.RECEIVE_MESSAGE + access_token + "&room=" + room)).get();
+            String result = sendMessage.execute((URLS.RECEIVE_MESSAGE + access_token + "&room=" + room)).get();
 
             if (result != null) {
                 JSONObject json = new JSONObject(result);
@@ -147,7 +135,7 @@ public class ChatFragment extends Fragment {
         }
         return null;
     }
-
+*/
     // Handle spinner clicks
     private void addSpinnerListener() {
         languageSpinner = (Spinner) view.findViewById(R.id.languageSpinner);
@@ -313,8 +301,9 @@ public class ChatFragment extends Fragment {
             }
 
             try {
+                //TODO: Remove .get() from AsyncTask
                 GetFromServerTask getBetsTask = new GetFromServerTask();
-                String result = getBetsTask.execute((URL.BET_LOOKUP + bet.replace(",", ""))).get();
+                String result = getBetsTask.execute((URLS.BET_LOOKUP + bet.replace(",", ""))).get();
 
                 if (result != null) {
                     JSONObject jsonBet = new JSONObject(result);
@@ -347,7 +336,7 @@ public class ChatFragment extends Fragment {
                 }
             }
             PostToServerTask sendMessage = new PostToServerTask();
-            String result = sendMessage.execute((URL.SEND_MESSAGE + access_token), urlParameters).get();
+            String result = sendMessage.execute((URLS.SEND_MESSAGE + access_token), urlParameters).get();
 
             Log.i("MESSAGE_RESULT", result);
 
@@ -427,6 +416,4 @@ public class ChatFragment extends Fragment {
             return "IGNORE";
         }
     }
-
-
 }

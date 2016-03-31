@@ -13,6 +13,11 @@ public class GetFromServerTask extends AsyncTask<String, Void, String> {
     private APIConnector APIConnector;
 
     @Override
+    protected void onPostExecute(String result) {
+        //TODO: Set result to activity (and remove .get() on AsyncTask)
+    }
+
+    @Override
     protected String doInBackground(String... params) {
         return getJSONResult(params[0]);
     }

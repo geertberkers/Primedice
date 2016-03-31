@@ -14,8 +14,8 @@ import java.net.URL;
 
 public class DownloadImageTask extends AsyncTask<Object, Void, Bitmap> {
 
-    String url = null;
-    ImageView imageView = null;
+    private String url = null;
+    private ImageView imageView = null;
 
     @Override
     protected Bitmap doInBackground(Object... objects) {
@@ -41,19 +41,3 @@ public class DownloadImageTask extends AsyncTask<Object, Void, Bitmap> {
         return downloadedImage;
     }
 }
-/*
-public class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
-
-    protected Bitmap doInBackground(String... urls) {
-        String url = urls[0];
-        Bitmap downloadedImage = null;
-        try {
-            InputStream in = new java.net.URL(url).openStream();
-            downloadedImage = BitmapFactory.decodeStream(in);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return downloadedImage;
-    }
-}
-*/

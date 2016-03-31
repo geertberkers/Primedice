@@ -7,7 +7,6 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.InflateException;
@@ -33,9 +32,9 @@ import java.util.ArrayList;
 import java.io.UnsupportedEncodingException;
 import java.util.concurrent.ExecutionException;
 
+import geert.berkers.primedice.Data.URLS;
 import geert.berkers.primedice.R;
 import geert.berkers.primedice.Data.Tip;
-import geert.berkers.primedice.Data.URL;
 import geert.berkers.primedice.Data.User;
 import geert.berkers.primedice.Data.Payment;
 import geert.berkers.primedice.Activity.TipActivity;
@@ -263,7 +262,7 @@ public class ProfileFragment extends Fragment {
         String account = user.getUsername() + "'s Account";
         txtUsername.setText(account);
 
-        String link = URL.REFERRAL + user.getUsername();
+        String link = URLS.REFERRAL + user.getUsername();
         txtAffiliateLink.setText(link);
 
         checkToHide();
@@ -337,7 +336,7 @@ public class ProfileFragment extends Fragment {
                         }
 
                         PostToServerTask setPasswordTask = new PostToServerTask();
-                        result = setPasswordTask.execute((URL.PASSWORD + activity.getAccess_token()), urlParameters).get();
+                        result = setPasswordTask.execute((URLS.PASSWORD + activity.getAccess_token()), urlParameters).get();
 
                         if (result == null) {
                             Toast.makeText(activity.getApplicationContext(), "Password is NOT changed!", Toast.LENGTH_LONG).show();
@@ -404,7 +403,7 @@ public class ProfileFragment extends Fragment {
                         String urlParameters = "email=" + URLEncoder.encode(email, "UTF-8");
 
                         PostToServerTask setEmailTask = new PostToServerTask();
-                        result = setEmailTask.execute((URL.EMAIL + activity.getAccess_token()), urlParameters).get();
+                        result = setEmailTask.execute((URLS.EMAIL + activity.getAccess_token()), urlParameters).get();
 
                         if (result == null) {
                             Toast.makeText(activity.getApplicationContext(), "Email is NOT set!", Toast.LENGTH_LONG).show();
@@ -471,7 +470,7 @@ public class ProfileFragment extends Fragment {
                             + "&otp_token=" + URLEncoder.encode(otpToken, "UTF-8")
                             + "&password=" + URLEncoder.encode(password, "UTF-8");
                     PostToServerTask setTwoFactorTask = new PostToServerTask();
-                    result = setTwoFactorTask.execute((URL.TWO_FACTOR + activity.getAccess_token()), urlParameters).get();
+                    result = setTwoFactorTask.execute((URLS.TWO_FACTOR + activity.getAccess_token()), urlParameters).get();
 
                     if (result == null) {
                         Toast.makeText(activity.getApplicationContext(), "Two Factor is NOT set!", Toast.LENGTH_LONG).show();
@@ -536,7 +535,7 @@ public class ProfileFragment extends Fragment {
                         String urlParameters = "address=" + URLEncoder.encode(address, "UTF-8");
 
                         PostToServerTask setEmergencyAddressTask = new PostToServerTask();
-                        String result = setEmergencyAddressTask.execute((URL.EMERGENCY_ADDRESS + activity.getAccess_token()), urlParameters).get();
+                        String result = setEmergencyAddressTask.execute((URLS.EMERGENCY_ADDRESS + activity.getAccess_token()), urlParameters).get();
 
                         if (result == null) {
                             Toast.makeText(activity.getApplicationContext(), "Emergency Address is NOT set!", Toast.LENGTH_LONG).show();
@@ -563,8 +562,9 @@ public class ProfileFragment extends Fragment {
         ArrayList<Payment> deposits = new ArrayList<>();
 
         try {
+            //TODO: Remove .get() from AsyncTask
             GetFromServerTask getDeposits = new GetFromServerTask();
-            String result = getDeposits.execute((URL.DEPOSITS + activity.getAccess_token())).get();
+            String result = getDeposits.execute((URLS.DEPOSITS + activity.getAccess_token())).get();
 
             Log.i("DEPOSITS_RESULT", result);
 
@@ -597,7 +597,8 @@ public class ProfileFragment extends Fragment {
 
         try {
             GetFromServerTask getWithdrawals = new GetFromServerTask();
-            String result = getWithdrawals.execute((URL.WITHDRAWALS + activity.getAccess_token())).get();
+            //TODO: Remove .get() from AsyncTask
+            String result = getWithdrawals.execute((URLS.WITHDRAWALS + activity.getAccess_token())).get();
 
             Log.i("WITHDRAWALS_RESULT", result);
 
@@ -628,8 +629,9 @@ public class ProfileFragment extends Fragment {
         ArrayList<Tip> tips = new ArrayList<>();
 
         try {
+            //TODO: Remove .get() from AsyncTask
             GetFromServerTask getTips = new GetFromServerTask();
-            String result = getTips.execute((URL.TIPS + activity.getAccess_token())).get();
+            String result = getTips.execute((URLS.TIPS + activity.getAccess_token())).get();
 
             Log.i("TIPS_RESULT", result);
 

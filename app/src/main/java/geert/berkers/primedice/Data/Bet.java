@@ -5,6 +5,7 @@ import android.os.Parcelable;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -21,7 +22,7 @@ public class Bet implements Parcelable {
     private boolean win, jackpot;
     private int amount, profit, nonce;
     private double target, roll, multiplier;
-    private String player, playerID, condition, client,server;
+    private String player, playerID, condition, client, server;
     private final SimpleDateFormat betDateFormat = new SimpleDateFormat("MMM dd yyyy, HH:mm:ss");
 
     public Bet(JSONObject bet) {
@@ -34,8 +35,7 @@ public class Bet implements Parcelable {
             this.profit = (int) bet.getDouble("profit");
             try {
                 this.win = bet.getBoolean("win");
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 this.win = bet.getInt("win") != 0;
             }
             this.condition = bet.getString("condition");
@@ -46,8 +46,7 @@ public class Bet implements Parcelable {
             setDateFromTimestamp(bet.getString("timestamp"));
             try {
                 this.jackpot = bet.getBoolean("jackpot");
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 this.jackpot = bet.getInt("jackpot") != 0;
             }
             this.server = bet.getString("server");
@@ -57,7 +56,7 @@ public class Bet implements Parcelable {
     }
 
     // Create bet from parcel
-    private Bet(Parcel read){
+    private Bet(Parcel read) {
         this.id = read.readLong();
         this.player = read.readString();
         this.playerID = read.readString();
@@ -80,7 +79,7 @@ public class Bet implements Parcelable {
     }
 
     // Create from parcel
-    public static final Parcelable.Creator<Bet> CREATOR = new Parcelable.Creator<Bet>(){
+    public static final Parcelable.Creator<Bet> CREATOR = new Parcelable.Creator<Bet>() {
 
         @Override
         public Bet createFromParcel(Parcel source) {
@@ -122,7 +121,11 @@ public class Bet implements Parcelable {
         arg0.writeInt(amount);
         arg0.writeDouble(target);
         arg0.writeInt(profit);
-        if(win)  { arg0.writeString("Y"); } else { arg0.writeString("N"); }
+        if (win) {
+            arg0.writeString("Y");
+        } else {
+            arg0.writeString("N");
+        }
         arg0.writeString(condition);
         arg0.writeDouble(roll);
         arg0.writeInt(nonce);
@@ -130,18 +133,21 @@ public class Bet implements Parcelable {
         arg0.writeDouble(multiplier);
         //arg0.writeString(timestamp);
         arg0.writeString(getTimeOfBet());
-        if(jackpot)  { arg0.writeString("Y"); } else { arg0.writeString("N"); }
+        if (jackpot) {
+            arg0.writeString("Y");
+        } else {
+            arg0.writeString("N");
+        }
         arg0.writeString(server);
     }
 
-    public String getIDString(){
+    public String getIDString() {
         String id = String.valueOf(this.id);
 
         StringBuilder str = new StringBuilder(id);
         int idx = str.length() - 3;
 
-        while (idx > 0)
-        {
+        while (idx > 0) {
             str.insert(idx, ",");
             idx = idx - 3;
         }
@@ -177,7 +183,7 @@ public class Bet implements Parcelable {
         return betDateFormat.format(date);
     }
 
-    public int getProfit(){
+    public int getProfit() {
         return profit;
     }
 
@@ -188,9 +194,13 @@ public class Bet implements Parcelable {
     public String getPayout() {
         DecimalFormat format = new DecimalFormat("0.000");
         String payoutString = format.format(multiplier);
-        payoutString = payoutString.replace(",",".");
-        payoutString = payoutString.substring(0,5);
-        return  payoutString;
+        payoutString = payoutString.replace(",", ".");
+
+        if (payoutString.indexOf(".") == 4) {
+            return payoutString.substring(0, 4);
+        } else {
+            return payoutString.substring(0, 5);
+        }
     }
 
     public String getBetGame() {
@@ -201,7 +211,7 @@ public class Bet implements Parcelable {
         DecimalFormat format = new DecimalFormat("0.00000000");
 
         String resultBTC = format.format(satoshi / 100000000);
-        resultBTC = resultBTC.replace(",",".");
+        resultBTC = resultBTC.replace(",", ".");
 
         return resultBTC;
     }
@@ -216,7 +226,7 @@ public class Bet implements Parcelable {
         // Timestamp from PD with GET BET API.
         // Timezone is UTC
         // Sat Mar 05 2016 14:03:33 GMT+0000 (UTC)
-        if(timestamp.endsWith(" GMT+0000 (UTC)")){
+        if (timestamp.endsWith(" GMT+0000 (UTC)")) {
             timestamp = timestamp.substring(0, timestamp.indexOf(" GMT+0000 (UTC)"));
             formatter = new SimpleDateFormat("EEE MMM dd yyyy HH:mm:ss");
             formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -224,13 +234,13 @@ public class Bet implements Parcelable {
         // Timestamp from MySQLITE DB.
         // Timezone is default already
         // Mar 05 2016, 14:03:33
-       else if(!timestamp.contains("-")){
+        else if (!timestamp.contains("-")) {
             formatter = betDateFormat;
         }
         // Timestamp from PD with place bet.
         // Timezone is UTC
         // 2016-03-05T13:24:59.888Z
-        else{
+        else {
             formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
             formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
         }

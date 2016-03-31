@@ -16,7 +16,7 @@ import org.json.JSONException;
 import java.util.concurrent.ExecutionException;
 
 import geert.berkers.primedice.R;
-import geert.berkers.primedice.Data.URL;
+import geert.berkers.primedice.Data.URLS;
 import geert.berkers.primedice.Data.User;
 import geert.berkers.primedice.DataHandler.GetFromServerTask;
 
@@ -109,8 +109,9 @@ public class PlayerInformationActivity extends AppCompatActivity {
 
     private User getUser() {
         try {
+            //TODO: Remove .get() from AsyncTask
             GetFromServerTask userTask = new GetFromServerTask();
-            String userResult = userTask.execute(URL.GET_USER + playerName).get();
+            String userResult = userTask.execute(URLS.GET_USER + playerName).get();
 
             if (userResult != null) {
                 JSONObject json = new JSONObject(userResult);

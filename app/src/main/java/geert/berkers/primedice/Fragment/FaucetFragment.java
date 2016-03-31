@@ -24,7 +24,7 @@ import java.util.Date;
 import java.util.concurrent.ExecutionException;
 
 import geert.berkers.primedice.Activity.MainActivity;
-import geert.berkers.primedice.Data.URL;
+import geert.berkers.primedice.Data.URLS;
 import geert.berkers.primedice.DataHandler.PostToServerTask;
 import geert.berkers.primedice.R;
 
@@ -96,7 +96,7 @@ public class FaucetFragment extends Fragment {
     }
 
     private void refreshFaucet() {
-        faucetWebView.loadDataWithBaseURL(URL.PRIMEDICE, html, mime, encoding, null);
+        faucetWebView.loadDataWithBaseURL(URLS.PRIMEDICE, html, mime, encoding, null);
     }
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
@@ -136,7 +136,7 @@ public class FaucetFragment extends Fragment {
             PostToServerTask claimFaucetTask = new PostToServerTask();
             String urlParameters = "response=" + URLEncoder.encode(responseForAPI, "UTF-8");
 
-            String result = claimFaucetTask.execute((URL.CLAIM_FAUCET + activity.getAccess_token()), urlParameters).get();
+            String result = claimFaucetTask.execute((URLS.CLAIM_FAUCET + activity.getAccess_token()), urlParameters).get();
 
             if (result != null) {
                 Log.i("CLAIM_FAUCET_RESULT", result);

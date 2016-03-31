@@ -8,8 +8,6 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
@@ -40,7 +38,7 @@ import java.util.concurrent.ExecutionException;
 
 import geert.berkers.primedice.Adapter.BetAdapter;
 import geert.berkers.primedice.Data.Bet;
-import geert.berkers.primedice.Data.URL;
+import geert.berkers.primedice.Data.URLS;
 import geert.berkers.primedice.DataHandler.DownloadImageTask;
 import geert.berkers.primedice.DataHandler.GetFromServerTask;
 import geert.berkers.primedice.DataHandler.MySQLiteHelper;
@@ -63,9 +61,9 @@ public class BetFragment extends Fragment {
     private static final int MY_BETS = 1;
     private static final int ALL_BETS = 2;
     private static final int HR_BETS = 3;
-    ImageView newImage = null;
+
     private int betAmount;
-    private Bitmap resultImage;
+    private ImageView qrImage;
     private View withdrawalView;
     private DecimalFormat format;
     private ListView betListView;
@@ -149,15 +147,11 @@ public class BetFragment extends Fragment {
         myBets = mySQLiteHelper.getAllBetsFromUser(MainActivity.getUser().getUsername());
         showBets(myBets);
 
-        System.out.println("Own bets set");
-
+        // TODO: New AsynchTask for this
         allBets = getBets("bets");
         hrBets = getBets("highrollers");
-        System.out.println("Bets and highrollers created");
 
         downloadImage();
-        System.out.println("BetFragment done");
-
     }
 
     // Download image for deposits
@@ -168,8 +162,9 @@ public class BetFragment extends Fragment {
         if (address == null || address.equals("null")) {
             String result;
             try {
+                //TODO: Remove .get() from AsyncTask
                 GetFromServerTask getAddressTask = new GetFromServerTask();
-                result = getAddressTask.execute(URL.DEPOSIT + activity.getAccess_token()).get();
+                result = getAddressTask.execute(URLS.DEPOSIT + activity.getAccess_token()).get();
 
                 JSONObject jsonResult = new JSONObject(result);
 
@@ -181,8 +176,8 @@ public class BetFragment extends Fragment {
             }
         }
 
-        newImage = new ImageView(activity);
-        new DownloadImageTask().execute((URL.DOWNLOAD_QR + address), newImage);
+        qrImage = new ImageView(activity);
+        new DownloadImageTask().execute((URLS.DOWNLOAD_QR + address), qrImage);
     }
 
     // Handle all button clicks
@@ -323,14 +318,14 @@ public class BetFragment extends Fragment {
     // Deposit some BTC!
     private void deposit() {
 
-        ViewGroup parent = (ViewGroup) newImage.getParent();
+        ViewGroup parent = (ViewGroup) qrImage.getParent();
         if (parent != null) {
-            parent.removeView(newImage);
+            parent.removeView(qrImage);
         }
 
         final AlertDialog.Builder alertDialog = new AlertDialog.Builder(activity);
         alertDialog.setTitle("DEPOSIT");
-        alertDialog.setView(newImage);
+        alertDialog.setView(qrImage);
         alertDialog.setMessage("Your deposit adress is: " + MainActivity.getUser().getAddress());
         alertDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
@@ -404,10 +399,10 @@ public class BetFragment extends Fragment {
         alertDialog.setView(withdrawalView);
         alertDialog.setPositiveButton("WITHDRAW", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
-                String withdrawalAdress = edWithdrawalAddress.getText().toString();
+                String withdrawalAddress = edWithdrawalAddress.getText().toString();
                 String withdrawalAmount = edWithdrawalAmount.getText().toString();
 
-                if (withdrawalAdress.length() == 0) {
+                if (withdrawalAddress.length() == 0) {
                     Toast.makeText(activity.getApplicationContext(), "Fill in a BTC Address!", Toast.LENGTH_SHORT).show();
                 } else if (withdrawalAmount.length() == 0) {
                     Toast.makeText(activity.getApplicationContext(), "Fill in an amount!", Toast.LENGTH_SHORT).show();
@@ -434,21 +429,13 @@ public class BetFragment extends Fragment {
                         } else {
                             try {
                                 String urlParameters = "amount=" + URLEncoder.encode(String.valueOf(satoshiWithdrawAmount), "UTF-8")
-                                        + "&address=" + URLEncoder.encode(withdrawalAdress, "UTF-8");
+                                        + "&address=" + URLEncoder.encode(withdrawalAddress, "UTF-8");
 
                                 PostToServerTask placeWithdrawalTask = new PostToServerTask();
-                                String result = placeWithdrawalTask.execute((URL.WITHDRAW + activity.getAccess_token()), urlParameters).get();
+                                placeWithdrawalTask.execute((URLS.WITHDRAW + activity.getAccess_token()), urlParameters).get();
 
-                                try {
-                                    JSONObject jsonResult = new JSONObject(result);
-
-                                    String txid = jsonResult.getString("txid");
-                                    String notification = "Withdrawed " + withdrawalAmount + " BTC to " + withdrawalAdress;
-
-                                    MainActivity.showNotification(false, notification, 0);
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
+                                String notification = "Withdrawed " + withdrawalAmount + " BTC to " + withdrawalAddress;
+                                MainActivity.showNotification(false, notification, 0);
 
                                 updateUser();
                                 txtBalance.setText(MainActivity.getUser().getBalanceAsString());
@@ -667,7 +654,7 @@ public class BetFragment extends Fragment {
                         "&condition=" + URLEncoder.encode(condition, "UTF-8");
 
                 PostToServerTask postToServerTask = new PostToServerTask();
-                String result = postToServerTask.execute((URL.BET + activity.getAccess_token()), urlParameters).get();
+                String result = postToServerTask.execute((URLS.BET + activity.getAccess_token()), urlParameters).get();
 
                 // Check result
                 if (result != null) {
@@ -713,9 +700,10 @@ public class BetFragment extends Fragment {
 
     // Get and show bets
     private ArrayList<Bet> getBets(String getThese) {
-        String url = URL.API + getThese;
+        String url = URLS.API + getThese;
 
         try {
+            //TODO: Remove .get() from AsyncTask
             GetFromServerTask getBetsTask = new GetFromServerTask();
             String result = getBetsTask.execute(url).get();
             if (getThese.equals("bets")) {
@@ -791,7 +779,9 @@ public class BetFragment extends Fragment {
                 }
             });
         } else {
-            this.allBets.remove(allBets.size() - 1);
+            if(allBets.size() > 30) {
+                this.allBets.remove(allBets.size() - 1);
+            }
             this.allBets.add(0, bet);
 
             activity.runOnUiThread(new Runnable() {
